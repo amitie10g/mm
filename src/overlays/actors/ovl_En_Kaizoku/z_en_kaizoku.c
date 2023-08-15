@@ -5,6 +5,7 @@
  */
 
 #include "z_en_kaizoku.h"
+#include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 
 #define FLAGS (ACTOR_FLAG_1 | ACTOR_FLAG_4 | ACTOR_FLAG_10 | ACTOR_FLAG_100000)
 
@@ -1610,8 +1611,7 @@ void func_80B89280(EnKaizoku* this, PlayState* play) {
 
         if ((this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_SFX) ||
             (this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX)) {
-            Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, ARRAY_COUNT(this->bodyPartsPos), 2,
-                                  0.7f, 0.4f);
+            Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, KAIZOKU_BODYPART_MAX, 2, 0.7f, 0.4f);
             this->unk_2B8 = 0;
             this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
             this->picto.actor.flags |= ACTOR_FLAG_400;
@@ -1633,8 +1633,7 @@ void func_80B893CC(EnKaizoku* this, PlayState* play) {
     if (((this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_SFX) ||
          (this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX)) &&
         (this->unk_2B8 != 0)) {
-        Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, ARRAY_COUNT(this->bodyPartsPos), 2, 0.7f,
-                              0.4f);
+        Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, KAIZOKU_BODYPART_MAX, 2, 0.7f, 0.4f);
         this->unk_2B8 = 0;
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
         this->picto.actor.flags |= ACTOR_FLAG_400;
@@ -1713,8 +1712,7 @@ void func_80B8971C(EnKaizoku* this, PlayState* play) {
         if (this->unk_2B8 == 0) {
             return;
         }
-        Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, ARRAY_COUNT(this->bodyPartsPos), 2, 0.7f,
-                              0.4f);
+        Actor_SpawnIceEffects(play, &this->picto.actor, this->bodyPartsPos, KAIZOKU_BODYPART_MAX, 2, 0.7f, 0.4f);
         this->unk_2B8 = 0;
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
     }
@@ -1908,7 +1906,7 @@ void func_80B89A08(EnKaizoku* this, PlayState* play) {
                     this->drawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
                     Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->picto.actor.focus.pos.x,
                                 this->picto.actor.focus.pos.y, this->picto.actor.focus.pos.z, 0, 0, 0,
-                                CLEAR_TAG_LARGE_LIGHT_RAYS);
+                                CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                     sp64 = 1;
                 }
                 break;
@@ -2116,11 +2114,11 @@ void EnKaizoku_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* 
         (limbIndex == KAIZOKU_LIMB_0D) || (limbIndex == KAIZOKU_LIMB_0F) || (limbIndex == KAIZOKU_LIMB_11) ||
         (limbIndex == KAIZOKU_LIMB_12) || (limbIndex == KAIZOKU_LIMB_L_FOOT) || (limbIndex == KAIZOKU_LIMB_14) ||
         (limbIndex == KAIZOKU_LIMB_15) || (limbIndex == KAIZOKU_LIMB_R_FOOT) || (limbIndex == KAIZOKU_LIMB_17)) {
-        Matrix_MultZero(&this->bodyPartsPos[this->bodyPartsPosIndex]);
+        Matrix_MultZero(&this->bodyPartsPos[this->bodyPartIndex]);
 
-        this->bodyPartsPosIndex++;
-        if (this->bodyPartsPosIndex >= ARRAY_COUNT(this->bodyPartsPos)) {
-            this->bodyPartsPosIndex = 0;
+        this->bodyPartIndex++;
+        if (this->bodyPartIndex >= KAIZOKU_BODYPART_MAX) {
+            this->bodyPartIndex = 0;
         }
     }
 }
@@ -2166,7 +2164,7 @@ void EnKaizoku_Draw(Actor* thisx, PlayState* play) {
             this->drawDmgEffFrozenSteamScale = 0.8f;
         }
 
-        Actor_DrawDamageEffects(play, &this->picto.actor, this->bodyPartsPos, ARRAY_COUNT(this->bodyPartsPos),
+        Actor_DrawDamageEffects(play, &this->picto.actor, this->bodyPartsPos, KAIZOKU_BODYPART_MAX,
                                 this->drawDmgEffScale, this->drawDmgEffFrozenSteamScale, drawDmgEffAlpha,
                                 this->drawDmgEffType);
     }

@@ -4,7 +4,6 @@
  * Description: Kafei
  */
 
-#include "prevent_bss_reordering.h"
 #include "z_en_test3.h"
 #include "objects/object_test3/object_test3.h"
 #include "overlays/actors/ovl_En_Door/z_en_door.h"
@@ -122,8 +121,8 @@ static u8 sScheduleScript[] = {
     /* 0x094 */ SCHEDULE_CMD_RET_TIME(15, 55, 16, 10, 12),
     /* 0x09A */ SCHEDULE_CMD_RET_NONE(),
     /* 0x09B */ SCHEDULE_CMD_CHECK_NOT_IN_DAY_L(3, 0x138 - 0x0A0),
-    /* 0x0A0 */ SCHEDULE_CMD_CHECK_FLAG_L(WEEKEVENTREG_33_08, 0x12C - 0x0A5),
-    /* 0x0A5 */ SCHEDULE_CMD_CHECK_FLAG_L(WEEKEVENTREG_79_40, 0x12C - 0x0AA),
+    /* 0x0A0 */ SCHEDULE_CMD_CHECK_FLAG_L(WEEKEVENTREG_RECOVERED_STOLEN_BOMB_BAG, 0x12C - 0x0A5),
+    /* 0x0A5 */ SCHEDULE_CMD_CHECK_FLAG_L(WEEKEVENTREG_SAKON_DEAD, 0x12C - 0x0AA),
     /* 0x0AA */ SCHEDULE_CMD_CHECK_NOT_IN_SCENE_S(SCENE_SECOM, 0x0B0 - 0x0AE),
     /* 0x0AE */ SCHEDULE_CMD_RET_VAL_S(7),
     /* 0x0B0 */ SCHEDULE_CMD_CHECK_FLAG_S(WEEKEVENTREG_ESCAPED_SAKONS_HIDEOUT, 0x0DD - 0x0B4),
@@ -457,7 +456,7 @@ void EnTest3_Init(Actor* thisx, PlayState* play2) {
     this->player.transformation = PLAYER_FORM_HUMAN;
     this->player.ageProperties = &sAgeProperties;
     this->player.heldItemAction = PLAYER_IA_NONE;
-    this->player.heldItemId = ITEM_OCARINA;
+    this->player.heldItemId = ITEM_OCARINA_OF_TIME;
 
     Player_SetModelGroup(&this->player, 3);
     play->playerInit(&this->player, play, &object_test3_Skel_00F7EC);
@@ -471,7 +470,8 @@ void EnTest3_Init(Actor* thisx, PlayState* play2) {
     this->unk_D90 = GET_PLAYER(play);
     this->player.giObjectSegment = this->unk_D90->giObjectSegment;
     this->player.tatlActor = this->unk_D90->tatlActor;
-    if ((CURRENT_DAY != 3) || CHECK_WEEKEVENTREG(WEEKEVENTREG_33_08) || !CHECK_WEEKEVENTREG(WEEKEVENTREG_51_08)) {
+    if ((CURRENT_DAY != 3) || CHECK_WEEKEVENTREG(WEEKEVENTREG_RECOVERED_STOLEN_BOMB_BAG) ||
+        !CHECK_WEEKEVENTREG(WEEKEVENTREG_51_08)) {
         this->player.currentMask = PLAYER_MASK_KEATON;
     }
     this->player.prevMask = this->player.currentMask;
@@ -670,7 +670,7 @@ s32 func_80A3F73C(EnTest3* this, PlayState* play) {
             CutsceneManager_SetReturnCamera(this->subCamId);
             play->startPlayerCutscene(play, &this->player, PLAYER_CSMODE_WAIT);
         }
-        func_800B863C(&this->player.actor, play);
+        Actor_OfferTalkNearColChkInfoCylinder(&this->player.actor, play);
         if (this->unk_D88 == 3) {
             func_80A3F534(this, play);
         } else if (this->unk_D88 == 5) {
@@ -1022,7 +1022,7 @@ void func_80A40908(EnTest3* this, PlayState* play) {
         Message_BombersNotebookQueueEvent(play, BOMBERS_NOTEBOOK_EVENT_RECEIVED_PENDANT_OF_MEMORIES);
         Message_BombersNotebookQueueEvent(play, BOMBERS_NOTEBOOK_EVENT_MET_KAFEI);
     } else {
-        func_800B8500(&this->player.actor, play, 9999.9f, 9999.9f, PLAYER_IA_MINUS1);
+        Actor_OfferTalkExchange(&this->player.actor, play, 9999.9f, 9999.9f, PLAYER_IA_MINUS1);
         this->unk_D78 = &D_80A41854[6];
         this->player.actor.textId = this->unk_D78->textId;
         this->player.actor.flags |= (ACTOR_FLAG_1 | ACTOR_FLAG_8);
@@ -1188,9 +1188,12 @@ void EnTest3_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList1, Gfx** dL
         Actor* leftHandActor = this->player.heldActor;
 
         if (leftHandActor != NULL) {
-            leftHandActor->world.pos.x = (this->player.bodyPartsPos[15].x + this->player.leftHandWorld.pos.x) / 2.0f;
-            leftHandActor->world.pos.y = (this->player.bodyPartsPos[15].y + this->player.leftHandWorld.pos.y) / 2.0f;
-            leftHandActor->world.pos.z = (this->player.bodyPartsPos[15].z + this->player.leftHandWorld.pos.z) / 2.0f;
+            leftHandActor->world.pos.x =
+                (this->player.bodyPartsPos[PLAYER_BODYPART_RIGHT_HAND].x + this->player.leftHandWorld.pos.x) / 2.0f;
+            leftHandActor->world.pos.y =
+                (this->player.bodyPartsPos[PLAYER_BODYPART_RIGHT_HAND].y + this->player.leftHandWorld.pos.y) / 2.0f;
+            leftHandActor->world.pos.z =
+                (this->player.bodyPartsPos[PLAYER_BODYPART_RIGHT_HAND].z + this->player.leftHandWorld.pos.z) / 2.0f;
         }
     } else if (limbIndex == OBJECT_TEST3_LIMB_0B) {
         Actor* actor730 = this->player.targetedActor;

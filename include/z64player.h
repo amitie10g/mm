@@ -51,8 +51,15 @@ typedef enum {
     /* 4 */ PLAYER_ENV_HAZARD_UNDERWATER_FREE
 } PlayerEnvHazard;
 
+/*
+ * Current known usages for PLAYER_IA_MINUS1:
+ *  1. With TalkExchange requests, used to continue a current conversation after a textbox is closed
+ *  2. In `func_80123810` as a return value representing the offer is declined or invalid
+ *  3. Used as an item action to return the previously held item after player is done shielding
+ */
+
 typedef enum PlayerItemAction {
-    /*   -1 */ PLAYER_IA_MINUS1 = -1,
+    /*   -1 */ PLAYER_IA_MINUS1 = -1, // TODO: determine usages with more player docs, possibly split into seperate values (see known usages above)
     /* 0x00 */ PLAYER_IA_NONE,
     /* 0x01 */ PLAYER_IA_LAST_USED,
     /* 0x02 */ PLAYER_IA_FISHING_ROD,
@@ -61,7 +68,7 @@ typedef enum PlayerItemAction {
     /* 0x04 */ PLAYER_IA_SWORD_RAZOR,
     /* 0x05 */ PLAYER_IA_SWORD_GILDED,
     /* 0x06 */ PLAYER_IA_SWORD_TWO_HANDED,
-    /* 0x07 */ PLAYER_IA_STICK,
+    /* 0x07 */ PLAYER_IA_DEKU_STICK,
     /* 0x08 */ PLAYER_IA_ZORA_FINS,
     /* 0x09 */ PLAYER_IA_BOW,
     /* 0x0A */ PLAYER_IA_BOW_FIRE,
@@ -73,8 +80,8 @@ typedef enum PlayerItemAction {
     /* 0x0F */ PLAYER_IA_POWDER_KEG,
     /* 0x10 */ PLAYER_IA_BOMBCHU,
     /* 0x11 */ PLAYER_IA_11,
-    /* 0x12 */ PLAYER_IA_NUT,
-    /* 0x13 */ PLAYER_IA_PICTO_BOX,
+    /* 0x12 */ PLAYER_IA_DEKU_NUT,
+    /* 0x13 */ PLAYER_IA_PICTOGRAPH_BOX,
     /* 0x14 */ PLAYER_IA_OCARINA,
     /* 0x15 */ PLAYER_IA_BOTTLE_MIN,
     /* 0x15 */ PLAYER_IA_BOTTLE_EMPTY = PLAYER_IA_BOTTLE_MIN,
@@ -141,7 +148,7 @@ typedef enum PlayerItemAction {
     /* 0x50 */ PLAYER_IA_MASK_ZORA,
     /* 0x51 */ PLAYER_IA_MASK_DEKU,
     /* 0x51 */ PLAYER_IA_MASK_MAX = PLAYER_IA_MASK_DEKU,
-    /* 0x52 */ PLAYER_IA_LENS,
+    /* 0x52 */ PLAYER_IA_LENS_OF_TRUTH,
     /* 0x53 */ PLAYER_IA_MAX
 } PlayerItemAction;
 
@@ -165,7 +172,7 @@ typedef enum PlayerMeleeWeapon {
     /* 2 */ PLAYER_MELEEWEAPON_SWORD_RAZOR = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_SWORD_RAZOR),
     /* 3 */ PLAYER_MELEEWEAPON_SWORD_GILDED = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_SWORD_GILDED),
     /* 4 */ PLAYER_MELEEWEAPON_SWORD_TWO_HANDED = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_SWORD_TWO_HANDED),
-    /* 5 */ PLAYER_MELEEWEAPON_STICK = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_STICK),
+    /* 5 */ PLAYER_MELEEWEAPON_DEKU_STICK = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_DEKU_STICK),
     /* 6 */ PLAYER_MELEEWEAPON_ZORA_FINS = GET_MELEE_WEAPON_FROM_IA(PLAYER_IA_ZORA_FINS),
     /* 7 */ PLAYER_MELEEWEAPON_MAX
 } PlayerMeleeWeapon;
@@ -414,7 +421,7 @@ typedef enum PlayerModelGroup {
     /*  7 */ PLAYER_MODELGROUP_EXPLOSIVES,
     /*  8 */ PLAYER_MODELGROUP_8,
     /*  9 */ PLAYER_MODELGROUP_HOOKSHOT,
-    /* 10 */ PLAYER_MODELGROUP_STICK,
+    /* 10 */ PLAYER_MODELGROUP_DEKU_STICK,
     /* 11 */ PLAYER_MODELGROUP_INSTRUMENT,
     /* 12 */ PLAYER_MODELGROUP_BOTTLE,
     /* 13 */ PLAYER_MODELGROUP_13,
@@ -1072,7 +1079,7 @@ typedef enum PlayerUnkAA5 {
 } PlayerUnkAA5;
 
 typedef void (*PlayerActionFunc)(struct Player* this, struct PlayState* play);
-typedef s32 (*PlayerFuncAC4)(struct Player* this, struct PlayState* play);
+typedef s32 (*PlayerUpperActionFunc)(struct Player* this, struct PlayState* play);
 typedef void (*PlayerFuncD58)(struct PlayState* play, struct Player* this);
 
 
@@ -1180,7 +1187,7 @@ typedef struct Player {
     /* 0xA80 */ Actor* tatlActor;
     /* 0xA84 */ s16 tatlTextId;
     /* 0xA86 */ s8 csId;
-    /* 0xA87 */ s8 exchangeItemId; // PlayerItemAction enum
+    /* 0xA87 */ s8 exchangeItemAction; // PlayerItemAction enum
     /* 0xA88 */ Actor* talkActor;
     /* 0xA8C */ f32 talkActorDistance;
     /* 0xA90 */ Actor* unk_A90;
@@ -1198,7 +1205,7 @@ typedef struct Player {
     /* 0xAB8 */ f32 unk_AB8;
     /* 0xABC */ f32 unk_ABC;
     /* 0xAC0 */ f32 unk_AC0;
-    /* 0xAC4 */ PlayerFuncAC4 unk_AC4;
+    /* 0xAC4 */ PlayerUpperActionFunc upperActionFunc; // Upper body/item action functions
     /* 0xAC8 */ f32 unk_AC8;
     /* 0xACC */ s16 unk_ACC;
     /* 0xACE */ s8 unk_ACE;

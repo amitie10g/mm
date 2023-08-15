@@ -5,6 +5,7 @@
  */
 
 #include "z_en_firefly.h"
+#include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "overlays/actors/ovl_Obj_Syokudai/z_obj_syokudai.h"
 
 #define FLAGS (ACTOR_FLAG_1 | ACTOR_FLAG_4 | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_4000)
@@ -179,7 +180,7 @@ void EnFirefly_SpawnIceEffects(EnFirefly* this, PlayState* play) {
     if (this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) {
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
         this->drawDmgEffAlpha = 0.0f;
-        Actor_SpawnIceEffects(play, &this->actor, &this->limbPos[0], 3, 2, 0.2f, 0.2f);
+        Actor_SpawnIceEffects(play, &this->actor, this->bodyPartsPos, KEESE_BODYPART_MAX, 2, 0.2f, 0.2f);
     }
 }
 
@@ -360,7 +361,7 @@ void EnFirefly_SetupFall(EnFirefly* this, PlayState* play) {
         this->drawDmgEffScale = 0.55f;
         Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.info.bumper.hitPos.x,
                     this->collider.info.bumper.hitPos.y, this->collider.info.bumper.hitPos.z, 0, 0, 0,
-                    CLEAR_TAG_SMALL_LIGHT_RAYS);
+                    CLEAR_TAG_PARAMS(CLEAR_TAG_SMALL_LIGHT_RAYS));
     } else if (this->actor.colChkInfo.damageEffect == KEESE_DMGEFF_FIRE) {
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
         this->drawDmgEffAlpha = 4.0f;
@@ -806,11 +807,11 @@ void EnFirefly_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* 
     }
 
     if (limbIndex == FIRE_KEESE_LIMB_LEFT_WING_END) {
-        Matrix_MultZero(&this->limbPos[0]);
+        Matrix_MultZero(&this->bodyPartsPos[KEESE_BODYPART_LEFT_WING_END]);
     } else if (limbIndex == FIRE_KEESE_LIMB_RIGHT_WING_END_ROOT) {
-        Matrix_MultZero(&this->limbPos[1]);
+        Matrix_MultZero(&this->bodyPartsPos[KEESE_BODYPART_RIGHT_WING_END_ROOT]);
     } else if (limbIndex == FIRE_KEESE_LIMB_BODY) {
-        Matrix_MultZero(&this->limbPos[2]);
+        Matrix_MultZero(&this->bodyPartsPos[KEESE_BODYPART_BODY]);
     }
 }
 
@@ -843,7 +844,7 @@ void EnFirefly_Draw(Actor* thisx, PlayState* play) {
         POLY_OPA_DISP = gfx;
     }
 
-    Actor_DrawDamageEffects(play, NULL, this->limbPos, ARRAY_COUNT(this->limbPos),
+    Actor_DrawDamageEffects(play, NULL, this->bodyPartsPos, KEESE_BODYPART_MAX,
                             this->drawDmgEffScale * this->actor.scale.y * 200.0f, this->drawDmgEffFrozenSteamScale,
                             this->drawDmgEffAlpha, this->drawDmgEffType);
     this->lastDrawnFrame = play->gameplayFrames;

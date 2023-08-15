@@ -24,7 +24,6 @@ beginseg
     include "build/src/boot_O2_g3/CIC6105.o"
     include "build/src/boot_O2_g3/syncprintf.o"
     include "build/src/boot_O2_g3/fault.o"
-    include "build/data/boot/fault.bss.o"
     include "build/src/boot_O2_g3/fault_drawer.o"
     include "build/src/boot_O2/boot_80084940.o"
     include "build/src/boot_O2/loadfragment.o"
@@ -2811,8 +2810,7 @@ beginseg
     name "ovl_En_Bal"
     compress
     include "build/src/overlays/actors/ovl_En_Bal/z_en_bal.o"
-    include "build/data/ovl_En_Bal/ovl_En_Bal.data.o"
-    include "build/data/ovl_En_Bal/ovl_En_Bal.reloc.o"
+    include "build/src/overlays/actors/ovl_En_Bal/ovl_En_Bal_reloc.o"
 endseg
 
 beginseg
@@ -3074,8 +3072,7 @@ beginseg
     name "ovl_En_Mnk"
     compress
     include "build/src/overlays/actors/ovl_En_Mnk/z_en_mnk.o"
-    include "build/data/ovl_En_Mnk/ovl_En_Mnk.data.o"
-    include "build/data/ovl_En_Mnk/ovl_En_Mnk.reloc.o"
+    include "build/src/overlays/actors/ovl_En_Mnk/ovl_En_Mnk_reloc.o"
 endseg
 
 beginseg
@@ -3644,8 +3641,7 @@ beginseg
     name "ovl_Obj_Wind"
     compress
     include "build/src/overlays/actors/ovl_Obj_Wind/z_obj_wind.o"
-    include "build/data/ovl_Obj_Wind/ovl_Obj_Wind.data.o"
-    include "build/data/ovl_Obj_Wind/ovl_Obj_Wind.reloc.o"
+    include "build/src/overlays/actors/ovl_Obj_Wind/ovl_Obj_Wind_reloc.o"
 endseg
 
 beginseg
