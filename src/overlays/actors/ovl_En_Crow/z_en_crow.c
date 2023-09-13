@@ -7,7 +7,7 @@
 #include "z_en_crow.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 
-#define FLAGS (ACTOR_FLAG_1 | ACTOR_FLAG_4 | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_4000)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_4000)
 
 #define THIS ((EnCrow*)thisx)
 
@@ -130,7 +130,7 @@ void EnCrow_Init(Actor* thisx, PlayState* play) {
     Actor_ProcessInitChain(&this->actor, sInitChain);
     SkelAnime_InitFlex(play, &this->skelAnime, &gGuaySkel, &gGuayFlyAnim, this->jointTable, this->morphTable,
                        OBJECT_CROW_LIMB_MAX);
-    Collider_InitAndSetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderItems);
+    Collider_InitAndSetJntSph(play, &this->collider, &this->actor, &sJntSphInit, this->colliderElements);
     this->collider.elements->dim.worldSphere.radius = sJntSphInit.elements[0].dim.modelSphere.radius;
     CollisionCheck_SetInfo(&this->actor.colChkInfo, &sDamageTable, &sColChkInfoInit);
     ActorShape_Init(&this->actor.shape, 2000.0f, ActorShadow_DrawCircle, 20.0f);
@@ -138,7 +138,7 @@ void EnCrow_Init(Actor* thisx, PlayState* play) {
     sDeadCount = 0;
 
     if (this->actor.parent != NULL) {
-        this->actor.flags &= ~ACTOR_FLAG_1;
+        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
     }
     EnCrow_SetupFlyIdle(this);
 }
@@ -159,11 +159,11 @@ void EnCrow_SetupFlyIdle(EnCrow* this) {
 void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     f32 dist;
-    s32 onInitialAnimFrame;
+    s32 onAnimFirstFrame;
     s16 yaw;
 
     SkelAnime_Update(&this->skelAnime);
-    onInitialAnimFrame = Animation_OnFrame(&this->skelAnime, 0.0f);
+    onAnimFirstFrame = Animation_OnFrame(&this->skelAnime, 0.0f);
     this->actor.speed = (Rand_ZeroOne() * 1.5f) + 3.0f;
 
     if ((this->actor.parent != NULL) && (this->actor.parent->home.rot.z == 0)) {
@@ -172,7 +172,7 @@ void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
         dist = Actor_WorldDistXZToPoint(&this->actor, &this->actor.parent->world.pos);
     } else {
         dist = 450.0f;
-        this->actor.flags |= ACTOR_FLAG_1;
+        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
     }
 
     if (this->actor.bgCheckFlags & BGCHECKFLAG_WALL) {
@@ -181,7 +181,7 @@ void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
         this->yawTarget = Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos);
     }
 
-    if ((Math_SmoothStepToS(&this->actor.shape.rot.y, this->yawTarget, 5, 0x300, 0x10) == 0) && onInitialAnimFrame &&
+    if ((Math_SmoothStepToS(&this->actor.shape.rot.y, this->yawTarget, 5, 0x300, 0x10) == 0) && onAnimFirstFrame &&
         (Rand_ZeroOne() < 0.1f)) {
 
         yaw = (Actor_WorldYawTowardPoint(&this->actor, &this->actor.home.pos) - this->actor.shape.rot.y);
@@ -201,7 +201,7 @@ void EnCrow_FlyIdle(EnCrow* this, PlayState* play) {
         this->pitchTarget = Rand_S16Offset(0x800, 0x800);
     }
 
-    if ((Math_SmoothStepToS(&this->actor.shape.rot.x, this->pitchTarget, 0xA, 0x100, 8) == 0) && onInitialAnimFrame &&
+    if (!Math_SmoothStepToS(&this->actor.shape.rot.x, this->pitchTarget, 0xA, 0x100, 8) && onAnimFirstFrame &&
         (Rand_ZeroOne() < 0.1f)) {
         if (this->actor.home.pos.y < this->actor.world.pos.y) {
             this->pitchTarget -= Rand_S16Offset(0x400, 0x400);
@@ -456,7 +456,7 @@ void EnCrow_Respawn(EnCrow* this, PlayState* play) {
             scaleTarget = 0.01f;
         }
         if (Math_StepToF(&this->actor.scale.x, scaleTarget, scaleTarget * 0.1f)) {
-            this->actor.flags |= ACTOR_FLAG_1;
+            this->actor.flags |= ACTOR_FLAG_TARGETABLE;
             this->actor.flags &= ~ACTOR_FLAG_10;
             this->actor.colChkInfo.health = 1;
             EnCrow_SetupFlyIdle(this);
@@ -481,7 +481,7 @@ void EnCrow_UpdateDamage(EnCrow* this, PlayState* play) {
 
         } else {
             this->actor.colChkInfo.health = 0;
-            this->actor.flags &= ~ACTOR_FLAG_1;
+            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
             Enemy_StartFinishingBlow(play, &this->actor);
             EnCrow_SetupDamaged(this, play);
         }

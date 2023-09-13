@@ -9,7 +9,7 @@
 #include "overlays/actors/ovl_Obj_Etcetera/z_obj_etcetera.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
 
-#define FLAGS (ACTOR_FLAG_1 | ACTOR_FLAG_4)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY)
 
 #define THIS ((EnDekunuts*)thisx)
 
@@ -131,11 +131,11 @@ void EnDekunuts_Init(Actor* thisx, PlayState* play) {
     }
 
     if (this->actor.params == ENDEKUNUTS_GET_FF00_1) {
-        this->actor.flags &= ~ACTOR_FLAG_1;
+        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
         this->collider.base.colType = COLTYPE_NONE;
         this->collider.info.bumperFlags |= (BUMP_NO_HITMARK | BUMP_NO_SWORD_SFX | BUMP_NO_DAMAGE | BUMP_NO_AT_INFO);
     } else if (this->actor.params == ENDEKUNUTS_GET_FF00_2) {
-        this->actor.targetMode = 0;
+        this->actor.targetMode = TARGET_MODE_0;
     }
 
     func_808BD428(this);
@@ -671,22 +671,22 @@ s32 EnDekunuts_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec
     f32 arg1;
     f32 arg2;
     f32 arg3;
-    f32 currentFrame;
+    f32 curFrame;
 
     if (this->actionFunc == func_808BDA4C) {
         if (limbIndex == DEKU_SCRUB_LIMB_SNOUT) {
-            currentFrame = this->skelAnime.curFrame;
-            if (currentFrame <= 6.0f) {
-                arg2 = 1.0f - (currentFrame * 0.0833f);
-                arg1 = (currentFrame * 0.1167f) + 1.0f;
-                arg3 = (currentFrame * 0.1167f) + 1.0f;
-            } else if (currentFrame <= 7.0f) {
-                currentFrame -= 6.0f;
-                arg2 = 0.5f + currentFrame;
-                arg1 = 1.7f - (currentFrame * 0.7f);
-                arg3 = 1.7f - (currentFrame * 0.7f);
-            } else if (currentFrame <= 10.0f) {
-                arg2 = 1.5f - ((currentFrame - 7.0f) * 0.1667f);
+            curFrame = this->skelAnime.curFrame;
+            if (curFrame <= 6.0f) {
+                arg2 = 1.0f - (curFrame * 0.0833f);
+                arg1 = (curFrame * 0.1167f) + 1.0f;
+                arg3 = (curFrame * 0.1167f) + 1.0f;
+            } else if (curFrame <= 7.0f) {
+                curFrame -= 6.0f;
+                arg2 = 0.5f + curFrame;
+                arg1 = 1.7f - (curFrame * 0.7f);
+                arg3 = 1.7f - (curFrame * 0.7f);
+            } else if (curFrame <= 10.0f) {
+                arg2 = 1.5f - ((curFrame - 7.0f) * 0.1667f);
                 arg1 = 1.0f;
                 arg3 = 1.0f;
             } else {
