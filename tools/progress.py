@@ -103,12 +103,16 @@ def GetFunctionSizes(mapFileList):
 
 def CalculateNonNamedAssets(mapFileList, assetsTracker):
     for mapFile in mapFileList:
-        if mapFile["section"] != ".data":
+        if mapFile["section"] != ".data" and mapFile["section"] != ".rodata":
             continue
         if not mapFile["name"].startswith("build/assets/"):
             continue
 
-        assetCat = mapFile["name"].split("/")[2]
+        if mapFile["name"].startswith("build/assets/c"):
+            assetCat = mapFile["name"].split("/")[3]
+        else:
+            assetCat = mapFile["name"].split("/")[2]
+
 
         for symbol in mapFile["symbols"]:
             symbolName = symbol["name"]
@@ -228,9 +232,12 @@ for line in map_file:
                 if srcCat in asmTracker:
                     asmTracker[srcCat]["totalSize"] += file_size
 
-        if section == ".data":
+        if section == ".data" or section == ".rodata":
             if obj_file.startswith("build/assets/"):
-                assetCat = obj_file.split("/")[2]
+                if obj_file.startswith("build/assets/c"):
+                    assetCat = obj_file.split("/")[3]
+                else:
+                    assetCat = obj_file.split("/")[2]
                 if assetCat in assetsTracker:
                     assetsTracker[assetCat]["currentSize"] += file_size
                 elif assetCat in ignoredAssets:
@@ -239,7 +246,7 @@ for line in map_file:
                     eprint(f"Found file '{obj_file}' in unknown asset category '{assetCat}'")
                     eprint("I'll ignore this for now, but please fix it!")
 
-    elif len(line_split) == 2 and line_split[0].startswith("0x00000000"):
+    elif len(line_split) == 2 and line_split[0].startswith("0x"):
         varVramStr, varName = line_split
         varVram = int(varVramStr, 16)
         varName = varName.strip()

@@ -68,15 +68,15 @@ typedef struct EnRd {
                     s16 deathTimer;
                     s16 coffinRiseForwardAccelTimer;
                 };
-    /* 0x3D8 */ s16 headYRotation;
-    /* 0x3DA */ s16 upperBodyYRotation;
+    /* 0x3D8 */ s16 headRotY;
+    /* 0x3DA */ s16 torsoRotY;
     /* 0x3DC */ s16 flags;
     /* 0x3DE */ s16 alpha;
     /* 0x3E0 */ s16 sunsSongStunTimer;
     /* 0x3E2 */ UNK_TYPE1 unk3E2[0x2];
     /* 0x3E4 */ union {
                     s16 danceEndTimer;
-                    s16 pirouetteRotationalVelocity;
+                    s16 pirouetteAngularVelocity;
                 };
     /* 0x3E6 */ s16 drawDmgEffTimer;
     /* 0x3E8 */ u8 drawDmgEffType;

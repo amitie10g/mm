@@ -2,11 +2,13 @@
 #define Z64GAME_H
 
 #include "ultra64.h"
+
 #include "libc/stdbool.h"
 #include "libc/stdint.h"
+#include "gamealloc.h"
+#include "padmgr.h"
 #include "padutils.h"
 #include "tha.h"
-#include "padmgr.h"
 #include "unk.h"
 
 struct GraphicsContext;
@@ -42,18 +44,6 @@ typedef struct {
     /* 0x2C */ size_t        instanceSize;
 } GameStateOverlay; // size = 0x30
 
-typedef struct GameAllocEntry {
-    /* 0x0 */ struct GameAllocEntry* next;
-    /* 0x4 */ struct GameAllocEntry* prev;
-    /* 0x8 */ size_t size;
-    /* 0xC */ u32 unk_0C;
-} GameAllocEntry; // size = 0x10
-
-typedef struct GameAlloc {
-    /* 0x00 */ GameAllocEntry base;
-    /* 0x10 */ GameAllocEntry* head;
-} GameAlloc; // size = 0x14
-
 typedef struct GameState {
     /* 0x00 */ struct GraphicsContext* gfxCtx;
     /* 0x04 */ GameStateFunc main;
@@ -61,7 +51,7 @@ typedef struct GameState {
     /* 0x0C */ GameStateFunc init; // Usually the current game state's init, though after stopping, the graph thread will look here to determine the next game state to load.
     /* 0x10 */ size_t size;
     /* 0x14 */ Input input[MAXCONTROLLERS];
-    /* 0x74 */ TwoHeadArena heap;
+    /* 0x74 */ TwoHeadArena tha;
     /* 0x84 */ GameAlloc alloc;
     /* 0x98 */ UNK_TYPE1 pad98[0x3];
     /* 0x9B */ u8 running; // If 0, switch to next game state

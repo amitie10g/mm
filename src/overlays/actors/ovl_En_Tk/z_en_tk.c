@@ -62,23 +62,18 @@ void func_80AEF5F4(Actor* thisx, PlayState* play);
 
 static s32 D_80AF0050;
 
-static u8 D_80AEF800[] = {
-    /* 0x0 */ SCHEDULE_CMD_CHECK_TIME_RANGE_L(6, 0, 18, 0, 0x8 - 0x7),
-    /* 0x7 */ SCHEDULE_CMD_RET_NONE(),
-    /* 0x8 */ SCHEDULE_CMD_RET_TIME(6, 0, 18, 0, 1),
-    /* 0xE */ SCHEDULE_CMD_RET_NONE(),
-};
+#include "build/src/overlays/actors/ovl_En_Tk/scheduleScripts.schl.inc"
 
 ActorInit En_Tk_InitVars = {
-    ACTOR_EN_TK,
-    ACTORCAT_NPC,
-    FLAGS,
-    OBJECT_TK,
-    sizeof(EnTk),
-    (ActorFunc)EnTk_Init,
-    (ActorFunc)EnTk_Destroy,
-    (ActorFunc)EnTk_Update,
-    (ActorFunc)EnTk_Draw,
+    /**/ ACTOR_EN_TK,
+    /**/ ACTORCAT_NPC,
+    /**/ FLAGS,
+    /**/ OBJECT_TK,
+    /**/ sizeof(EnTk),
+    /**/ EnTk_Init,
+    /**/ EnTk_Destroy,
+    /**/ EnTk_Update,
+    /**/ EnTk_Draw,
 };
 
 static ColliderCylinderInit sCylinderInit = {
@@ -204,10 +199,10 @@ void EnTk_Init(Actor* thisx, PlayState* play) {
     EnTk* this = THIS;
 
     this->unk_2B0 = ENTK_GET_F(&this->actor);
-    this->unk_2B1 = ENTK_GET_7F0(&this->actor);
+    this->switchFlag = ENTK_GET_SWITCH_FLAG(&this->actor);
     Collider_InitCylinder(play, &this->collider);
 
-    if (Flags_GetSwitch(play, this->unk_2B1)) {
+    if (Flags_GetSwitch(play, this->switchFlag)) {
         if (this->unk_2B0 == 0) {
             Actor_Kill(&this->actor);
             return;
@@ -289,8 +284,8 @@ void func_80AECA3C(EnTk* this, PlayState* play) {
 }
 
 void func_80AECA90(EnTk* this, PlayState* play) {
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
-        play->msgCtx.msgMode = 0;
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
+        play->msgCtx.msgMode = MSGMODE_NONE;
         play->msgCtx.msgLength = 0;
         func_80AEDE10(this, play);
     } else if (this->actor.xzDistToPlayer < 100.0f) {
@@ -316,15 +311,15 @@ void func_80AECB6C(EnTk* this, PlayState* play) {
     u8 temp4;
 
     this->actor.textId = 0;
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
-        play->msgCtx.msgMode = 0;
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
+        play->msgCtx.msgMode = MSGMODE_NONE;
         play->msgCtx.msgLength = 0;
         func_80AED4F8(this, play);
         return;
     }
 
     if (R_TIME_SPEED != 0.0f) {
-        this->skelAnime.playSpeed = (f32)func_800FE620(play) / R_TIME_SPEED;
+        this->skelAnime.playSpeed = (f32)Environment_GetTimeSpeed(play) / R_TIME_SPEED;
     } else {
         this->skelAnime.playSpeed = 0.0f;
     }
@@ -472,7 +467,7 @@ s32 func_80AECE60(EnTk* this, PlayState* play) {
         Vec3f sp5C;
 
         Actor_OffsetOfPointInActorCoords(&this->actor, &sp5C, &door->knobDoor.dyna.actor.world.pos);
-        door->unk_1A7 = 2;
+        door->openTimer = 2;
         if (sp5C.z < -20.0f) {
             this->unk_2CA &= ~0x400;
             this->unk_2CA |= 0x800;
@@ -480,7 +475,7 @@ s32 func_80AECE60(EnTk* this, PlayState* play) {
     }
 
     if (door != NULL) {
-        if ((this->unk_2CA & 0x800) && (door->unk_1A7 == 0)) {
+        if ((this->unk_2CA & 0x800) && (door->openTimer == 0)) {
             this->unk_2CA &= ~0x800;
         }
     }
@@ -538,11 +533,11 @@ void func_80AED544(EnTk* this, PlayState* play) {
     if (!CHECK_WEEKEVENTREG(WEEKEVENTREG_31_10)) {
         Message_StartTextbox(play, 0x13FE, &this->actor);
         SET_WEEKEVENTREG(WEEKEVENTREG_31_10);
-    } else if (gSaveContext.save.time < CLOCK_TIME(9, 0)) {
+    } else if (CURRENT_TIME < CLOCK_TIME(9, 0)) {
         Message_StartTextbox(play, 0x13FF, &this->actor);
-    } else if (gSaveContext.save.time < CLOCK_TIME(12, 0)) {
+    } else if (CURRENT_TIME < CLOCK_TIME(12, 0)) {
         Message_StartTextbox(play, 0x1400, &this->actor);
-    } else if (gSaveContext.save.time < CLOCK_TIME(15, 0)) {
+    } else if (CURRENT_TIME < CLOCK_TIME(15, 0)) {
         Message_StartTextbox(play, 0x1401, &this->actor);
     } else {
         Message_StartTextbox(play, 0x1402, &this->actor);
@@ -562,7 +557,7 @@ void func_80AED610(EnTk* this, PlayState* play) {
                     Message_StartTextbox(play, 0x13FD, &this->actor);
                 } else if (CURRENT_DAY != 2) {
                     func_80AED544(this, play);
-                } else if (!Flags_GetSwitch(play, ENTK_GET_7F0(&this->actor))) {
+                } else if (!Flags_GetSwitch(play, ENTK_GET_SWITCH_FLAG(&this->actor))) {
                     Message_StartTextbox(play, 0x1403, &this->actor);
                 } else if (CHECK_WEEKEVENTREG(WEEKEVENTREG_60_02)) {
                     func_80AED544(this, play);
@@ -572,13 +567,13 @@ void func_80AED610(EnTk* this, PlayState* play) {
                 break;
             }
 
-        case TEXT_STATE_1:
+        case TEXT_STATE_NEXT:
         case TEXT_STATE_CLOSING:
-        case TEXT_STATE_3:
+        case TEXT_STATE_FADING:
             break;
 
         case TEXT_STATE_CHOICE:
-        case TEXT_STATE_5:
+        case TEXT_STATE_EVENT:
         case TEXT_STATE_DONE:
             if (Message_ShouldAdvance(play)) {
                 switch (play->msgCtx.currentTextId) {
@@ -688,10 +683,10 @@ void func_80AED940(EnTk* this, PlayState* play) {
         } while (actor != NULL);
     }
 
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         this->unk_2CA &= ~0x80;
         this->actor.flags &= ~ACTOR_FLAG_10000;
-        play->msgCtx.msgMode = 0;
+        play->msgCtx.msgMode = MSGMODE_NONE;
         play->msgCtx.msgLength = 0;
         func_80AEDE10(this, play);
     } else if (!(this->unk_2CA & 0x80)) {
@@ -822,13 +817,13 @@ void func_80AEDF5C(EnTk* this, PlayState* play) {
             }
             break;
 
-        case TEXT_STATE_1:
+        case TEXT_STATE_NEXT:
         case TEXT_STATE_CLOSING:
-        case TEXT_STATE_3:
+        case TEXT_STATE_FADING:
             break;
 
         case TEXT_STATE_CHOICE:
-        case TEXT_STATE_5:
+        case TEXT_STATE_EVENT:
         case TEXT_STATE_DONE:
             if (Message_ShouldAdvance(play)) {
                 switch (play->msgCtx.currentTextId) {
@@ -874,7 +869,7 @@ void func_80AEDF5C(EnTk* this, PlayState* play) {
                         this->unk_2CA |= 2;
                         if (play->msgCtx.choiceIndex == 0) {
                             Audio_PlaySfx_MessageDecide();
-                            play->msgCtx.msgMode = 0x44;
+                            play->msgCtx.msgMode = MSGMODE_PAUSED;
                             func_80AEE2A8(this, play);
                         } else {
                             Audio_PlaySfx_MessageCancel();

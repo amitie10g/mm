@@ -1,5 +1,5 @@
-#include "prevent_bss_reordering.h"
-#include "global.h"
+#include "carthandle.h"
+#include "CIC6105.h"
 #include "idle.h"
 #include "stack.h"
 #include "stackcheck.h"
@@ -14,7 +14,7 @@ STACK(sBootStack, 0x400);
 void bootproc(void) {
     StackCheck_Init(&sBootStackInfo, sBootStack, STACK_TOP(sBootStack), 0, -1, "boot");
     osMemSize = osGetMemSize();
-    func_800818F4();
+    CIC6105_Init();
     osInitialize();
     osUnmapTLBAll();
     gCartHandle = osCartRomInit();

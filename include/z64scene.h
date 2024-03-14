@@ -74,7 +74,7 @@ typedef struct {
 typedef struct {
     /* 0x0 */ u8  code;
     /* 0x1 */ u8  naviQuestHintFileId;
-    /* 0x4 */ u32 subKeepIndex;
+    /* 0x4 */ u32 subKeepId;
 } SCmdSpecialFiles; // size = 0x8
 
 typedef struct {
@@ -312,9 +312,6 @@ typedef union {
     RoomShapeCullable cullable;
 } RoomShape; // "Ground Shape"
 
-// TODO: update ZAPD
-#define SCENE_CMD_MESH SCENE_CMD_ROOM_SHAPE
-
 // TODO: Check which ones don't exist
 typedef enum {
     /* 0 */ ROOM_BEHAVIOR_TYPE1_0,
@@ -349,7 +346,7 @@ typedef struct {
     /* 0x10 */ UNK_TYPE1 pad10[0x4];
 } Room; // size = 0x14
 
-typedef struct {
+typedef struct RoomContext {
     /* 0x00 */ Room curRoom;
     /* 0x14 */ Room prevRoom;
     /* 0x28 */ void* roomMemPages[2]; // In a scene with transitions, roomMemory is split between two pages that toggle each transition. This is one continuous range, as the second page allocates from the end
@@ -415,7 +412,7 @@ typedef struct {
     /* 0x08 */ DmaRequest dmaReq;
     /* 0x28 */ OSMesgQueue loadQueue;
     /* 0x40 */ OSMesg loadMsg;
-} ObjectStatus; // size = 0x44
+} ObjectEntry; // size = 0x44
 
 typedef struct {
     /* 0x0 */ RomFile segment;
@@ -468,18 +465,16 @@ typedef struct {
     /* 0x4 */ void* params;
 } AnimatedMaterial; // size = 0x8
 
-// TODO: ZAPD
-typedef RoomShapeCullableEntry PolygonDlist2;
-typedef RoomShapeCullable PolygonType2;
+#define OBJECT_SLOT_NONE -1
 
 typedef struct {
     /* 0x000 */ void* spaceStart;
     /* 0x004 */ void* spaceEnd;
-    /* 0x008 */ u8 num;
-    /* 0x009 */ u8 spawnedObjectCount;
-    /* 0x00A */ u8 mainKeepIndex;
-    /* 0x00B */ u8 subKeepIndex;
-    /* 0x00C */ ObjectStatus status[OBJECT_EXCHANGE_BANK_MAX];
+    /* 0x008 */ u8 numEntries; // total amount of used entries
+    /* 0x009 */ u8 numPersistentEntries; // amount of entries that won't be reused when loading a new object list (when loading a new room)
+    /* 0x00A */ u8 mainKeepSlot; // "gameplay_keep" slot
+    /* 0x00B */ u8 subKeepSlot; // "gameplay_field_keep" or "gameplay_dangeon_keep" slot
+    /* 0x00C */ ObjectEntry slots[35];
 } ObjectContext; // size = 0x958
 
 #define PATH_INDEX_NONE -1
@@ -520,8 +515,6 @@ typedef struct {
     /* 0x4 */ Vec3s* actorCsCamFuncData; // s16 data grouped in threes
 } ActorCsCamInfo; // size = 0x8
 
-typedef ActorCsCamInfo CsCameraEntry; // TODO: Remove once ZAPD updates its structs
-
 typedef union {
     /* Command: N/A  */ SCmdBase              base;
     /* Command: 0x00 */ SCmdSpawnList         spawnList;
@@ -558,7 +551,7 @@ typedef union {
 } SceneCmd; // size = 0x8
 
 // Sets cursor point options on the world map
-typedef enum {
+typedef enum RegionId {
     /*  -1 */ REGION_NONE = -1,
     /* 0x0 */ REGION_GREAT_BAY,
     /* 0x1 */ REGION_ZORA_HALL,
@@ -575,23 +568,24 @@ typedef enum {
 } RegionId;
 
 // Sets warp points for owl statues
-typedef enum {
-    /* 0x0 */ OWL_WARP_GREAT_BAY_COAST,
-    /* 0x1 */ OWL_WARP_ZORA_CAPE,
-    /* 0x2 */ OWL_WARP_SNOWHEAD,
-    /* 0x3 */ OWL_WARP_MOUNTAIN_VILLAGE,
-    /* 0x4 */ OWL_WARP_CLOCK_TOWN,
-    /* 0x5 */ OWL_WARP_MILK_ROAD,
-    /* 0x6 */ OWL_WARP_WOODFALL,
-    /* 0x7 */ OWL_WARP_SOUTHERN_SWAMP,
-    /* 0x8 */ OWL_WARP_IKANA_CANYON,
-    /* 0x9 */ OWL_WARP_STONE_TOWER,
-    /* 0xA */ OWL_WARP_ENTRANCE, // Special index for warping to the entrance of a scene
-    /* 0xB */ OWL_WARP_MAX
+typedef enum OwlWarpId {
+    /*  0x0 */ OWL_WARP_GREAT_BAY_COAST,
+    /*  0x1 */ OWL_WARP_ZORA_CAPE,
+    /*  0x2 */ OWL_WARP_SNOWHEAD,
+    /*  0x3 */ OWL_WARP_MOUNTAIN_VILLAGE,
+    /*  0x4 */ OWL_WARP_CLOCK_TOWN,
+    /*  0x5 */ OWL_WARP_MILK_ROAD,
+    /*  0x6 */ OWL_WARP_WOODFALL,
+    /*  0x7 */ OWL_WARP_SOUTHERN_SWAMP,
+    /*  0x8 */ OWL_WARP_IKANA_CANYON,
+    /*  0x9 */ OWL_WARP_STONE_TOWER,
+    /*  0xA */ OWL_WARP_ENTRANCE, // Special index for warping to the entrance of a scene
+    /*  0xB */ OWL_WARP_MAX,
+    /* 0xFF */ OWL_WARP_NONE = 0xFF
 } OwlWarpId;
 
 // Sets cloud visibility on the world map
-typedef enum {
+typedef enum TingleMapId {
     /* 0 */ TINGLE_MAP_CLOCK_TOWN,
     /* 1 */ TINGLE_MAP_WOODFALL,
     /* 2 */ TINGLE_MAP_SNOWHEAD,
@@ -895,17 +889,14 @@ typedef enum {
 #define SCENE_CMD_MINIMAP_COMPASS_ICON_INFO(compassIconCount, compassIconInfo) \
     { SCENE_CMD_ID_MINIMAP_COMPASS_ICON_INFO, compassIconCount, CMD_PTR(compassIconInfo) }
 
- // TODO: ZAPD Capatability
-#define SCENE_CMD_MISC_SETTINGS SCENE_CMD_SET_REGION_VISITED
-#define SCENE_CMD_CUTSCENE_LIST SCENE_CMD_CUTSCENE_SCRIPT_LIST
 
-s32 Object_Spawn(ObjectContext* objectCtx, s16 id);
-void Object_InitBank(struct GameState* gameState, ObjectContext* objectCtx);
-void Object_UpdateBank(ObjectContext* objectCtx);
-s32 Object_GetIndex(ObjectContext* objectCtx, s16 objectId);
-s32 Object_IsLoaded(ObjectContext* objectCtx, s32 index);
+s32 Object_SpawnPersistent(ObjectContext* objectCtx, s16 id);
+void Object_InitContext(struct GameState* gameState, ObjectContext* objectCtx);
+void Object_UpdateEntries(ObjectContext* objectCtx);
+s32 Object_GetSlot(ObjectContext* objectCtx, s16 objectId);
+s32 Object_IsLoaded(ObjectContext* objectCtx, s32 slot);
 void Object_LoadAll(ObjectContext* objectCtx);
-void* func_8012F73C(ObjectContext* objectCtx, s32 iParm2, s16 id);
+void* func_8012F73C(ObjectContext* objectCtx, s32 slot, s16 id);
 void Scene_CommandSpawnList(struct PlayState* play, SceneCmd* cmd);
 void Scene_CommandActorList(struct PlayState* play, SceneCmd* cmd);
 void Scene_CommandActorCutsceneCamList(struct PlayState* play, SceneCmd* cmd);

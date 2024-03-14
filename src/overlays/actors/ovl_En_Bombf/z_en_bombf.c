@@ -26,15 +26,15 @@ void func_808AEF68(EnBombf* this, PlayState* play);
 void func_808AEFD4(EnBombf* this, PlayState* play);
 
 ActorInit En_Bombf_InitVars = {
-    ACTOR_EN_BOMBF,
-    ACTORCAT_PROP,
-    FLAGS,
-    OBJECT_BOMBF,
-    sizeof(EnBombf),
-    (ActorFunc)EnBombf_Init,
-    (ActorFunc)EnBombf_Destroy,
-    (ActorFunc)EnBombf_Update,
-    (ActorFunc)EnBombf_Draw,
+    /**/ ACTOR_EN_BOMBF,
+    /**/ ACTORCAT_PROP,
+    /**/ FLAGS,
+    /**/ OBJECT_BOMBF,
+    /**/ sizeof(EnBombf),
+    /**/ EnBombf_Init,
+    /**/ EnBombf_Destroy,
+    /**/ EnBombf_Update,
+    /**/ EnBombf_Draw,
 };
 
 static ColliderCylinderInit sCylinderInit = {
@@ -116,7 +116,7 @@ void EnBombf_Init(Actor* thisx, PlayState* play2) {
         this->timer = 140;
         this->unk_1FE = 15;
         thisx->gravity = -1.5f;
-        func_800BC154(play, &play->actorCtx, thisx, 3);
+        Actor_ChangeCategory(play, &play->actorCtx, thisx, ACTORCAT_EXPLOSIVES);
         thisx->colChkInfo.mass = 200;
         thisx->flags &= ~ACTOR_FLAG_TARGETABLE;
         EnBombf_SetupAction(this, func_808AEE3C);
@@ -273,28 +273,28 @@ void func_808AEFD4(EnBombf* this, PlayState* play) {
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->colliderJntSph.base);
     }
 
-    if (play->envCtx.lightSettings.diffuseColor1[0] != 0) {
-        play->envCtx.lightSettings.diffuseColor1[0] -= 25;
+    if (play->envCtx.adjLightSettings.light1Color[0] != 0) {
+        play->envCtx.adjLightSettings.light1Color[0] -= 25;
     }
 
-    if (play->envCtx.lightSettings.diffuseColor1[1] != 0) {
-        play->envCtx.lightSettings.diffuseColor1[1] -= 25;
+    if (play->envCtx.adjLightSettings.light1Color[1] != 0) {
+        play->envCtx.adjLightSettings.light1Color[1] -= 25;
     }
 
-    if (play->envCtx.lightSettings.diffuseColor1[2] != 0) {
-        play->envCtx.lightSettings.diffuseColor1[2] -= 25;
+    if (play->envCtx.adjLightSettings.light1Color[2] != 0) {
+        play->envCtx.adjLightSettings.light1Color[2] -= 25;
     }
 
-    if (play->envCtx.lightSettings.ambientColor[0] != 0) {
-        play->envCtx.lightSettings.ambientColor[0] -= 25;
+    if (play->envCtx.adjLightSettings.ambientColor[0] != 0) {
+        play->envCtx.adjLightSettings.ambientColor[0] -= 25;
     }
 
-    if (play->envCtx.lightSettings.ambientColor[1] != 0) {
-        play->envCtx.lightSettings.ambientColor[1] -= 25;
+    if (play->envCtx.adjLightSettings.ambientColor[1] != 0) {
+        play->envCtx.adjLightSettings.ambientColor[1] -= 25;
     }
 
-    if (play->envCtx.lightSettings.ambientColor[2] != 0) {
-        play->envCtx.lightSettings.ambientColor[2] -= 25;
+    if (play->envCtx.adjLightSettings.ambientColor[2] != 0) {
+        play->envCtx.adjLightSettings.ambientColor[2] -= 25;
     }
 
     if (this->timer == 0) {
@@ -389,7 +389,7 @@ void EnBombf_Update(Actor* thisx, PlayState* play) {
             }
 
             if ((this->timer == 3) || (this->timer == 30) || (this->timer == 50) || (this->timer == 70)) {
-                this->unk_1FE = this->unk_1FE >> 1;
+                this->unk_1FE >>= 1;
             }
 
             if ((this->timer < 100) && (this->timer & (this->unk_1FE + 1))) {
@@ -414,10 +414,10 @@ void EnBombf_Update(Actor* thisx, PlayState* play) {
                             CLEAR_TAG_PARAMS(CLEAR_TAG_SMALL_EXPLOSION));
                 Actor_PlaySfx(&this->actor, NA_SE_IT_BOMB_EXPLOSION);
 
-                play->envCtx.lightSettings.diffuseColor1[0] = play->envCtx.lightSettings.diffuseColor1[1] =
-                    play->envCtx.lightSettings.diffuseColor1[2] = 250;
-                play->envCtx.lightSettings.ambientColor[0] = play->envCtx.lightSettings.ambientColor[1] =
-                    play->envCtx.lightSettings.ambientColor[2] = 250;
+                play->envCtx.adjLightSettings.light1Color[0] = play->envCtx.adjLightSettings.light1Color[1] =
+                    play->envCtx.adjLightSettings.light1Color[2] = 250;
+                play->envCtx.adjLightSettings.ambientColor[0] = play->envCtx.adjLightSettings.ambientColor[1] =
+                    play->envCtx.adjLightSettings.ambientColor[2] = 250;
 
                 Camera_AddQuake(&play->mainCamera, 2, 11, 8);
 

@@ -4,6 +4,7 @@
 #include "ultratypes.h"
 #include "os_cont.h"
 #include "os_pfs.h"
+#include "rcp.h"
 
 #define CHNL_ERR(format) (((format).rxsize & CHNL_ERR_MASK) >> 4)
 
@@ -141,8 +142,6 @@ typedef struct {
     /* 0x7 */ s8 stick_y;
 } __OSContReadFormat;
 
-
-// Original name: __OSContRequesFormat
 typedef struct {
     /* 0x00 */ u8 align;
     /* 0x01 */ u8 txsize;
@@ -152,7 +151,7 @@ typedef struct {
     /* 0x05 */ u8 typel;
     /* 0x06 */ u8 status;
     /* 0x07 */ u8 align1;
-} __OSContRequestHeader; // size = 0x8
+} __OSContRequesFormat; // size = 0x8
 
 typedef struct {
     /* 0x00 */ u8 txsize;
@@ -199,10 +198,10 @@ s32 __osPfsGetStatus(OSMesgQueue* queue, s32 channel);
 s32 __osContChannelReset(OSMesgQueue* mq, s32 channel);
 
 extern OSPifRam __osContPifRam;
-// extern UNK_TYPE1 D_8009CF0C;
 extern u8 __osContLastPoll;
 extern u8 __osMaxControllers;
-// extern OSMesgQueue D_8009CF38;
-// extern OSMesg D_8009CF50;
+extern OSMesgQueue __osEepromTimerQ;
+extern OSMesg __osEepromTimerMsg[];
+extern OSPifRam __osPfsPifRam;
 
 #endif

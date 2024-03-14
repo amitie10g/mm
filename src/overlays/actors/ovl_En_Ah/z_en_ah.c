@@ -16,28 +16,9 @@ void EnAh_Destroy(Actor* thisx, PlayState* play);
 void EnAh_Update(Actor* thisx, PlayState* play);
 void EnAh_Draw(Actor* thisx, PlayState* play);
 
-void func_80BD36B8(EnAh* this, PlayState* play);
 void func_80BD3768(EnAh* this, PlayState* play);
 
-static u8 D_80BD3DB0[] = {
-    /* 0x00 */ SCHEDULE_CMD_CHECK_NOT_IN_SCENE_S(SCENE_YADOYA, 0x21 - 0x04),
-    /* 0x04 */ SCHEDULE_CMD_CHECK_NOT_IN_DAY_S(3, 0x0B - 0x08),
-    /* 0x08 */ SCHEDULE_CMD_RET_VAL_L(1),
-    /* 0x0B */ SCHEDULE_CMD_CHECK_NOT_IN_DAY_S(2, 0x20 - 0x0F),
-    /* 0x0F */ SCHEDULE_CMD_CHECK_TIME_RANGE_S(21, 0, 23, 0, 0x1D - 0x15),
-    /* 0x15 */ SCHEDULE_CMD_CHECK_FLAG_S(WEEKEVENTREG_HAD_MIDNIGHT_MEETING, 0x1C - 0x19),
-    /* 0x19 */ SCHEDULE_CMD_RET_VAL_L(1),
-    /* 0x1C */ SCHEDULE_CMD_RET_NONE(),
-    /* 0x1D */ SCHEDULE_CMD_RET_VAL_L(3),
-    /* 0x20 */ SCHEDULE_CMD_RET_NONE(),
-    /* 0x21 */ SCHEDULE_CMD_CHECK_NOT_IN_SCENE_S(SCENE_OMOYA, 0x37 - 0x25),
-    /* 0x25 */ SCHEDULE_CMD_CHECK_NOT_IN_DAY_S(3, 0x36 - 0x29),
-    /* 0x29 */ SCHEDULE_CMD_CHECK_TIME_RANGE_S(18, 0, 6, 0, 0x30 - 0x2F),
-    /* 0x2F */ SCHEDULE_CMD_RET_NONE(),
-    /* 0x30 */ SCHEDULE_CMD_RET_TIME(18, 0, 6, 0, 2),
-    /* 0x36 */ SCHEDULE_CMD_RET_NONE(),
-    /* 0x37 */ SCHEDULE_CMD_RET_NONE(),
-};
+#include "build/src/overlays/actors/ovl_En_Ah/scheduleScripts.schl.inc"
 
 s32 D_80BD3DE8[] = { 0x0E28FF0C, 0x10000000 };
 
@@ -48,15 +29,15 @@ s32 D_80BD3DF8[] = { 0x00330100, 0x050E28FE, 0x0C100E28, -0x03F3F000 };
 s32 D_80BD3E08[] = { 0x0E28FD0C, 0x0F29540C, 0x10000000 };
 
 ActorInit En_Ah_InitVars = {
-    ACTOR_EN_AH,
-    ACTORCAT_NPC,
-    FLAGS,
-    OBJECT_AH,
-    sizeof(EnAh),
-    (ActorFunc)EnAh_Init,
-    (ActorFunc)EnAh_Destroy,
-    (ActorFunc)EnAh_Update,
-    (ActorFunc)EnAh_Draw,
+    /**/ ACTOR_EN_AH,
+    /**/ ACTORCAT_NPC,
+    /**/ FLAGS,
+    /**/ OBJECT_AH,
+    /**/ sizeof(EnAh),
+    /**/ EnAh_Init,
+    /**/ EnAh_Destroy,
+    /**/ EnAh_Update,
+    /**/ EnAh_Draw,
 };
 
 static ColliderCylinderInit sCylinderInit = {
@@ -172,7 +153,7 @@ s32 func_80BD2BE8(EnAh* this, PlayState* play) {
     s32 ret = false;
 
     if (((this->unk_2D8 & SUBS_OFFER_MODE_MASK) != SUBS_OFFER_MODE_NONE) &&
-        Actor_ProcessTalkRequest(&this->actor, &play->state)) {
+        Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         SubS_SetOfferMode(&this->unk_2D8, SUBS_OFFER_MODE_NONE, SUBS_OFFER_MODE_MASK);
         ret = true;
         this->unk_2D8 |= 8;

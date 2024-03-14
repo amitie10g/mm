@@ -92,15 +92,15 @@ static AnimationSpeedInfo sAnimationSpeedInfo[EN_DNO_ANIM_MAX] = {
 };
 
 ActorInit En_Dno_InitVars = {
-    ACTOR_EN_DNO,
-    ACTORCAT_NPC,
-    FLAGS,
-    OBJECT_DNJ,
-    sizeof(EnDno),
-    (ActorFunc)EnDno_Init,
-    (ActorFunc)EnDno_Destroy,
-    (ActorFunc)EnDno_Update,
-    (ActorFunc)EnDno_Draw,
+    /**/ ACTOR_EN_DNO,
+    /**/ ACTORCAT_NPC,
+    /**/ FLAGS,
+    /**/ OBJECT_DNJ,
+    /**/ sizeof(EnDno),
+    /**/ EnDno_Init,
+    /**/ EnDno_Destroy,
+    /**/ EnDno_Update,
+    /**/ EnDno_Draw,
 };
 
 static ColliderCylinderInit sCylinderInit = {
@@ -371,8 +371,8 @@ void func_80A71C3C(EnDno* this, PlayState* play) {
         Math_ScaledStepToS(&this->actor.shape.rot.y, this->actor.home.rot.y, 0x222);
     }
 
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
-        play->msgCtx.msgMode = 0;
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
+        play->msgCtx.msgMode = MSGMODE_NONE;
         play->msgCtx.msgLength = 0;
         func_80A71E54(this, play);
     } else if (this->actor.xzDistToPlayer < 60.0f) {
@@ -438,7 +438,7 @@ void func_80A71F18(EnDno* this, PlayState* play) {
             }
             break;
 
-        case TEXT_STATE_3:
+        case TEXT_STATE_FADING:
             if (play->msgCtx.currentTextId == 0x80B) {
                 switch (this->animIndex) {
                     case EN_DNO_ANIM_IMPLORE_START:
@@ -466,7 +466,7 @@ void func_80A71F18(EnDno* this, PlayState* play) {
             break;
 
         case TEXT_STATE_CHOICE:
-        case TEXT_STATE_5:
+        case TEXT_STATE_EVENT:
         case TEXT_STATE_DONE:
             switch (play->msgCtx.currentTextId) {
                 case 0x80B:
@@ -482,7 +482,7 @@ void func_80A71F18(EnDno* this, PlayState* play) {
                             if (Message_ShouldAdvance(play)) {
                                 SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo,
                                                                 EN_DNO_ANIM_IMPLORE_END, &this->animIndex);
-                                play->msgCtx.msgMode = 0x44;
+                                play->msgCtx.msgMode = MSGMODE_PAUSED;
                             }
                             break;
 
@@ -589,7 +589,7 @@ void func_80A724B8(EnDno* this, PlayState* play) {
         func_80A71424(&this->unk_466, 0, this->actor.yawTowardsPlayer, this->actor.home.rot.y, 0x2000, 0x2D8);
     }
 
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         func_80A725E0(this, play);
     } else if (this->actor.xzDistToPlayer < 60.0f) {
         Actor_OfferTalk(&this->actor, play, 60.0f);
@@ -602,7 +602,7 @@ void func_80A7256C(EnDno* this, PlayState* play) {
 }
 
 void func_80A72598(EnDno* this, PlayState* play) {
-    if (Actor_ProcessTalkRequest(&this->actor, &play->state)) {
+    if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         func_80A725E0(this, play);
     } else {
         func_80A7256C(this, play);
@@ -656,9 +656,9 @@ void func_80A725F8(EnDno* this, PlayState* play) {
             }
             break;
 
-        case TEXT_STATE_1:
+        case TEXT_STATE_NEXT:
         case TEXT_STATE_CLOSING:
-        case TEXT_STATE_3:
+        case TEXT_STATE_FADING:
             if (((play->msgCtx.currentTextId == 0x800) || (play->msgCtx.currentTextId == 0x801)) &&
                 (this->animIndex == EN_DNO_ANIM_OPEN_PARASOL)) {
                 Math_SmoothStepToF(&this->unk_454, 1.0f, 1.0f, 0.1f, 0.01f);
@@ -682,13 +682,13 @@ void func_80A725F8(EnDno* this, PlayState* play) {
             break;
 
         case TEXT_STATE_CHOICE:
-        case TEXT_STATE_5:
+        case TEXT_STATE_EVENT:
         case TEXT_STATE_DONE:
             switch (play->msgCtx.currentTextId) {
                 case 0x800:
                 case 0x801:
                     if (Message_ShouldAdvance(play)) {
-                        play->msgCtx.msgMode = 0x44;
+                        play->msgCtx.msgMode = MSGMODE_PAUSED;
                         this->unk_452 = 1;
                         this->unk_454 = 0.0f;
                         SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, EN_DNO_ANIM_OPEN_PARASOL,

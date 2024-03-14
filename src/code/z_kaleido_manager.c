@@ -20,7 +20,7 @@ FaultAddrConvClient sKaleidoMgrFaultAddrConvClient;
 uintptr_t KaleidoManager_FaultAddrConv(uintptr_t address, void* param) {
     uintptr_t addr = address;
     KaleidoMgrOverlay* kaleidoMgrOvl = gKaleidoMgrCurOvl;
-    size_t ramConv;
+    uintptr_t ramConv;
     void* ramStart;
     size_t diff;
 
@@ -66,7 +66,7 @@ void KaleidoManager_Init(PlayState* play) {
         }
     }
 
-    sKaleidoAreaPtr = THA_AllocTailAlign16(&play->state.heap, largestSize);
+    sKaleidoAreaPtr = THA_AllocTailAlign16(&play->state.tha, largestSize);
     gKaleidoMgrCurOvl = NULL;
     Fault_AddAddrConvClient(&sKaleidoMgrFaultAddrConvClient, KaleidoManager_FaultAddrConv, NULL);
 }

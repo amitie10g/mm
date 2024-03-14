@@ -33,15 +33,15 @@ void func_8089010C(Actor* thisx, PlayState* play);
 void func_808908D0(Vec3f* vec, PlayState* play, u32 action);
 
 ActorInit En_Elf_InitVars = {
-    ACTOR_EN_ELF,
-    ACTORCAT_ITEMACTION,
-    FLAGS,
-    GAMEPLAY_KEEP,
-    sizeof(EnElf),
-    (ActorFunc)EnElf_Init,
-    (ActorFunc)EnElf_Destroy,
-    (ActorFunc)EnElf_Update,
-    (ActorFunc)EnElf_Draw,
+    /**/ ACTOR_EN_ELF,
+    /**/ ACTORCAT_ITEMACTION,
+    /**/ FLAGS,
+    /**/ GAMEPLAY_KEEP,
+    /**/ sizeof(EnElf),
+    /**/ EnElf_Init,
+    /**/ EnElf_Destroy,
+    /**/ EnElf_Update,
+    /**/ EnElf_Draw,
 };
 
 static InitChainEntry sInitChain[] = {
@@ -744,7 +744,7 @@ void func_8088E0F0(EnElf* this, PlayState* play) {
             if (this->unk_250 < 2.0f) {
                 this->unk_250 += 0.1f;
             } else {
-                gSaveContext.healthAccumulator = 160;
+                gSaveContext.healthAccumulator = 0xA0;
                 this->unk_246++;
             }
             break;
@@ -1241,8 +1241,8 @@ void func_8088F214(EnElf* this, PlayState* play) {
 }
 
 void func_8088F5F4(EnElf* this, PlayState* play, s32 sparkleLife) {
-    static Vec3f sparkleVelocity = { 0.0f, -0.05f, 0.0f };
-    static Vec3f sparkleAccel = { 0.0f, -0.025f, 0.0f };
+    static Vec3f sSparkleVelocity = { 0.0f, -0.05f, 0.0f };
+    static Vec3f sSparkleAccel = { 0.0f, -0.025f, 0.0f };
     s32 pad;
     Vec3f sparklePos;
     Color_RGBA8 primColor;
@@ -1261,8 +1261,8 @@ void func_8088F5F4(EnElf* this, PlayState* play, s32 sparkleLife) {
         envColor.g = this->outerColor.g;
         envColor.b = this->outerColor.b;
 
-        EffectSsKirakira_SpawnDispersed(play, &sparklePos, &sparkleVelocity, &sparkleAccel, &primColor, &envColor, 1000,
-                                        sparkleLife);
+        EffectSsKirakira_SpawnDispersed(play, &sparklePos, &sSparkleVelocity, &sSparkleAccel, &primColor, &envColor,
+                                        1000, sparkleLife);
     }
 }
 
@@ -1323,7 +1323,7 @@ void func_8088FC34(EnElf* this, PlayState* play) {
         } else {
             Math_StepToF(&this->unk_240, 1.0f, 0.05f);
         }
-        func_800FD2B4(play, SQ(this->unk_240), player->actor.projectedPos.z + 780.0f, 0.2f, 0.5f);
+        Environment_AdjustLights(play, SQ(this->unk_240), player->actor.projectedPos.z + 780.0f, 0.2f, 0.5f);
     }
 }
 
@@ -1390,7 +1390,7 @@ void func_8088FE64(Actor* thisx, PlayState* play2) {
             }
             break;
 
-        case TEXT_STATE_5:
+        case TEXT_STATE_EVENT:
             if (Message_ShouldAdvance(play)) {
                 switch (play->msgCtx.currentTextId) {
                     case 0x240:
@@ -1421,7 +1421,7 @@ void func_8088FE64(Actor* thisx, PlayState* play2) {
                             case 3:
                                 if (!gSaveContext.save.isNight) {
                                     Message_ContinueTextbox(play, 0x248);
-                                } else if ((gSaveContext.save.time < CLOCK_TIME(6, 0)) &&
+                                } else if ((CURRENT_TIME < CLOCK_TIME(6, 0)) &&
                                            CHECK_WEEKEVENTREG(WEEKEVENTREG_74_20)) {
                                     Message_ContinueTextbox(play, 0x225);
                                 } else {
@@ -1473,7 +1473,7 @@ void func_8089010C(Actor* thisx, PlayState* play) {
         thisx->flags |= ACTOR_FLAG_10000;
     }
 
-    if (Actor_ProcessTalkRequest(thisx, &play->state)) {
+    if (Actor_TalkOfferAccepted(thisx, &play->state)) {
         Audio_PlaySfx_AtPosWithReverb(&gSfxDefaultPos, NA_SE_VO_NA_LISTEN, 0x20);
         thisx->focus.pos = thisx->world.pos;
 
@@ -1487,7 +1487,7 @@ void func_8089010C(Actor* thisx, PlayState* play) {
         thisx->update = func_8088FE64;
         func_8088C51C(this, 3);
         if (this->elfMsg != NULL) {
-            this->elfMsg->flags |= ACTOR_FLAG_TALK_REQUESTED;
+            this->elfMsg->flags |= ACTOR_FLAG_TALK;
             thisx->csId = this->elfMsg->csId;
             if (thisx->csId != CS_ID_NONE) {
                 func_8088FD04(this);
@@ -1521,8 +1521,8 @@ void func_8089010C(Actor* thisx, PlayState* play) {
     this->elfMsg = NULL;
     this->timer++;
 
-    if ((this->unk_240 >= 0.0f) &&
-        func_800FD2B4(play, SQ(this->unk_240) * this->unk_240, player->actor.projectedPos.z + 780.0f, 0.2f, 0.5f)) {
+    if ((this->unk_240 >= 0.0f) && Environment_AdjustLights(play, SQ(this->unk_240) * this->unk_240,
+                                                            player->actor.projectedPos.z + 780.0f, 0.2f, 0.5f)) {
         Math_StepToF(&this->unk_240, -0.05f, 0.05f);
     }
 
@@ -1550,7 +1550,7 @@ void EnElf_Update(Actor* thisx, PlayState* play) {
 
 s32 EnElf_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx,
                            Gfx** gfx) {
-    static Vec3f zeroVec = { 0.0f, 0.0f, 0.0f };
+    static Vec3f sZeroVec = { 0.0f, 0.0f, 0.0f };
     s32 pad;
     EnElf* this = THIS;
     Vec3f sp34;
@@ -1563,7 +1563,7 @@ s32 EnElf_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* p
         }
         scale *= this->actor.scale.x * (1.0f / 0.008f);
 
-        Matrix_MultVec3f(&zeroVec, &sp34);
+        Matrix_MultVec3f(&sZeroVec, &sp34);
         Matrix_Translate(sp34.x, sp34.y, sp34.z, MTXMODE_NEW);
         Matrix_Scale(scale, scale, scale, MTXMODE_APPLY);
     }

@@ -6,7 +6,6 @@
 
 #include "z_en_st.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
-#include "objects/object_st/object_st.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS                                                                                          \
@@ -27,15 +26,15 @@ void func_808A701C(EnSt* this, PlayState* play);
 void func_808A7478(Actor* thisx, PlayState* play);
 
 ActorInit En_St_InitVars = {
-    ACTOR_EN_ST,
-    ACTORCAT_ENEMY,
-    FLAGS,
-    OBJECT_ST,
-    sizeof(EnSt),
-    (ActorFunc)EnSt_Init,
-    (ActorFunc)EnSt_Destroy,
-    (ActorFunc)EnSt_Update,
-    (ActorFunc)NULL,
+    /**/ ACTOR_EN_ST,
+    /**/ ACTORCAT_ENEMY,
+    /**/ FLAGS,
+    /**/ OBJECT_ST,
+    /**/ sizeof(EnSt),
+    /**/ EnSt_Init,
+    /**/ EnSt_Destroy,
+    /**/ EnSt_Update,
+    /**/ NULL,
 };
 
 static ColliderCylinderInit sCylinderInit1 = {
@@ -155,29 +154,42 @@ static DamageTable sDamageTable = {
     /* Powder Keg     */ DMG_ENTRY(1, 0x0),
 };
 
-static AnimationInfoS sAnimationInfo[] = {
-    { &object_st_Anim_000304, 1.0f, 0, -1, ANIMMODE_LOOP, 0 },
-    { &object_st_Anim_005B98, 1.0f, 0, -1, ANIMMODE_ONCE, -4 },
-    { &object_st_Anim_000304, 4.0f, 0, -1, ANIMMODE_ONCE, -4 },
-    { &object_st_Anim_000304, 1.0f, 0, -1, ANIMMODE_LOOP, -4 },
-    { &object_st_Anim_0055A8, 1.0f, 0, -1, ANIMMODE_ONCE, -4 },
-    { &object_st_Anim_000304, 8.0f, 0, -1, ANIMMODE_LOOP, -4 },
-    { &object_st_Anim_000304, 6.0f, 0, -1, ANIMMODE_ONCE, -4 },
-    { &object_st_Anim_005B98, 2.0f, 0, -1, ANIMMODE_LOOP, -4 },
+typedef enum EnStAnimation {
+    /* -1 */ ENST_ANIM_NONE = -1,
+    /*  0 */ ENST_ANIM_0,
+    /*  1 */ ENST_ANIM_1,
+    /*  2 */ ENST_ANIM_2,
+    /*  3 */ ENST_ANIM_3,
+    /*  4 */ ENST_ANIM_4,
+    /*  5 */ ENST_ANIM_5,
+    /*  6 */ ENST_ANIM_6,
+    /*  7 */ ENST_ANIM_7,
+    /*  8 */ ENST_ANIM_MAX
+} EnStAnimation;
+
+static AnimationInfoS sAnimationInfo[ENST_ANIM_MAX] = {
+    { &object_st_Anim_000304, 1.0f, 0, -1, ANIMMODE_LOOP, 0 },  // ENST_ANIM_0
+    { &object_st_Anim_005B98, 1.0f, 0, -1, ANIMMODE_ONCE, -4 }, // ENST_ANIM_1
+    { &object_st_Anim_000304, 4.0f, 0, -1, ANIMMODE_ONCE, -4 }, // ENST_ANIM_2
+    { &object_st_Anim_000304, 1.0f, 0, -1, ANIMMODE_LOOP, -4 }, // ENST_ANIM_3
+    { &object_st_Anim_0055A8, 1.0f, 0, -1, ANIMMODE_ONCE, -4 }, // ENST_ANIM_4
+    { &object_st_Anim_000304, 8.0f, 0, -1, ANIMMODE_LOOP, -4 }, // ENST_ANIM_5
+    { &object_st_Anim_000304, 6.0f, 0, -1, ANIMMODE_ONCE, -4 }, // ENST_ANIM_6
+    { &object_st_Anim_005B98, 2.0f, 0, -1, ANIMMODE_LOOP, -4 }, // ENST_ANIM_7
 };
 
 void func_808A5050(EnSt* this, PlayState* play) {
-    static Color_RGBA8 D_808A770C = { 170, 130, 90, 255 };
-    static Color_RGBA8 D_808A7710 = { 100, 60, 20, 0 };
+    static Color_RGBA8 sPrimColor = { 170, 130, 90, 255 };
+    static Color_RGBA8 sEnvColor = { 100, 60, 20, 0 };
     s32 i;
-    Vec3f spB8;
-    Vec3f spAC;
-    Vec3f spA0;
+    Vec3f velocity;
+    Vec3f accel;
+    Vec3f pos;
     Vec3f sp94;
     s32 rand;
     s16 temp_s0 = (Rand_ZeroOne() - 0.5f) * 0x10000;
 
-    spA0.y = this->actor.floorHeight;
+    pos.y = this->actor.floorHeight;
 
     for (i = 0; i < 16; i++, temp_s0 += 0xFFF) {
         rand = (Rand_ZeroOne() * 4.0f) + 8.0f;
@@ -185,37 +197,37 @@ void func_808A5050(EnSt* this, PlayState* play) {
         sp94.x = 0.0f;
         sp94.y = (Rand_ZeroOne() * 0.2f) + 0.1f;
         sp94.z = Rand_ZeroOne() + 1.0f;
-        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &spAC);
+        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &accel);
         sp94.x = 0.0f;
         sp94.y = 1.0f;
         sp94.z = 5.0f;
-        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &spB8);
+        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &velocity);
 
-        spA0.x = this->actor.world.pos.x + (2.0f * spB8.x);
-        spA0.z = this->actor.world.pos.z + (2.0f * spB8.z);
+        pos.x = this->actor.world.pos.x + (2.0f * velocity.x);
+        pos.z = this->actor.world.pos.z + (2.0f * velocity.z);
 
-        func_800B0EB0(play, &spA0, &spB8, &spAC, &D_808A770C, &D_808A7710, 100, 40, rand);
+        func_800B0EB0(play, &pos, &velocity, &accel, &sPrimColor, &sEnvColor, 100, 40, rand);
     }
 
-    spA0.x = this->actor.world.pos.x;
-    spA0.z = this->actor.world.pos.z;
-    spA0.y = this->actor.floorHeight;
-    EffectSsBlast_SpawnWhiteCustomScale(play, &spA0, &gZeroVec3f, &gZeroVec3f, 100, 220, 8);
+    pos.x = this->actor.world.pos.x;
+    pos.z = this->actor.world.pos.z;
+    pos.y = this->actor.floorHeight;
+    EffectSsBlast_SpawnWhiteCustomScale(play, &pos, &gZeroVec3f, &gZeroVec3f, 100, 220, 8);
 }
 
 void func_808A52A8(EnSt* this, PlayState* play) {
-    static Color_RGBA8 D_808A7714 = { 170, 130, 90, 255 };
-    static Color_RGBA8 D_808A7718 = { 100, 60, 20, 0 };
+    static Color_RGBA8 sPrimColor = { 170, 130, 90, 255 };
+    static Color_RGBA8 sEnvColor = { 100, 60, 20, 0 };
     s32 pad;
-    Vec3f spB8;
-    Vec3f spAC;
-    Vec3f spA0;
+    Vec3f velocity;
+    Vec3f accel;
+    Vec3f pos;
     Vec3f sp94;
     s32 i;
     s16 temp_s0 = (Rand_ZeroOne() - 0.5f) * 0x10000;
     s32 rand;
 
-    spA0.y = this->actor.floorHeight;
+    pos.y = this->actor.floorHeight;
 
     for (i = 0; i < 8; i++, temp_s0 += 0x1FFE) {
         rand = (Rand_ZeroOne() * 4.0f) + 8.0f;
@@ -224,17 +236,17 @@ void func_808A52A8(EnSt* this, PlayState* play) {
         sp94.y = (Rand_ZeroOne() * 0.2f) + 0.1f;
         sp94.z = Rand_ZeroOne() + 1.0f;
 
-        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &spAC);
+        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &accel);
 
         sp94.x = 0.0f;
         sp94.y = 1.0f;
         sp94.z = 4.0f;
 
-        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &spB8);
+        Lib_Vec3f_TranslateAndRotateY(&gZeroVec3f, temp_s0, &sp94, &velocity);
 
-        spA0.x = this->actor.world.pos.x + (2.0f * spB8.x);
-        spA0.z = this->actor.world.pos.z + (2.0f * spB8.z);
-        func_800B0EB0(play, &spA0, &spB8, &spAC, &D_808A7714, &D_808A7718, 100, 40, rand);
+        pos.x = this->actor.world.pos.x + (2.0f * velocity.x);
+        pos.z = this->actor.world.pos.z + (2.0f * velocity.z);
+        func_800B0EB0(play, &pos, &velocity, &accel, &sPrimColor, &sEnvColor, 100, 40, rand);
     }
 }
 
@@ -245,9 +257,9 @@ void func_808A54B0(EnSt* this, PlayState* play) {
     if ((this->unk_18C & 1) && (this->actor.colChkInfo.health != 0)) {
         OPEN_DISPS(play->state.gfxCtx);
 
-        gSegments[6] = VIRTUAL_TO_PHYSICAL(play->objectCtx.status[this->unk_2C0].segment);
+        gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[this->objectSlot].segment);
 
-        gSPSegment(POLY_XLU_DISP++, 0x06, play->objectCtx.status[this->unk_2C0].segment);
+        gSPSegment(POLY_XLU_DISP++, 0x06, play->objectCtx.slots[this->objectSlot].segment);
 
         Gfx_SetupDL25_Xlu(play->state.gfxCtx);
         Matrix_Translate(this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, MTXMODE_NEW);
@@ -272,7 +284,7 @@ void func_808A54B0(EnSt* this, PlayState* play) {
 
 s32 func_808A576C(EnSt* this) {
     s32 i;
-    s16 phi_s2 = (s16)((s16)(Rand_ZeroOne() * 1000.0f) % 12) * 0x1555;
+    s16 phi_s2 = (s16)(TRUNCF_BINANG(Rand_ZeroOne() * 1000.0f) % 12) * 0x1555;
 
     for (i = 0; i < ENST_BODYPART_MAX; i++, phi_s2 += 0x1555) {
         if (this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) {
@@ -450,7 +462,7 @@ s32 func_808A6064(EnSt* this) {
 }
 
 void func_808A60E0(EnSt* this) {
-    s32 animIndex = (this->unk_2C8 > 0.0f) ? 2 : 6;
+    s32 animIndex = (this->unk_2C8 > 0.0f) ? ENST_ANIM_2 : ENST_ANIM_6;
     f32 sp20 = (this->unk_2C8 > 0.0f) ? 4.0f : 9.0f;
     f32 sp1C;
     u16 sfxId = (this->unk_2C8 < 0.0f) ? NA_SE_EN_STALTU_DOWN : NA_SE_EN_STALTU_UP;
@@ -510,7 +522,7 @@ void func_808A6220(EnSt* this, PlayState* play) {
 }
 
 void func_808A63E8(EnSt* this) {
-    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 3);
+    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_3);
     this->unk_2C8 = 1.0f;
     func_808A5D7C(this);
     this->unk_30C = 0;
@@ -523,7 +535,7 @@ void func_808A63E8(EnSt* this) {
 
 void func_808A6468(EnSt* this, PlayState* play) {
     func_808A5050(this, play);
-    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 4);
+    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_4);
     this->unk_18C |= (0x8 | 0x4);
     this->unk_18C &= ~(0x10 | 0x2);
     this->unk_2C8 = -1.0f;
@@ -538,7 +550,7 @@ void func_808A6468(EnSt* this, PlayState* play) {
 }
 
 void func_808A650C(EnSt* this) {
-    s32 animIndex = (this->unk_2C8 > 0.0f) ? 2 : 6;
+    s32 animIndex = (this->unk_2C8 > 0.0f) ? ENST_ANIM_2 : ENST_ANIM_6;
 
     SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, animIndex);
     this->unk_2CC = 0.0f;
@@ -610,15 +622,15 @@ s32 func_808A6580(EnSt* this, PlayState* play) {
                     this->unk_312 = 0;
                     Actor_SetColorFilter(&this->actor, COLORFILTER_COLORFLAG_RED, 200, COLORFILTER_BUFFLAG_OPA,
                                          this->unk_314);
-                    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 1);
+                    SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_1);
                     this->unk_18C |= 8;
                     this->actionFunc = func_808A6D84;
                     this->unk_2C8 = -1.0f;
                     break;
             }
         } else {
-            if (ENST_GET_3F(&this->actor) != ENST_3F_63) {
-                Flags_SetSwitch(play, ENST_GET_3F(&this->actor));
+            if (ENST_GET_SWITCH_FLAG(&this->actor) != 0x3F) {
+                Flags_SetSwitch(play, ENST_GET_SWITCH_FLAG(&this->actor));
             }
             SoundSource_PlaySfxAtFixedWorldPos(play, &this->actor.world.pos, 40, NA_SE_EN_STALTU_DEAD);
             Enemy_StartFinishingBlow(play, &this->actor);
@@ -651,7 +663,7 @@ s32 func_808A6580(EnSt* this, PlayState* play) {
             }
 
             if (this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) {
-                SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 7);
+                SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_7);
                 this->unk_2CC = 0.0f;
                 this->unk_2D4 = 0.0f;
                 this->actor.gravity = -1.0f;
@@ -693,10 +705,11 @@ s32 func_808A6A3C(EnSt* this) {
 void func_808A6A78(EnSt* this, PlayState* play) {
     s32 pad[2];
 
-    if (Object_IsLoaded(&play->objectCtx, this->unk_2C0)) {
+    if (Object_IsLoaded(&play->objectCtx, this->objectSlot)) {
         ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 8.0f);
-        SkelAnime_Init(play, &this->skelAnime, &object_st_Skel_005298, NULL, this->jointTable, this->morphTable, 30);
-        SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 0);
+        SkelAnime_Init(play, &this->skelAnime, &object_st_Skel_005298, NULL, this->jointTable, this->morphTable,
+                       OBJECT_ST_LIMB_MAX);
+        SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_0);
 
         Collider_InitAndSetCylinder(play, &this->collider1, &this->actor, &sCylinderInit1);
         Collider_InitAndSetCylinder(play, &this->collider2, &this->actor, &sCylinderInit2);
@@ -727,7 +740,7 @@ void func_808A6C04(EnSt* this, PlayState* play) {
     Actor_MoveWithGravity(&this->actor);
 
     if ((this->unk_18C & 8) && Animation_OnFrame(&this->skelAnime, this->skelAnime.endFrame)) {
-        SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 3);
+        SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_3);
         this->unk_18C &= ~8;
     } else if ((this->unk_310 == 0) && func_808A5F28(this, play) && !func_808A6064(this)) {
         func_808A650C(this);
@@ -769,7 +782,7 @@ void func_808A6E24(EnSt* this, PlayState* play) {
         }
 
         if (bodyPartsCount == ENST_BODYPART_MAX) {
-            SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, 7);
+            SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENST_ANIM_7);
             this->drawDmgEffType = ACTOR_DRAW_DMGEFF_BLUE_FIRE;
             this->unk_2CC = 0.0f;
             this->unk_2D4 = 0.0f;
@@ -842,9 +855,9 @@ void func_808A701C(EnSt* this, PlayState* play) {
 void EnSt_Init(Actor* thisx, PlayState* play) {
     EnSt* this = THIS;
 
-    this->unk_2C0 = Object_GetIndex(&play->objectCtx, GAMEPLAY_KEEP);
-    if (((ENST_GET_3F(&this->actor) != ENST_3F_63) && Flags_GetSwitch(play, ENST_GET_3F(&this->actor))) ||
-        (this->unk_2C0 < 0)) {
+    this->objectSlot = Object_GetSlot(&play->objectCtx, GAMEPLAY_KEEP);
+    if (((ENST_GET_SWITCH_FLAG(&this->actor) != 0x3F) && Flags_GetSwitch(play, ENST_GET_SWITCH_FLAG(&this->actor))) ||
+        (this->objectSlot <= OBJECT_SLOT_NONE)) {
         Actor_Kill(&this->actor);
         return;
     }
@@ -909,7 +922,7 @@ s32 EnSt_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
     EnSt* this = THIS;
     Color_RGB8 sp20;
 
-    if (limbIndex == 4) {
+    if (limbIndex == OBJECT_ST_LIMB_04) {
         func_808A5DCC(this, &sp20);
 
         gDPPipeSync((*gfx)++);
