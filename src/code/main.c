@@ -32,7 +32,9 @@ PadMgr gPadMgr;
 #include "main.h"
 #include "buffers.h"
 #include "global.h"
+#include "sys_initial_check.h"
 #include "system_heap.h"
+#include "z64nmi_buff.h"
 #include "z64thread.h"
 
 s32 gScreenWidth = SCREEN_WIDTH;
@@ -40,8 +42,8 @@ s32 gScreenHeight = SCREEN_HEIGHT;
 size_t gSystemHeapSize = 0;
 
 void Main(void* arg) {
-    intptr_t fb;
-    intptr_t sysHeap;
+    uintptr_t fb;
+    uintptr_t sysHeap;
     s32 exit;
     s16* msg;
 
@@ -53,7 +55,7 @@ void Main(void* arg) {
     Check_RegionIsSupported();
     Check_ExpansionPak();
 
-    sysHeap = (intptr_t)SEGMENT_START(system_heap);
+    sysHeap = (uintptr_t)SEGMENT_START(system_heap);
     fb = FRAMEBUFFERS_START_ADDR;
     gSystemHeapSize = fb - sysHeap;
     SystemHeap_Init((void*)sysHeap, gSystemHeapSize);

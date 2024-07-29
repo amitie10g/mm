@@ -552,6 +552,9 @@ typedef enum PlayerLedgeClimbType {
 
 #define LEDGE_DIST_MAX 399.96002f
 
+// TODO: less dumb name
+#define SFX_VOICE_BANK_SIZE 0x20
+
 typedef struct PlayerAgeProperties {
     /* 0x00 */ f32 ceilingCheckHeight;
     /* 0x04 */ f32 shadowScale;
@@ -1385,10 +1388,10 @@ void Player_UpdateBottleHeld(struct PlayState* play, Player* player, ItemId item
 void Player_Untarget(Player* player);
 void func_80123DC0(Player* player);
 void func_80123E90(struct PlayState* play, Actor* actor);
-s32 func_80123F2C(struct PlayState* play, s32 ammo);
+s32 Player_SetBButtonAmmo(struct PlayState* play, s32 ammo);
 bool Player_IsBurningStickInRange(struct PlayState* play, Vec3f* pos, f32 xzRange, f32 yRange);
 u8 Player_GetStrength(void);
-u8 Player_GetMask(struct PlayState* play);
+PlayerMask Player_GetMask(struct PlayState* play);
 void Player_RemoveMask(struct PlayState* play);
 bool Player_HasMirrorShieldEquipped(struct PlayState* play);
 bool Player_IsHoldingMirrorShield(struct PlayState* play);
@@ -1422,5 +1425,15 @@ s32 func_80127438(struct PlayState* play, Player* player, s32 currentMask);
 s32 func_80128640(struct PlayState* play, Player* player, Gfx* dList);
 void Player_SetFeetPos(struct PlayState* play, Player* player, s32 limbIndex);
 void Player_PostLimbDrawGameplay(struct PlayState* play, s32 limbIndex, Gfx** dList1, Gfx** dList2, Vec3s* rot, Actor* actor);
+
+extern FlexSkeletonHeader* gPlayerSkeletons[PLAYER_FORM_MAX];
+extern PlayerModelIndices gPlayerModelTypes[];
+extern struct_80124618 D_801C03A0[];
+extern struct_80124618 D_801C0490[];
+extern Gfx gCullBackDList[];
+extern Gfx gCullFrontDList[];
+
+// object_table.c
+extern s16 gPlayerFormObjectIds[PLAYER_FORM_MAX];
 
 #endif

@@ -222,7 +222,7 @@ void ObjMine_Water_CheckAC(ObjMine* this, Vec3f* knockbackDir) {
 void ObjMine_AirWater_Noop(ObjMine* this) {
 }
 
-void ObjMine_ReplaceTranslation(Vec3f* translation) {
+void ObjMine_SetMatrixTranslation(Vec3f* translation) {
     MtxF* matrix = Matrix_GetCurrent();
 
     matrix->xw = translation->x;
@@ -230,7 +230,7 @@ void ObjMine_ReplaceTranslation(Vec3f* translation) {
     matrix->zw = translation->z;
 }
 
-void ObjMine_SetRotation(ObjMineMtxF3* basis) {
+void ObjMine_SetMatrixRotation(ObjMineMtxF3* basis) {
     MtxF* matrix = Matrix_GetCurrent();
 
     matrix->xx = basis->x.x;
@@ -258,7 +258,7 @@ s32 ObjMine_StepUntilParallel(Vec3f* value, Vec3f* target, f32 angleStep) {
     Vec3f perpVec;
     Vec3f prevValue;
     Vec3f perpNormal;
-    f32 cosAngle = Math3D_Parallel(value, target);
+    f32 cosAngle = Math3D_Cos(value, target);
 
     if (Math_CosF(angleStep) <= cosAngle) {
         Math_Vec3f_Copy(value, target);
@@ -267,7 +267,7 @@ s32 ObjMine_StepUntilParallel(Vec3f* value, Vec3f* target, f32 angleStep) {
 
     Matrix_Push();
     Math_Vec3f_Copy(&prevValue, value);
-    Math3D_CrossProduct(value, target, &perpVec);
+    Math3D_Vec3f_Cross(value, target, &perpVec);
     if (ObjMine_GetUnitVec3f(&perpVec, &perpNormal)) {
         Matrix_RotateAxisS(RAD_TO_BINANG(angleStep), &perpNormal, MTXMODE_NEW);
         Matrix_MultVec3f(&prevValue, value);
@@ -337,10 +337,10 @@ void ObjMine_Air_SetBasis(ObjMine* this) {
 
     ObjMine_GetUnitVec3f(&tempVec, &airChain->basis.y);
 
-    Math3D_CrossProduct(&sStandardBasis.x, &airChain->basis.y, &tempVec);
+    Math3D_Vec3f_Cross(&sStandardBasis.x, &airChain->basis.y, &tempVec);
     ObjMine_GetUnitVec3f(&tempVec, &airChain->basis.z);
 
-    Math3D_CrossProduct(&airChain->basis.y, &airChain->basis.z, &tempVec);
+    Math3D_Vec3f_Cross(&airChain->basis.y, &airChain->basis.z, &tempVec);
     ObjMine_GetUnitVec3f(&tempVec, &airChain->basis.x);
 }
 
@@ -441,8 +441,8 @@ void ObjMine_Water_WallCheck(ObjMine* this, PlayState* play) {
     waterChain->touchWall = false;
     if (waterChain->wallCheckDistSq > -1e-6f) {
         //  Checks for walls if mine is sufficiently far from home. If found, sets ejection force towards home.
-        if (waterChain->wallCheckDistSq <= Math3D_XZDistanceSquared(this->actor.home.pos.x, this->actor.home.pos.z,
-                                                                    this->actor.world.pos.x, this->actor.world.pos.z)) {
+        if (waterChain->wallCheckDistSq <= Math3D_Dist2DSq(this->actor.home.pos.x, this->actor.home.pos.z,
+                                                           this->actor.world.pos.x, this->actor.world.pos.z)) {
             Vec3f centerPos;
             Vec3f offsetPos;
             Vec3f result; // not used
@@ -624,15 +624,15 @@ void ObjMine_Water_UpdateLinks(ObjMine* this) {
 
         if (ObjMine_GetUnitVec3fNorm(&tempVec, &diffDir, &diffNorm, &invNorm) && (diffNorm > LINK_SIZE / 3.0f)) {
             Math_Vec3f_Copy(&newBasis.y, &waterLink->basis.y);
-            ObjMine_StepUntilParallel(&newBasis.y, &diffDir, M_PI / 30);
+            ObjMine_StepUntilParallel(&newBasis.y, &diffDir, M_PIf / 30);
 
             tempBasisX = (prevBasisX == NULL) ? &sStandardBasis.x : prevBasisX;
 
-            Math3D_CrossProduct(tempBasisX, &newBasis.y, &tempVec);
+            Math3D_Vec3f_Cross(tempBasisX, &newBasis.y, &tempVec);
 
             // Skips change of basis if any of the basis vectors would be zero.
             if (ObjMine_GetUnitVec3f(&tempVec, &newBasis.z)) {
-                Math3D_CrossProduct(&newBasis.y, &newBasis.z, &tempVec);
+                Math3D_Vec3f_Cross(&newBasis.y, &newBasis.z, &tempVec);
                 if (ObjMine_GetUnitVec3f(&tempVec, &newBasis.x)) {
                     changeBasis = true;
                 }
@@ -807,7 +807,7 @@ void ObjMine_Path_Move(ObjMine* this, PlayState* play) {
         MtxF rotMtxF;
 
         // Makes mines appear to roll while traversing the path
-        Math3D_CrossProduct(&sStandardBasis.y, &thisx->velocity, &yhatCrossV);
+        Math3D_Vec3f_Cross(&sStandardBasis.y, &thisx->velocity, &yhatCrossV);
         if (ObjMine_GetUnitVec3f(&yhatCrossV, &rotAxis)) {
             Matrix_RotateAxisF(thisx->speed / PATH_RADIUS, &rotAxis, MTXMODE_NEW);
             Matrix_RotateYS(thisx->shape.rot.y, MTXMODE_APPLY);
@@ -924,8 +924,8 @@ void ObjMine_Air_Chained(ObjMine* this, PlayState* play) {
     // Checks for wall collisions if sufficiently far from home. If collision detected, bounce off the wall at half
     // speed. If speed is close to zero when hitting wall, weakly eject it instead.
     if (airChain->wallCheckDistSq > -1e-6f) {
-        if (airChain->wallCheckDistSq <= Math3D_XZDistanceSquared(this->actor.world.pos.x, this->actor.world.pos.z,
-                                                                  this->actor.home.pos.x, this->actor.home.pos.z)) {
+        if (airChain->wallCheckDistSq <= Math3D_Dist2DSq(this->actor.world.pos.x, this->actor.world.pos.z,
+                                                         this->actor.home.pos.x, this->actor.home.pos.z)) {
 
             Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, AIR_RADIUS, 0.0f, UPDBGCHECKINFO_FLAG_1);
 
@@ -946,7 +946,7 @@ void ObjMine_Air_Chained(ObjMine* this, PlayState* play) {
                     wallNormal.y = COLPOLY_GET_NORMAL(this->actor.wallPoly->normal.y);
                     wallNormal.z = COLPOLY_GET_NORMAL(this->actor.wallPoly->normal.z);
 
-                    func_80179F64(&xzDir, &wallNormal, &reflectedDir);
+                    Math3D_Vec3fReflect(&xzDir, &wallNormal, &reflectedDir);
 
                     xzSpeed /= 2.0f;
                     airChain->velocity.x = reflectedDir.x * xzSpeed;
@@ -1150,7 +1150,7 @@ void ObjMine_Air_Draw(Actor* thisx, PlayState* play) {
     gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gSPDisplayList(gfx++, object_ny_DL_000030);
 
-    ObjMine_SetRotation(&airChain->basis);
+    ObjMine_SetMatrixRotation(&airChain->basis);
     Matrix_Scale(this->actor.scale.x, this->actor.scale.y, this->actor.scale.z, MTXMODE_APPLY);
     if (linkCount != 0) {
         // Sets pivot point to be half a chain link length below home
@@ -1165,7 +1165,7 @@ void ObjMine_Air_Draw(Actor* thisx, PlayState* play) {
             linkPos.x += linkOffset.x;
             linkPos.y += linkOffset.y;
             linkPos.z += linkOffset.z;
-            ObjMine_ReplaceTranslation(&linkPos);
+            ObjMine_SetMatrixTranslation(&linkPos);
 
             gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPDisplayList(gfx++, object_ny_DL_000030);
@@ -1173,7 +1173,7 @@ void ObjMine_Air_Draw(Actor* thisx, PlayState* play) {
     }
 
     Matrix_RotateXS(0x2000, MTXMODE_APPLY);
-    ObjMine_ReplaceTranslation(&this->actor.world.pos);
+    ObjMine_SetMatrixTranslation(&this->actor.world.pos);
 
     gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gDPPipeSync(gfx++);
@@ -1207,20 +1207,20 @@ void ObjMine_Water_Draw(Actor* thisx, PlayState* play) {
     gSPDisplayList(gfx++, object_ny_DL_000030);
 
     for (i = 0, waterLink = waterChain->links; i < linkCount; i++, waterLink++) {
-        ObjMine_SetRotation(&waterLink->basis);
+        ObjMine_SetMatrixRotation(&waterLink->basis);
         Matrix_Scale(this->actor.scale.x, this->actor.scale.y, this->actor.scale.z, MTXMODE_APPLY);
         // Consecutive chain links are offset 90 degrees.
         if ((i % 2) == 0) {
             Matrix_RotateYS(0x4000, MTXMODE_APPLY);
         }
-        ObjMine_ReplaceTranslation(&waterLink->pos);
+        ObjMine_SetMatrixTranslation(&waterLink->pos);
 
         gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPDisplayList(gfx++, object_ny_DL_000030);
     }
 
     Matrix_RotateXS(0x2000, MTXMODE_APPLY);
-    ObjMine_ReplaceTranslation(&this->actor.world.pos);
+    ObjMine_SetMatrixTranslation(&this->actor.world.pos);
 
     gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     gDPPipeSync(gfx++);

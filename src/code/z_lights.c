@@ -405,7 +405,7 @@ void Lights_GlowCheck(PlayState* play) {
             if ((projectedPos.z > 1) && (fabsf(projectedPos.x * invW) < 1) && (fabsf(projectedPos.y * invW) < 1)) {
                 s32 screenPosX = PROJECTED_TO_SCREEN_X(projectedPos, invW);
                 s32 screenPosY = PROJECTED_TO_SCREEN_Y(projectedPos, invW);
-                s32 wZ = (s32)((projectedPos.z * invW) * 16352.0f) + 16352;
+                s32 wZ = (s32)(projectedPos.z * invW * ((G_MAXZ / 2) * 32)) + ((G_MAXZ / 2) * 32);
                 s32 zBuf = SysCfb_GetZBufferInt(screenPosX, screenPosY);
 
                 if (wZ < zBuf) {
@@ -428,7 +428,7 @@ void Lights_DrawGlow(PlayState* play) {
 
         gfx = Gfx_SetupDL65_NoCD(POLY_XLU_DISP);
 
-        gDPSetDither(gfx++, G_CD_NOISE);
+        gDPSetDither(gfx++, G_AD_PATTERN | G_CD_NOISE);
 
         gDPSetCombineLERP(gfx++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE,
                           0);

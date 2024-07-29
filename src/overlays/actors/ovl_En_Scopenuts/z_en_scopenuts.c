@@ -197,7 +197,7 @@ void func_80BCAE78(EnScopenuts* this, PlayState* play) {
 s16 func_80BCAF0C(EnScopenuts* this) {
     switch (this->unk_33C) {
         case 0x0:
-            if (CHECK_WEEKEVENTREG(WEEKEVENTREG_53_02)) {
+            if (CHECK_WEEKEVENTREG(WEEKEVENTREG_RECEIVED_BUSINESS_SCRUB_HEART_PIECE)) {
                 this->unk_328 |= 1;
                 return 0x1638;
             }
@@ -405,7 +405,7 @@ void func_80BCB6D0(EnScopenuts* this, PlayState* play) {
 void func_80BCB90C(EnScopenuts* this, PlayState* play) {
     if (Actor_HasParent(&this->actor, play)) {
         this->actor.parent = NULL;
-        SET_WEEKEVENTREG(WEEKEVENTREG_53_02);
+        SET_WEEKEVENTREG(WEEKEVENTREG_RECEIVED_BUSINESS_SCRUB_HEART_PIECE);
         this->actionFunc = func_80BCB6D0;
     } else {
         Actor_OfferGetItem(&this->actor, play, GI_HEART_PIECE, 300.0f, 300.0f);
@@ -694,7 +694,7 @@ s32 EnScopenuts_HasReachedPoint(EnScopenuts* this, Path* path, s32 pointIndex) {
         diffZ = points[index + 1].z - points[index - 1].z;
     }
 
-    func_8017B7F8(&point, RAD_TO_BINANG(Math_FAtan2F(diffX, diffZ)), &px, &pz, &d);
+    Math3D_RotateXZPlane(&point, RAD_TO_BINANG(Math_FAtan2F(diffX, diffZ)), &px, &pz, &d);
 
     if (((px * this->actor.world.pos.x) + (pz * this->actor.world.pos.z) + d) > 0.0f) {
         reached = true;

@@ -10,9 +10,12 @@
  * VisFbuf_Draw() for how to do this.
  */
 
-#include "global.h"
 #include "z64visfbuf.h"
+
+#include "gfxalloc.h"
+#include "global.h"
 #include "sys_cfb.h"
+#include "sys_ucode.h"
 
 #define SCALE_MIN 0.032f
 #define SCALE_MAX 1.0f //!< also unchanged scale
