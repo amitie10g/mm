@@ -9,10 +9,10 @@
 #include "z64rumble.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
-#include "objects/object_bigslime/object_bigslime.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_bigslime/object_bigslime.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_200)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_200)
 
 #define THIS ((EnBigslime*)thisx)
 
@@ -130,22 +130,22 @@ void EnBigslime_DrawShatteringEffects(EnBigslime* this, PlayState* play);
 
 // Reference data: used to store the original vertices
 static Vtx sBigslimeStaticVtx[BIGSLIME_NUM_VTX] = {
-#include "overlays/ovl_En_Bigslime/sBigslimeStaticVtx.vtx.inc"
+#include "assets/overlays/ovl_En_Bigslime/sBigslimeStaticVtx.vtx.inc"
 };
 
 // Dynamic data: used to draw the real shape and has 2 states
 static Vtx sBigslimeDynamicVtx[2][BIGSLIME_NUM_VTX] = {
     {
-#include "overlays/ovl_En_Bigslime/sBigslimeDynamicState0Vtx.vtx.inc"
+#include "assets/overlays/ovl_En_Bigslime/sBigslimeDynamicState0Vtx.vtx.inc"
     },
     {
-#include "overlays/ovl_En_Bigslime/sBigslimeDynamicState1Vtx.vtx.inc"
+#include "assets/overlays/ovl_En_Bigslime/sBigslimeDynamicState1Vtx.vtx.inc"
     },
 };
 
 // Target data: used to define the shape the dynamic vertices morph to
 static Vtx sBigslimeTargetVtx[BIGSLIME_NUM_VTX] = {
-#include "overlays/ovl_En_Bigslime/sBigslimeTargetVtx.vtx.inc"
+#include "assets/overlays/ovl_En_Bigslime/sBigslimeTargetVtx.vtx.inc"
 };
 
 /*
@@ -212,7 +212,7 @@ static EnBigslimeTri sBigslimeTri[BIGSLIME_NUM_FACES] = {
     { 142, 126, 127 }, { 130, 111, 145 },
 };
 
-ActorInit En_Bigslime_InitVars = {
+ActorProfile En_Bigslime_Profile = {
     /**/ ACTOR_EN_BIGSLIME,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -334,7 +334,7 @@ void EnBigslime_Init(Actor* thisx, PlayState* play2) {
     this->bigslimeCollider[0].base.atFlags &= ~AT_ON;
     Collider_InitAndSetCylinder(play, &this->gekkoCollider, &this->actor, &sCylinderInit);
     this->gekkoCollider.base.colType = COLTYPE_HIT6;
-    this->gekkoCollider.info.elemType = ELEMTYPE_UNK1;
+    this->gekkoCollider.elem.elemType = ELEMTYPE_UNK1;
     this->gekkoCollider.base.atFlags &= ~AT_ON;
     this->gekkoCollider.base.ocFlags1 &= ~OC1_NO_PUSH;
     this->actor.params = CLAMP(this->actor.params, 1, 4);
@@ -909,7 +909,7 @@ void EnBigslime_GekkoSfxInsideBigslime(EnBigslime* this, u16 sfxId) {
 void EnBigslime_GekkoFreeze(EnBigslime* this) {
     this->gekkoDrawDmgEffType = ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX;
     this->gekkoCollider.base.colType = COLTYPE_HIT3;
-    this->gekkoCollider.info.elemType = ELEMTYPE_UNK0;
+    this->gekkoCollider.elem.elemType = ELEMTYPE_UNK0;
     this->stunTimer = 2;
     this->gekkoDrawDmgEffScale = 0.75f;
     this->gekkoDrawDmgEffFrozenSteamScale = 1.125f;
@@ -921,7 +921,7 @@ void EnBigslime_GekkoThaw(EnBigslime* this, PlayState* play) {
     if (this->gekkoDrawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) {
         this->gekkoDrawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
         this->gekkoCollider.base.colType = COLTYPE_HIT6;
-        this->gekkoCollider.info.elemType = ELEMTYPE_UNK1;
+        this->gekkoCollider.elem.elemType = ELEMTYPE_UNK1;
         this->gekkoDrawDmgEffAlpha = 0.0f;
         Actor_SpawnIceEffects(play, &this->actor, this->gekkoBodyPartsPos, GEKKO_BODYPART_MAX, 2, 0.3f, 0.2f);
         this->actor.flags |= ACTOR_FLAG_200;
@@ -2620,7 +2620,7 @@ void EnBigslime_ApplyDamageEffectGekko(EnBigslime* this, PlayState* play) {
     if (this->gekkoCollider.base.acFlags & AC_HIT) {
         this->gekkoCollider.base.acFlags &= ~AC_HIT;
         if ((this->gekkoDrawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) ||
-            !(this->gekkoCollider.info.acHitInfo->toucher.dmgFlags & 0xDB0B3)) {
+            !(this->gekkoCollider.elem.acHitElem->toucher.dmgFlags & 0xDB0B3)) {
             EnBigslime_EndThrowMinislime(this);
             if (this->actor.colChkInfo.damageEffect != BIGSLIME_DMGEFF_HOOKSHOT) {
                 if (Actor_ApplyDamage(&this->actor) == 0) {
@@ -2638,8 +2638,8 @@ void EnBigslime_ApplyDamageEffectGekko(EnBigslime* this, PlayState* play) {
                         } else {
                             this->gekkoDrawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
                             Actor_Spawn(
-                                &play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->gekkoCollider.info.bumper.hitPos.x,
-                                this->gekkoCollider.info.bumper.hitPos.y, this->gekkoCollider.info.bumper.hitPos.z, 0,
+                                &play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->gekkoCollider.elem.bumper.hitPos.x,
+                                this->gekkoCollider.elem.bumper.hitPos.y, this->gekkoCollider.elem.bumper.hitPos.z, 0,
                                 0, 0, CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                         }
                     } else if (this->actor.colChkInfo.damageEffect == BIGSLIME_DMGEFF_ICE) {
@@ -2673,8 +2673,8 @@ void EnBigslime_ApplyDamageEffectGekko(EnBigslime* this, PlayState* play) {
                         } else {
                             this->gekkoDrawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
                             Actor_Spawn(
-                                &play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->gekkoCollider.info.bumper.hitPos.x,
-                                this->gekkoCollider.info.bumper.hitPos.y, this->gekkoCollider.info.bumper.hitPos.z, 0,
+                                &play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->gekkoCollider.elem.bumper.hitPos.x,
+                                this->gekkoCollider.elem.bumper.hitPos.y, this->gekkoCollider.elem.bumper.hitPos.z, 0,
                                 0, 0, CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                         }
                     }

@@ -5,7 +5,7 @@
  */
 
 #include "z_en_ah.h"
-#include "objects/object_ah/object_ah.h"
+#include "assets/objects/object_ah/object_ah.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -51,7 +51,7 @@ MsgScript D_80BD3E08[] = {
     /* 0x0008 0x01 */ MSCRIPT_CMD_DONE(),
 };
 
-ActorInit En_Ah_InitVars = {
+ActorProfile En_Ah_Profile = {
     /**/ ACTOR_EN_AH,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

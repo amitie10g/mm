@@ -9,8 +9,8 @@
  */
 
 #include "z_dm_stk.h"
-#include "objects/object_stk2/object_stk2.h"
-#include "objects/object_stk3/object_stk3.h"
+#include "assets/objects/object_stk2/object_stk2.h"
+#include "assets/objects/object_stk3/object_stk3.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_2000000)
 
@@ -151,7 +151,7 @@ typedef enum {
     /* 4 */ SK_DEKU_PIPES_CS_STATE_END
 } SkullKidDekuPipesCutsceneState;
 
-ActorInit Dm_Stk_InitVars = {
+ActorProfile Dm_Stk_Profile = {
     /**/ ACTOR_DM_STK,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

@@ -7,9 +7,9 @@
 #include "z_en_death.h"
 #include "z64rumble.h"
 #include "overlays/actors/ovl_Arrow_Light/z_arrow_light.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_IGNORE_QUAKE)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_IGNORE_QUAKE)
 
 #define THIS ((EnDeath*)thisx)
 
@@ -57,7 +57,7 @@ void EnDeath_SetupPlayCutscene(EnDeath* this);
 void EnDeath_SetupBeginWithoutCutscene(EnDeath* this);
 void EnDeath_SetupDeathCutscenePart4(EnDeath* this);
 
-ActorInit En_Death_InitVars = {
+ActorProfile En_Death_Profile = {
     /**/ ACTOR_EN_DEATH,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,
@@ -814,7 +814,7 @@ void EnDeath_SetupDeathCutscenePart1(EnDeath* this, PlayState* play) {
 
     this->coreGuarded = false;
     this->coreCollider.base.acFlags &= ~AC_ON;
-    Actor_SetColorFilter(&this->actor, 0x4000, 255, 0, 30);
+    Actor_SetColorFilter(&this->actor, COLORFILTER_COLORFLAG_RED, 255, COLORFILTER_BUFFLAG_OPA, 30);
     this->actionTimer = 35;
     this->actor.world.pos.y = this->actor.home.pos.y;
     this->actor.speed = 0.0f;

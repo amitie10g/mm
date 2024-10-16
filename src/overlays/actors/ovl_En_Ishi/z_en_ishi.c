@@ -7,9 +7,9 @@
 #include "z_en_ishi.h"
 #include "z64quake.h"
 #include "z64rumble.h"
-#include "objects/gameplay_field_keep/gameplay_field_keep.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_ishi/object_ishi.h"
+#include "assets/objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_ishi/object_ishi.h"
 #include "overlays/actors/ovl_En_Insect/z_en_insect.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_800000)
@@ -45,7 +45,7 @@ static s16 D_8095F690 = 0;
 
 static s16 D_8095F694 = 0;
 
-ActorInit En_Ishi_InitVars = {
+ActorProfile En_Ishi_Profile = {
     /**/ ACTOR_EN_ISHI,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -482,7 +482,7 @@ void func_8095E660(EnIshi* this, PlayState* play) {
         return;
     }
 
-    if (sp34 && (sp38 == 0) && (this->collider.info.acHitInfo->toucher.dmgFlags & 0x508)) {
+    if (sp34 && (sp38 == 0) && (this->collider.elem.acHitElem->toucher.dmgFlags & 0x508)) {
         if (sp30 != 0) {
             func_8095DFF0(this, play);
             func_8095F060(this);

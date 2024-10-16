@@ -7,7 +7,7 @@
 #include "z_en_minislime.h"
 #include "overlays/actors/ovl_En_Bigslime/z_en_bigslime.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_200)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_200)
 
 #define THIS ((EnMinislime*)thisx)
 
@@ -41,7 +41,7 @@ void EnMinislime_MoveToGekko(EnMinislime* this, PlayState* play);
 void EnMinislime_SetupGekkoThrow(EnMinislime* this);
 void EnMinislime_GekkoThrow(EnMinislime* this, PlayState* play);
 
-ActorInit En_Minislime_InitVars = {
+ActorProfile En_Minislime_Profile = {
     /**/ ACTOR_EN_MINISLIME,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,

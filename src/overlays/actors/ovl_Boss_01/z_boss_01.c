@@ -34,7 +34,7 @@
 #include "overlays/actors/ovl_En_Tanron1/z_en_tanron1.h"
 #include "overlays/actors/ovl_Item_B_Heart/z_item_b_heart.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((Boss01*)thisx)
 
@@ -636,7 +636,7 @@ static ColliderCylinderInit sBugATColliderCylinderInit = {
     { 8, 15, 10, { 0, 0, 0 } },
 };
 
-ActorInit Boss_01_InitVars = {
+ActorProfile Boss_01_Profile = {
     /**/ ACTOR_BOSS_01,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -1951,12 +1951,12 @@ void Boss01_UpdateDamage(Boss01* this, PlayState* play) {
     u8 damage;
     s32 i;
 
-    if (this->shieldCollider.elements[ODOLWA_SHIELD_COLLIDER_SHIELD].info.bumperFlags & BUMP_HIT) {
+    if (this->shieldCollider.elements[ODOLWA_SHIELD_COLLIDER_SHIELD].base.bumperFlags & BUMP_HIT) {
         this->bodyInvincibilityTimer = 5;
         if (this->damagedTimer == 0) {
-            ColliderInfo* acHitInfo = this->shieldCollider.elements[ODOLWA_SHIELD_COLLIDER_SHIELD].info.acHitInfo;
+            ColliderElement* acHitElem = this->shieldCollider.elements[ODOLWA_SHIELD_COLLIDER_SHIELD].base.acHitElem;
 
-            if (acHitInfo->toucher.dmgFlags == DMG_SWORD_BEAM) {
+            if (acHitElem->toucher.dmgFlags == DMG_SWORD_BEAM) {
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->actor.focus.pos.x, this->actor.focus.pos.y,
                             this->actor.focus.pos.z, 0, 0, 3, CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                 Actor_PlaySfx(&this->actor, NA_SE_IT_SHIELD_BOUND);
@@ -1965,24 +1965,24 @@ void Boss01_UpdateDamage(Boss01* this, PlayState* play) {
         }
     } else if (this->damagedTimer == 0) {
         for (i = 0; i < ODOLWA_SWORD_COLLIDER_MAX; i++) {
-            if (this->swordCollider.elements[i].info.toucherFlags & TOUCH_HIT) {
-                this->swordCollider.elements[i].info.toucherFlags &= ~TOUCH_HIT;
+            if (this->swordCollider.elements[i].base.toucherFlags & TOUCH_HIT) {
+                this->swordCollider.elements[i].base.toucherFlags &= ~TOUCH_HIT;
                 player->pushedYaw = this->actor.yawTowardsPlayer;
                 player->pushedSpeed = 15.0f;
             }
         }
 
         for (i = 0; i < ODOLWA_KICK_AND_SHIELD_BASH_COLLIDER_MAX; i++) {
-            if (this->kickAndShieldBashCollider.elements[i].info.toucherFlags & TOUCH_HIT) {
-                this->kickAndShieldBashCollider.elements[i].info.toucherFlags &= ~TOUCH_HIT;
+            if (this->kickAndShieldBashCollider.elements[i].base.toucherFlags & TOUCH_HIT) {
+                this->kickAndShieldBashCollider.elements[i].base.toucherFlags &= ~TOUCH_HIT;
                 player->pushedYaw = this->actor.yawTowardsPlayer;
                 player->pushedSpeed = 20.0f;
             }
         }
 
         for (i = 0; i < ODOLWA_COLLIDER_BODYPART_MAX; i++) {
-            if (this->bodyCollider.elements[i].info.bumperFlags & BUMP_HIT) {
-                this->bodyCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+            if (this->bodyCollider.elements[i].base.bumperFlags & BUMP_HIT) {
+                this->bodyCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
 
                 switch (this->actor.colChkInfo.damageEffect) {
                     case ODOLWA_DMGEFF_FREEZE:
@@ -2408,7 +2408,7 @@ void Boss01_Update(Actor* thisx, PlayState* play2) {
         } else {
             this->bodyInvincibilityTimer--;
             for (i = 0; i < ODOLWA_COLLIDER_BODYPART_MAX; i++) {
-                this->bodyCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+                this->bodyCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
             }
         }
 
@@ -2428,7 +2428,7 @@ void Boss01_Update(Actor* thisx, PlayState* play2) {
     } else {
         this->disableCollisionTimer--;
         for (i = 0; i < ODOLWA_COLLIDER_BODYPART_MAX; i++) {
-            this->bodyCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+            this->bodyCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
         }
     }
 
@@ -3246,16 +3246,16 @@ void Boss01_Bug_UpdateDamage(Boss01* this, PlayState* play) {
     Vec3f additionalVelocity;
     s32 pad[2];
     u8 damage;
-    ColliderInfo* acHitInfo;
+    ColliderElement* acHitElem;
     OdolwaEffect* effect = play->specialEffects;
 
     if (this->bugACCollider.base.acFlags & AC_HIT) {
         this->bugACCollider.base.acFlags &= ~AC_HIT;
-        acHitInfo = this->bugACCollider.info.acHitInfo;
+        acHitElem = this->bugACCollider.elem.acHitElem;
 
         if (this->damagedTimer == 0) {
             Matrix_RotateYS(this->actor.yawTowardsPlayer, MTXMODE_NEW);
-            if (acHitInfo->toucher.dmgFlags & 0x300000) {
+            if (acHitElem->toucher.dmgFlags & 0x300000) {
                 this->damagedTimer = 10;
                 Matrix_MultVecZ(-10.0f, &additionalVelocity);
                 this->additionalVelocityX = additionalVelocity.x;
@@ -3448,10 +3448,10 @@ void Boss01_UpdateEffects(Boss01* this, PlayState* play) {
                         if (player->invincibilityTimer == 0) {
                             if ((temp2 < (KREG(49) + 210.0f)) && ((KREG(49) + 190.0f) < temp2)) {
                                 for (j = 0; j < PLAYER_BODYPART_MAX; j++) {
-                                    player->flameTimers[j] = Rand_S16Offset(0, 200);
+                                    player->bodyFlameTimers[j] = Rand_S16Offset(0, 200);
                                 }
 
-                                player->isBurning = true;
+                                player->bodyIsBurning = true;
                                 temp = Math_Atan2S_XY(diffZ, diffX);
                                 if ((KREG(49) + 100.0f) < temp2) {
                                     temp += 0x8000;

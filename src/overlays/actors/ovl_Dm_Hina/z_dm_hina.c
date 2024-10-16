@@ -5,7 +5,7 @@
  */
 
 #include "z_dm_hina.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -21,7 +21,7 @@ void func_80A1F56C(DmHina* this, PlayState* play);
 void func_80A1F5AC(DmHina* this, PlayState* play);
 void func_80A1F63C(DmHina* this, PlayState* play);
 
-ActorInit Dm_Hina_InitVars = {
+ActorProfile Dm_Hina_Profile = {
     /**/ ACTOR_DM_HINA,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

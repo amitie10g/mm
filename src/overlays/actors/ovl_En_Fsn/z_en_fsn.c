@@ -5,7 +5,7 @@
  */
 
 #include "z_en_fsn.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -52,7 +52,7 @@ typedef enum {
     /* 2 */ ENFSN_CUTSCENESTATE_PLAYING
 } EnFsnCutsceneState;
 
-ActorInit En_Fsn_InitVars = {
+ActorProfile En_Fsn_Profile = {
     /**/ ACTOR_EN_FSN,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

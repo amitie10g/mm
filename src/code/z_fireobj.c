@@ -1,6 +1,6 @@
 #include "z_fireobj.h"
 #include "overlays/actors/ovl_En_Arrow/z_en_arrow.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 ColliderCylinderInit sFireObjCollisionInit = {
     {
@@ -223,7 +223,7 @@ void FireObj_Update(PlayState* play, FireObj* fire, Actor* actor) {
     FireObj_UpdateStateTransitions(play, fire);
     if (fire->state == FIRE_STATE_NOT_LIT) {
         if ((fire->collision.base.acFlags & AC_HIT) &&
-            (fire->collision.info.acHitInfo->toucher.dmgFlags & DMG_FIRE_ARROW)) {
+            (fire->collision.elem.acHitElem->toucher.dmgFlags & DMG_FIRE_ARROW)) {
             FireObj_SetState(fire, fire->dynamicSizeStep, FIRE_STATE_GROWING);
         }
     } else if ((fire->collision.base.acFlags & AC_HIT) && (arrow->actor.update != NULL) &&

@@ -5,7 +5,7 @@
  */
 
 #include "z_en_osk.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
 
@@ -21,7 +21,7 @@ void func_80BF61EC(EnOsk* this, PlayState* play);
 void func_80BF656C(EnOsk* this, PlayState* play);
 void func_80BF6A20(EnOsk* this, PlayState* play);
 
-ActorInit En_Osk_InitVars = {
+ActorProfile En_Osk_Profile = {
     /**/ ACTOR_EN_OSK,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

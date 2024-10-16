@@ -7,7 +7,7 @@
 #include "z_en_sw.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE)
 
 #define THIS ((EnSw*)thisx)
 
@@ -28,7 +28,7 @@ void func_808DB100(EnSw* this, PlayState* play);
 void func_808DB25C(EnSw* this, PlayState* play);
 void func_808DB2E0(EnSw* this, PlayState* play);
 
-ActorInit En_Sw_InitVars = {
+ActorProfile En_Sw_Profile = {
     /**/ ACTOR_EN_SW,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

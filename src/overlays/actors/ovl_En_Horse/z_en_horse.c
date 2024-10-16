@@ -11,7 +11,7 @@
 #include "overlays/actors/ovl_En_In/z_en_in.h"
 #include "overlays/actors/ovl_Obj_Um/z_obj_um.h"
 #include "overlays/actors/ovl_En_Horse_Game_Check/z_en_horse_game_check.h"
-#include "objects/object_horse_link_child/object_horse_link_child.h"
+#include "assets/objects/object_horse_link_child/object_horse_link_child.h"
 
 #define FLAGS (ACTOR_FLAG_10)
 
@@ -162,7 +162,7 @@ static SkeletonHeader* sSkeletonHeaders[HORSE_TYPE_MAX] = {
     NULL,        // HORSE_TYPE_DONKEY
 };
 
-ActorInit En_Horse_InitVars = {
+ActorProfile En_Horse_Profile = {
     /**/ ACTOR_EN_HORSE,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,
@@ -372,7 +372,7 @@ void func_8087B7C0(EnHorse* this, PlayState* play, Path* path) {
         EnHorse_RotateToPoint(this, play, &sp8C, 0x320);
         if (sp70 < SQ(100.0f)) {
             if ((this->actor.xzDistToPlayer < 100.0f) ||
-                (this->colliderJntSph.elements[0].info.ocElemFlags & OCELEM_HIT)) {
+                (this->colliderJntSph.elements[0].base.ocElemFlags & OCELEM_HIT)) {
                 s32 pad;
 
                 if (Math_SinS(this->actor.yawTowardsPlayer - this->actor.world.rot.y) > 0.0f) {
@@ -936,12 +936,12 @@ void EnHorse_Init(Actor* thisx, PlayState* play2) {
     if (this->unk_1EC & 0x100) {
         this->colliderCylinder1.base.colType = COLTYPE_HIT3;
         this->colliderCylinder1.base.acFlags |= (AC_TYPE_PLAYER | AC_ON);
-        this->colliderCylinder1.info.bumperFlags |= BUMP_ON;
-        this->colliderCylinder1.info.bumper.dmgFlags = 0x10000 | 0x2000 | 0x1000 | 0x800 | 0x20;
+        this->colliderCylinder1.elem.bumperFlags |= BUMP_ON;
+        this->colliderCylinder1.elem.bumper.dmgFlags = 0x10000 | 0x2000 | 0x1000 | 0x800 | 0x20;
         this->colliderCylinder2.base.colType = COLTYPE_HIT3;
         this->colliderCylinder2.base.acFlags |= (AC_TYPE_PLAYER | AC_ON);
-        this->colliderCylinder2.info.bumperFlags |= BUMP_ON;
-        this->colliderCylinder2.info.bumper.dmgFlags = 0x10000 | 0x2000 | 0x1000 | 0x800 | 0x20;
+        this->colliderCylinder2.elem.bumperFlags |= BUMP_ON;
+        this->colliderCylinder2.elem.bumper.dmgFlags = 0x10000 | 0x2000 | 0x1000 | 0x800 | 0x20;
     }
 }
 
@@ -4275,7 +4275,7 @@ void EnHorse_Update(Actor* thisx, PlayState* play2) {
             }
         }
 
-        if (this->colliderJntSph.elements->info.ocElemFlags & OCELEM_HIT) {
+        if (this->colliderJntSph.elements[0].base.ocElemFlags & OCELEM_HIT) {
             if (thisx->speed > 10.0f) {
                 thisx->speed -= 1.0f;
             }
@@ -4295,7 +4295,7 @@ void EnHorse_Update(Actor* thisx, PlayState* play2) {
         }
 
         if ((this->playerControlled == false) && (this->unk_1EC & 8)) {
-            if ((this->colliderJntSph.elements->info.ocElemFlags & OCELEM_HIT) &&
+            if ((this->colliderJntSph.elements[0].base.ocElemFlags & OCELEM_HIT) &&
                 (this->colliderJntSph.base.oc->id == ACTOR_EN_IN)) {
                 func_80884868(this);
             }

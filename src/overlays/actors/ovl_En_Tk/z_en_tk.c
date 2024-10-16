@@ -63,7 +63,7 @@ static s32 D_80AF0050;
 
 #include "src/overlays/actors/ovl_En_Tk/scheduleScripts.schl.inc"
 
-ActorInit En_Tk_InitVars = {
+ActorProfile En_Tk_Profile = {
     /**/ ACTOR_EN_TK,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -484,7 +484,7 @@ s32 func_80AECE60(EnTk* this, PlayState* play) {
     if ((door != NULL) && (this->unk_2CA & 0x400)) {
         Vec3f sp5C;
 
-        Actor_OffsetOfPointInActorCoords(&this->actor, &sp5C, &door->knobDoor.dyna.actor.world.pos);
+        Actor_WorldToActorCoords(&this->actor, &sp5C, &door->knobDoor.dyna.actor.world.pos);
         door->openTimer = 2;
         if (sp5C.z < -20.0f) {
             this->unk_2CA &= ~0x400;

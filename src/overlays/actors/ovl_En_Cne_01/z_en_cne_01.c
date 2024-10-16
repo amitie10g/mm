@@ -5,7 +5,7 @@
  */
 
 #include "z_en_cne_01.h"
-#include "objects/object_cne/object_cne.h"
+#include "assets/objects/object_cne/object_cne.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -20,7 +20,7 @@ void EnCne01_Walk(EnHy* this, PlayState* play);
 void EnCne01_FaceForward(EnHy* this, PlayState* play);
 void EnCne01_Talk(EnHy* this, PlayState* play);
 
-ActorInit En_Cne_01_InitVars = {
+ActorProfile En_Cne_01_Profile = {
     /**/ ACTOR_EN_CNE_01,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

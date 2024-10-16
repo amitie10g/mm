@@ -8,10 +8,11 @@
 #include "z_en_knight.h"
 #include "z64shrink_window.h"
 #include "overlays/actors/ovl_Mir_Ray3/z_mir_ray3.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_knight/object_knight.h"
+#include "overlays/effects/ovl_Effect_Ss_Hitmark/z_eff_ss_hitmark.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_knight/object_knight.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((EnKnight*)thisx)
 
@@ -368,7 +369,7 @@ static Color_RGBA8 sDustPrimColor = { 60, 50, 20, 255 };
 
 static Color_RGBA8 sDustEnvColor = { 40, 30, 30, 255 };
 
-const ActorInit En_Knight_InitVars = {
+const ActorProfile En_Knight_Profile = {
     /**/ ACTOR_EN_KNIGHT,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -1585,8 +1586,8 @@ void EnKnight_FallOver(EnKnight* this, PlayState* play) {
         } else {
             this->actor.colChkInfo.health = 6 - BREG(40);
         }
-        this->bodyCollider.elements[0].info.bumperFlags &= ~BUMP_HIT;
-        this->bodyCollider.elements[1].info.bumperFlags &= ~BUMP_HIT;
+        this->bodyCollider.elements[0].base.bumperFlags &= ~BUMP_HIT;
+        this->bodyCollider.elements[1].base.bumperFlags &= ~BUMP_HIT;
         this->actor.colChkInfo.damageTable = &sDamageTableStanding;
         this->invincibilityTimer = 25;
     }
@@ -2116,7 +2117,7 @@ void EnKnight_IgosSitting(EnKnight* this, PlayState* play) {
 
         Math_Vec3f_Copy(&hitmarkPos, &player->actor.world.pos);
         hitmarkPos.y += 25.0f;
-        EffectSsHitmark_SpawnFixedScale(play, 0, &hitmarkPos);
+        EffectSsHitmark_SpawnFixedScale(play, EFFECT_HITMARK_WHITE, &hitmarkPos);
 
         func_800B8D50(play, NULL, KREG(53) + 12.0f, this->actor.shape.rot.y + yaw, KREG(54) + 7.0f, 0x10);
         EnKnight_SpawnDust(play, 12);
@@ -2177,9 +2178,9 @@ void EnKnight_FlyingHeadDone(EnKnight* this, PlayState* play) {
                 Actor_Kill(&sIgosHeadInstance->actor);
                 sIgosHeadInstance = NULL;
                 this->actor.flags |= ACTOR_FLAG_TARGETABLE;
-                player->lockOnActor = &this->actor;
+                player->focusActor = &this->actor;
                 play->actorCtx.targetCtx.fairyActor = &this->actor;
-                play->actorCtx.targetCtx.lockOnActor = &this->actor;
+                play->actorCtx.targetCtx.reticleActor = &this->actor;
             }
 
             if (this->timers[0] == 15) {
@@ -3058,8 +3059,8 @@ void EnKnight_UpdateDamage(EnKnight* this, PlayState* play) {
     Vec3f translation;
     Player* player = GET_PLAYER(play);
 
-    if (this->shieldCollider.elements[0].info.bumperFlags & BUMP_HIT) {
-        this->shieldCollider.elements[0].info.bumperFlags &= ~BUMP_HIT;
+    if (this->shieldCollider.elements[0].base.bumperFlags & BUMP_HIT) {
+        this->shieldCollider.elements[0].base.bumperFlags &= ~BUMP_HIT;
         this->shieldingInvulnerabilityTimer = 5;
 
         if ((player->meleeWeaponState != PLAYER_MWA_FORWARD_SLASH_1H) &&
@@ -3080,8 +3081,8 @@ void EnKnight_UpdateDamage(EnKnight* this, PlayState* play) {
             continue;
         }
 
-        if (this->bodyCollider.elements[i].info.bumperFlags & BUMP_HIT) {
-            this->bodyCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+        if (this->bodyCollider.elements[i].base.bumperFlags & BUMP_HIT) {
+            this->bodyCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
 
             switch (this->actor.colChkInfo.damageEffect) {
                 case KNIGHT_DMGEFF_ICE:
@@ -3158,16 +3159,16 @@ void EnKnight_UpdateDamageFallenOver(EnKnight* this, PlayState* play) {
     }
 
     for (i = 0; i < ARRAY_COUNT(this->bodyColliderElements); i++) {
-        ColliderJntSphElement* colliderElem = &this->bodyCollider.elements[i];
-        ColliderInfo* acHitInfo;
+        ColliderJntSphElement* jntSphElem = &this->bodyCollider.elements[i];
+        ColliderElement* acHitElem;
 
-        if (colliderElem->info.bumperFlags & BUMP_HIT) {
-            colliderElem->info.bumperFlags &= ~BUMP_HIT;
+        if (jntSphElem->base.bumperFlags & BUMP_HIT) {
+            jntSphElem->base.bumperFlags &= ~BUMP_HIT;
 
-            acHitInfo = colliderElem->info.acHitInfo;
+            acHitElem = jntSphElem->base.acHitElem;
 
             this->invincibilityTimer = 10;
-            if (acHitInfo->toucher.dmgFlags & DMG_LIGHT_RAY) {
+            if (acHitElem->toucher.dmgFlags & DMG_LIGHT_RAY) {
                 this->damageFlashTimer = 15;
                 this->invincibilityTimer = 1000;
                 EnKnight_SetupDie(this, play);
@@ -3255,9 +3256,9 @@ void EnKnight_FlyingHead(EnKnight* this, PlayState* play) {
             this->actor.world.rot.x = KREG(39) * 0x1000 + 0x2000;
             this->timers[0] = 20;
             sIgosInstance->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-            player->lockOnActor = &this->actor;
+            player->focusActor = &this->actor;
             play->actorCtx.targetCtx.fairyActor = &this->actor;
-            play->actorCtx.targetCtx.lockOnActor = &this->actor;
+            play->actorCtx.targetCtx.reticleActor = &this->actor;
             Math_Vec3f_Copy(&this->actor.world.pos, &sIgosInstance->actor.world.pos);
             Math_Vec3s_Copy(&this->actor.world.rot, &sIgosInstance->actor.world.rot);
             Math_Vec3s_Copy(&this->actor.shape.rot, &sIgosInstance->actor.world.rot);

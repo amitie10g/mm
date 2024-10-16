@@ -7,7 +7,7 @@
 #include "z_obj_switch.h"
 #include "z64rumble.h"
 #include "overlays/actors/ovl_Obj_Ice_Poly/z_obj_ice_poly.h"
-#include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
+#include "assets/objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10)
 
@@ -72,7 +72,7 @@ static TexturePtr sEyeSwitchTextures[][4] = {
 
 static s32 sTexturesDesegmented = false;
 
-ActorInit Obj_Switch_InitVars = {
+ActorProfile Obj_Switch_Profile = {
     /**/ ACTOR_OBJ_SWITCH,
     /**/ ACTORCAT_SWITCH,
     /**/ FLAGS,

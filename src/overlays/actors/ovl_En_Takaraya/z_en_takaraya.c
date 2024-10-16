@@ -31,7 +31,7 @@ void func_80ADF730(EnTakaraya* this, PlayState* play);
 void func_80ADF7B8(EnTakaraya* this);
 void func_80ADF7CC(EnTakaraya* this, PlayState* play);
 
-ActorInit En_Takaraya_InitVars = {
+ActorProfile En_Takaraya_Profile = {
     /**/ ACTOR_EN_TAKARAYA,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -261,7 +261,7 @@ void EnTakaraya_Talk(EnTakaraya* this, PlayState* play) {
 }
 
 void func_80ADF2D4(EnTakaraya* this) {
-    Actor_PlaySfx_FlaggedCentered2(&this->actor, NA_SE_SY_FOUND);
+    Actor_PlaySfx_FlaggedCentered1(&this->actor, NA_SE_SY_FOUND);
     Audio_PlaySubBgm(NA_BGM_TIMED_MINI_GAME);
     this->timer = 145;
     SET_WEEKEVENTREG(WEEKEVENTREG_KICKOUT_WAIT);

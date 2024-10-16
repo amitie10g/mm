@@ -73,7 +73,7 @@ static TexturePtr sSilverEyeTextures[HONOTRAP_EYE_MAX] = {
 
 static s32 sTexturesNotDesegmented = true;
 
-ActorInit En_Honotrap_InitVars = {
+ActorProfile En_Honotrap_Profile = {
     /**/ ACTOR_EN_HONOTRAP,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -658,7 +658,7 @@ void EnHonotrap_FlameGroup(EnHonotrap* this, PlayState* play) {
     }
     temp_fs0 = flameGroup->unk0 * 120.0f;
     temp_fs1 = flameGroup->unk4 * 120.0f;
-    Actor_OffsetOfPointInActorCoords(&this->actor, &sp68, &GET_PLAYER(play)->actor.world.pos);
+    Actor_WorldToActorCoords(&this->actor, &sp68, &GET_PLAYER(play)->actor.world.pos);
 
     if (sp68.z < temp_fs1) {
         sp68.z = temp_fs1;

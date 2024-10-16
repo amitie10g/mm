@@ -7,7 +7,7 @@
 #include "overlays/actors/ovl_En_Fish/z_en_fish.h"
 #include "overlays/actors/ovl_En_Mushi2/z_en_mushi2.h"
 #include "z_en_fish2.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -48,7 +48,7 @@ static s32 D_80B2B2EC = 0;
 static s32 D_80B2B2F0 = 0;
 static Actor* D_80B2B2F4 = NULL;
 
-ActorInit En_Fish2_InitVars = {
+ActorProfile En_Fish2_Profile = {
     /**/ ACTOR_EN_FISH2,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -231,7 +231,7 @@ void EnFish2_Init(Actor* thisx, PlayState* play) {
     } else if (this->actor.params != 0) {
         this->unk_2B4 = 10;
         this->actor.draw = NULL;
-        this->actor.flags |= ACTOR_FLAG_CANT_LOCK_ON;
+        this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
         this->actionFunc = func_80B2A01C;
     }
 }

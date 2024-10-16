@@ -5,7 +5,7 @@
  */
 
 #include "z_bg_goron_oyu.h"
-#include "objects/object_oyu/object_oyu.h"
+#include "assets/objects/object_oyu/object_oyu.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -23,7 +23,7 @@ void BgGoronOyu_UpdateWaterBoxInfo(BgGoronOyu* this, PlayState* play);
 void BgGoronOyu_SpawnEffects(BgGoronOyu* this, PlayState* play);
 void func_80B40160(BgGoronOyu* this, PlayState* play);
 
-ActorInit Bg_Goron_Oyu_InitVars = {
+ActorProfile Bg_Goron_Oyu_Profile = {
     /**/ ACTOR_BG_GORON_OYU,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,

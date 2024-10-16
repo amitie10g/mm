@@ -9,7 +9,7 @@
 
 #include "z64olib.h"
 
-#include "objects/object_ka/object_ka.h"
+#include "assets/objects/object_ka/object_ka.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_2000000)
 
@@ -70,7 +70,7 @@ static ColliderCylinderInit D_80971D80 = {
     { 20, 70, 0, { 0, 0, 0 } },
 };
 
-ActorInit En_Kakasi_InitVars = {
+ActorProfile En_Kakasi_Profile = {
     /**/ ACTOR_EN_KAKASI,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -1049,7 +1049,7 @@ void EnKakasi_DiggingAway(EnKakasi* this, PlayState* play) {
 void EnKakasi_SetupIdleUnderground(EnKakasi* this) {
     this->picto.actor.shape.yOffset = -7000.0f;
     this->picto.actor.draw = NULL;
-    this->picto.actor.flags |= ACTOR_FLAG_CANT_LOCK_ON;
+    this->picto.actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
     this->unkState196 = 5;
     this->actionFunc = EnKakasi_IdleUnderground;
 }
@@ -1057,7 +1057,7 @@ void EnKakasi_SetupIdleUnderground(EnKakasi* this) {
 void EnKakasi_IdleUnderground(EnKakasi* this, PlayState* play) {
     if (CHECK_WEEKEVENTREG(WEEKEVENTREG_79_08) && (this->picto.actor.xzDistToPlayer < this->songSummonDist) &&
         ((BREG(1) != 0) || (play->msgCtx.ocarinaMode == OCARINA_MODE_PLAYED_SCARECROW_SPAWN))) {
-        this->picto.actor.flags &= ~ACTOR_FLAG_CANT_LOCK_ON;
+        this->picto.actor.flags &= ~ACTOR_FLAG_LOCK_ON_DISABLED;
         play->msgCtx.ocarinaMode = OCARINA_MODE_END;
         this->actionFunc = EnKakasi_SetupRiseOutOfGround;
     }

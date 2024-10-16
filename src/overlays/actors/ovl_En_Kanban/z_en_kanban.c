@@ -5,8 +5,8 @@
  */
 
 #include "z_en_kanban.h"
-#include "objects/object_kanban/object_kanban.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_kanban/object_kanban.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -17,7 +17,7 @@ void EnKanban_Destroy(Actor* thisx, PlayState* play);
 void EnKanban_Update(Actor* thisx, PlayState* play);
 void EnKanban_Draw(Actor* thisx, PlayState* play);
 
-ActorInit En_Kanban_InitVars = {
+ActorProfile En_Kanban_Profile = {
     /**/ ACTOR_EN_KANBAN,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -246,13 +246,13 @@ void EnKanban_Update(Actor* thisx, PlayState* play) {
                         this->actor.world.pos.y, this->actor.world.pos.z, this->actor.shape.rot.x,
                         this->actor.shape.rot.y, this->actor.shape.rot.z, ENKANBAN_PIECE);
                     if (piece != NULL) {
-                        ColliderInfo* hitItem = this->collider.info.acHitInfo;
+                        ColliderElement* acHitElem = this->collider.elem.acHitElem;
                         s16 yawDiff = this->actor.yawTowardsPlayer - this->actor.shape.rot.y;
                         u8 i;
 
-                        if (hitItem->toucher.dmgFlags & 0x200) {
+                        if (acHitElem->toucher.dmgFlags & 0x200) {
                             this->cutType = sCutTypes[player->meleeWeaponAnimation];
-                        } else if (hitItem->toucher.dmgFlags & 0x10) {
+                        } else if (acHitElem->toucher.dmgFlags & 0x10) {
                             this->invincibilityTimer = 0;
                             this->cutType = this->unk_19A + 3;
                             this->unk_19A = 1 - this->unk_19A;
@@ -264,7 +264,7 @@ void EnKanban_Update(Actor* thisx, PlayState* play) {
                             this->cutType = 0;
                         }
 
-                        if ((ABS_ALT(yawDiff) > 0x4000) && !(hitItem->toucher.dmgFlags & 0x10)) {
+                        if ((ABS_ALT(yawDiff) > 0x4000) && !(acHitElem->toucher.dmgFlags & 0x10)) {
                             if (this->cutType == 4) {
                                 this->cutType = 3;
                             } else if (this->cutType == 1) {
@@ -361,8 +361,8 @@ void EnKanban_Update(Actor* thisx, PlayState* play) {
                         piece->actor.world.rot.y =
                             BINANG_ROT180((s32)Rand_CenteredFloat(0x4000) + this->actor.yawTowardsPlayer);
 
-                        if ((hitItem->toucher.dmgFlags & 0x10) || (hitItem->toucher.dmgFlags & 8) ||
-                            (hitItem->toucher.dmgFlags & 0x80000000)) {
+                        if ((acHitElem->toucher.dmgFlags & 0x10) || (acHitElem->toucher.dmgFlags & 8) ||
+                            (acHitElem->toucher.dmgFlags & 0x80000000)) {
                             piece->actor.velocity.y = Rand_ZeroFloat(3.0f) + 6.0f;
                             piece->actor.speed = Rand_ZeroFloat(4.0f) + 6.0f;
                         } else {
@@ -918,7 +918,7 @@ static f32 sCutAngles[] = {
     /*            */ 0.00f * M_PIf,
 };
 
-#include "overlays/ovl_En_Kanban/ovl_En_Kanban.c"
+#include "assets/overlays/ovl_En_Kanban/ovl_En_Kanban.c"
 
 void EnKanban_Draw(Actor* thisx, PlayState* play) {
     EnKanban* this = THIS;

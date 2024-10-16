@@ -1,5 +1,5 @@
 #include "z_bg_lotus.h"
-#include "objects/object_lotus/object_lotus.h"
+#include "assets/objects/object_lotus/object_lotus.h"
 
 #define FLAGS 0x00000000
 
@@ -14,7 +14,7 @@ void func_80AD68DC(BgLotus* this, PlayState* play);
 void func_80AD6A88(BgLotus* this, PlayState* play);
 void func_80AD6B68(BgLotus* this, PlayState* play);
 
-ActorInit Bg_Lotus_InitVars = {
+ActorProfile Bg_Lotus_Profile = {
     /**/ ACTOR_BG_LOTUS,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,

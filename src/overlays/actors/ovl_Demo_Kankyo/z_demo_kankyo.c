@@ -5,8 +5,8 @@
  */
 
 #include "z_demo_kankyo.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_bubble/object_bubble.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_bubble/object_bubble.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -22,7 +22,7 @@ void DemoKakyo_MoonSparklesActionFunc(DemoKankyo* this, PlayState* play);
 static u8 sLostWoodsSparklesMutex = false; // make sure only one can exist at once
 static s16 sLostWoodsSkyFishParticleNum = 0;
 
-ActorInit Demo_Kankyo_InitVars = {
+ActorProfile Demo_Kankyo_Profile = {
     /**/ ACTOR_DEMO_KANKYO,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

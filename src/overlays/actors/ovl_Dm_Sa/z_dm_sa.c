@@ -5,7 +5,7 @@
  */
 
 #include "z_dm_sa.h"
-#include "objects/object_stk/object_stk.h"
+#include "assets/objects/object_stk/object_stk.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -18,7 +18,7 @@ void DmSa_Draw(Actor* thisx, PlayState* play);
 
 void DmSa_DoNothing(DmSa* this, PlayState* play);
 
-ActorInit Dm_Sa_InitVars = {
+ActorProfile Dm_Sa_Profile = {
     /**/ ACTOR_DM_SA,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

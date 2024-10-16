@@ -8,7 +8,7 @@
 
 #include "gfxalloc.h"
 
-#include "objects/object_mag/object_mag.h"
+#include "assets/objects/object_mag/object_mag.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -88,7 +88,7 @@ static s16 sZeldaEffectColorTargetIndex = 0;
 static s16 sTextAlphaTargetIndex = 0;
 static s16 sTextAlphaTimer = 20;
 
-ActorInit En_Mag_InitVars = {
+ActorProfile En_Mag_Profile = {
     /**/ ACTOR_EN_MAG,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,

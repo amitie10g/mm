@@ -5,8 +5,8 @@
  */
 
 #include "z_en_tab.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_tab/object_tab.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_tab/object_tab.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -212,7 +212,7 @@ MsgScript D_80BE1A0C[] = {
     /* 0x0068 0x01 */ MSCRIPT_CMD_DONE(),
 };
 
-ActorInit En_Tab_InitVars = {
+ActorProfile En_Tab_Profile = {
     /**/ ACTOR_EN_TAB,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

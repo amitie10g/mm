@@ -8,7 +8,7 @@
  */
 
 #include "z_eff_ss_sbn.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define rScrollStep regs[0]
 #define rScroll regs[1]
@@ -27,7 +27,7 @@ void EffectSsSbn_Update(PlayState* play, u32 index, EffectSs* this);
 void EffectSsSbn_DrawSliding(PlayState* play, u32 index, EffectSs* this);
 void EffectSsSbn_Draw(PlayState* play, u32 index, EffectSs* this);
 
-EffectSsInit Effect_Ss_Sbn_InitVars = {
+EffectSsProfile Effect_Ss_Sbn_Profile = {
     EFFECT_SS_SBN,
     EffectSsSbn_Init,
 };

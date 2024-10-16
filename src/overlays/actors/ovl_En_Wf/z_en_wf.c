@@ -9,7 +9,7 @@
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "overlays/actors/ovl_Obj_Ice_Poly/z_obj_ice_poly.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_400)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_400)
 
 #define THIS ((EnWf*)thisx)
 
@@ -56,7 +56,7 @@ void func_80993524(EnWf* this);
 void func_8099357C(EnWf* this, PlayState* play);
 s32 func_8099408C(PlayState* play, EnWf* this);
 
-ActorInit En_Wf_InitVars = {
+ActorProfile En_Wf_Profile = {
     /**/ ACTOR_EN_WF,
     /**/ ACTORCAT_PROP,
     /**/ FLAGS,
@@ -322,8 +322,8 @@ void EnWf_Init(Actor* thisx, PlayState* play) {
                            this->morphTable, WOLFOS_NORMAL_LIMB_MAX);
         this->actor.hintId = TATL_HINT_ID_WOLFOS;
         CollisionCheck_SetInfo(&this->actor.colChkInfo, &sDamageTable2, &sColChkInfoInit);
-        this->collider1.elements[0].info.toucher.damage = 8;
-        this->collider1.elements[1].info.toucher.damage = 8;
+        this->collider1.elements[0].base.toucher.damage = 8;
+        this->collider1.elements[1].base.toucher.damage = 8;
         this->actor.colChkInfo.health = 6;
     } else {
         SkelAnime_InitFlex(play, &this->skelAnime, &gWolfosWhiteSkel, &gWolfosWaitAnim, this->jointTable,
@@ -1407,10 +1407,10 @@ void func_8099386C(EnWf* this, PlayState* play) {
         }
 
         if (this->collider2.base.acFlags & AC_HIT) {
-            Actor_SetDropFlag(&this->actor, &this->collider2.info);
+            Actor_SetDropFlag(&this->actor, &this->collider2.elem);
             collider = &this->collider2;
         } else {
-            Actor_SetDropFlag(&this->actor, &this->collider3.info);
+            Actor_SetDropFlag(&this->actor, &this->collider3.elem);
             collider = &this->collider3;
         }
 
@@ -1419,7 +1419,7 @@ void func_8099386C(EnWf* this, PlayState* play) {
         this->collider1.base.atFlags &= ~AT_ON;
 
         if (((this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) ||
-             !(collider->info.acHitInfo->toucher.dmgFlags &
+             !(collider->elem.acHitElem->toucher.dmgFlags &
                (0x80000 | 0x40000 | 0x10000 | 0x8000 | 0x2000 | 0x1000 | 0x80 | 0x20 | 0x10 | 0x2 | 0x1))) &&
             (this->actor.colChkInfo.damageEffect != 0xF)) {
             if (!Actor_ApplyDamage(&this->actor)) {
@@ -1457,8 +1457,8 @@ void func_8099386C(EnWf* this, PlayState* play) {
                     this->drawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
                     this->drawDmgEffScale = 0.75f;
                     this->drawDmgEffAlpha = 4.0f;
-                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, collider->info.bumper.hitPos.x,
-                                collider->info.bumper.hitPos.y, collider->info.bumper.hitPos.z, 0, 0, 0,
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, collider->elem.bumper.hitPos.x,
+                                collider->elem.bumper.hitPos.y, collider->elem.bumper.hitPos.z, 0, 0, 0,
                                 CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                 }
 

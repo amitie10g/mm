@@ -5,7 +5,7 @@
  */
 
 #include "z_en_nb.h"
-#include "objects/object_nb/object_nb.h"
+#include "assets/objects/object_nb/object_nb.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -211,7 +211,7 @@ MsgScript D_80BC15C8[] = {
     /* 0x0007 0x01 */ MSCRIPT_CMD_DONE(),
 };
 
-ActorInit En_Nb_InitVars = {
+ActorProfile En_Nb_Profile = {
     /**/ ACTOR_EN_NB,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

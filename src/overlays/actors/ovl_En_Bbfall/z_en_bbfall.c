@@ -6,9 +6,9 @@
 
 #include "z_en_bbfall.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_200)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_200)
 
 #define THIS ((EnBbfall*)thisx)
 
@@ -36,7 +36,7 @@ typedef enum {
     /*  1 */ BBFALL_BODY_PART_DRAW_STATUS_DEAD
 } EnBbfallBodyPartDrawStatus;
 
-ActorInit En_Bbfall_InitVars = {
+ActorProfile En_Bbfall_Profile = {
     /**/ ACTOR_EN_BBFALL,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,
@@ -234,15 +234,15 @@ void EnBbfall_CheckForWall(EnBbfall* this) {
 }
 
 void EnBbfall_EnableColliders(EnBbfall* this) {
-    this->collider.elements[0].info.toucher.effect = ELEMTYPE_UNK1; // Fire
-    this->collider.elements[1].info.toucherFlags |= TOUCH_ON;
-    this->collider.elements[2].info.toucherFlags |= TOUCH_ON;
+    this->collider.elements[0].base.toucher.effect = ELEMTYPE_UNK1; // Fire
+    this->collider.elements[1].base.toucherFlags |= TOUCH_ON;
+    this->collider.elements[2].base.toucherFlags |= TOUCH_ON;
 }
 
 void EnBbfall_DisableColliders(EnBbfall* this) {
-    this->collider.elements[0].info.toucher.effect = ELEMTYPE_UNK0; // Nothing
-    this->collider.elements[1].info.toucherFlags &= ~TOUCH_ON;
-    this->collider.elements[2].info.toucherFlags &= ~TOUCH_ON;
+    this->collider.elements[0].base.toucher.effect = ELEMTYPE_UNK0; // Nothing
+    this->collider.elements[1].base.toucherFlags &= ~TOUCH_ON;
+    this->collider.elements[2].base.toucherFlags &= ~TOUCH_ON;
 }
 
 void EnBbfall_SetupWaitForPlayer(EnBbfall* this) {
@@ -524,7 +524,7 @@ void EnBbfall_UpdateDamage(EnBbfall* this, PlayState* play) {
         this->collider.base.atFlags &= ~(AT_HIT | AT_BOUNCED);
         this->collider.base.atFlags &= ~AT_ON;
         if ((this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) ||
-            !(this->collider.elements[0].info.acHitInfo->toucher.dmgFlags & 0xDB0B3)) {
+            !(this->collider.elements[0].base.acHitElem->toucher.dmgFlags & 0xDB0B3)) {
             Actor_SetDropFlagJntSph(&this->actor, &this->collider);
             this->flameOpacity = 0;
             this->flameScaleY = 0.0f;
@@ -554,9 +554,9 @@ void EnBbfall_UpdateDamage(EnBbfall* this, PlayState* play) {
                 this->drawDmgEffAlpha = 4.0f;
                 this->drawDmgEffScale = 0.4f;
                 this->drawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
-                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.elements[0].info.bumper.hitPos.x,
-                            this->collider.elements[0].info.bumper.hitPos.y,
-                            this->collider.elements[0].info.bumper.hitPos.z, 0, 0, 0,
+                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.elements[0].base.bumper.hitPos.x,
+                            this->collider.elements[0].base.bumper.hitPos.y,
+                            this->collider.elements[0].base.bumper.hitPos.z, 0, 0, 0,
                             CLEAR_TAG_PARAMS(CLEAR_TAG_SMALL_LIGHT_RAYS));
             }
         }
@@ -613,7 +613,7 @@ void EnBbfall_Update(Actor* thisx, PlayState* play) {
         this->collider.elements[0].dim.worldSphere.radius =
             CLAMP_MIN(this->collider.elements[0].dim.worldSphere.radius, 20);
 
-        Math_Vec3s_ToVec3f(&this->actor.focus.pos, &this->collider.elements->dim.worldSphere.center);
+        Math_Vec3s_ToVec3f(&this->actor.focus.pos, &this->collider.elements[0].dim.worldSphere.center);
 
         if (this->collider.base.atFlags & AT_ON) {
             this->actor.flags |= ACTOR_FLAG_1000000;

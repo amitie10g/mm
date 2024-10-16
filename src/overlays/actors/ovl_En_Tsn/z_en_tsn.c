@@ -6,7 +6,7 @@
 
 #include "z_en_tsn.h"
 #include "z64snap.h"
-#include "objects/object_tsn/object_tsn.h"
+#include "assets/objects/object_tsn/object_tsn.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_2000000)
 
@@ -29,7 +29,7 @@ void func_80AE0D10(EnTsn* this, PlayState* play);
 void func_80AE0D78(EnTsn* this, PlayState* play);
 void func_80AE0F84(Actor* thisx, PlayState* play);
 
-ActorInit En_Tsn_InitVars = {
+ActorProfile En_Tsn_Profile = {
     /**/ ACTOR_EN_TSN,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

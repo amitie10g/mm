@@ -5,7 +5,7 @@
  */
 
 #include "z_obj_skateblock.h"
-#include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
+#include "assets/objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10)
 
@@ -27,7 +27,7 @@ void func_80A2273C(ObjSkateblock* this, PlayState* play);
 void func_80A227A4(ObjSkateblock* this);
 void func_80A227C0(ObjSkateblock* this, PlayState* play);
 
-ActorInit Obj_Skateblock_InitVars = {
+ActorProfile Obj_Skateblock_Profile = {
     /**/ ACTOR_OBJ_SKATEBLOCK,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,

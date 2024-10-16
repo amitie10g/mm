@@ -5,9 +5,9 @@
  */
 
 #include "z_en_clear_tag.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((EnClearTag*)thisx)
 
@@ -31,7 +31,7 @@ void EnClearTag_Draw(Actor* thisx, PlayState* play);
 void EnClearTag_UpdateEffects(EnClearTag* this, PlayState* play);
 void EnClearTag_DrawEffects(Actor* thisx, PlayState* play);
 
-ActorInit En_Clear_Tag_InitVars = {
+ActorProfile En_Clear_Tag_Profile = {
     /**/ ACTOR_EN_CLEAR_TAG,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -108,7 +108,7 @@ static TexturePtr sWaterSplashTextures[] = {
     NULL,
 };
 
-#include "overlays/ovl_En_Clear_Tag/ovl_En_Clear_Tag.c"
+#include "assets/overlays/ovl_En_Clear_Tag/ovl_En_Clear_Tag.c"
 
 /**
  * Creates a debris effect.

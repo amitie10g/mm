@@ -5,10 +5,10 @@
  */
 
 #include "z_en_rat.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "overlays/actors/ovl_En_Bom/z_en_bom.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_200)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_200)
 
 #define THIS ((EnRat*)thisx)
 
@@ -35,7 +35,7 @@ typedef enum {
     /* -1 */ EN_RAT_HOOKED
 } EnRatHookedState;
 
-ActorInit En_Rat_InitVars = {
+ActorProfile En_Rat_Profile = {
     /**/ ACTOR_EN_RAT,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,

@@ -6,9 +6,9 @@
 
 #include "z_en_bat.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
-#include "objects/object_bat/object_bat.h"
+#include "assets/objects/object_bat/object_bat.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_4000)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_IGNORE_QUAKE | ACTOR_FLAG_4000)
 
 #define THIS ((EnBat*)thisx)
 
@@ -29,7 +29,7 @@ void EnBat_DiveAttack(EnBat* this, PlayState* play);
 void EnBat_Die(EnBat* this, PlayState* play);
 void EnBat_Stunned(EnBat* this, PlayState* play);
 
-ActorInit En_Bat_InitVars = {
+ActorProfile En_Bat_Profile = {
     /**/ ACTOR_EN_BAT,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,

@@ -6,7 +6,7 @@
 
 #include "z_en_pm.h"
 #include "overlays/actors/ovl_En_Door/z_en_door.h"
-#include "objects/object_mm/object_mm.h"
+#include "assets/objects/object_mm/object_mm.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -293,7 +293,7 @@ static MsgScript D_80AFB764[] = {
     /* 0x000B 0x01 */ MSCRIPT_CMD_DONE(),
 };
 
-ActorInit En_Pm_InitVars = {
+ActorProfile En_Pm_Profile = {
     /**/ ACTOR_EN_PM,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

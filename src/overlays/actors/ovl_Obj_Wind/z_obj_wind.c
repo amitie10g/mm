@@ -5,7 +5,7 @@
  */
 
 #include "z_obj_wind.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10)
 
@@ -16,7 +16,7 @@ void ObjWind_Destroy(Actor* thisx, PlayState* play);
 void ObjWind_Update(Actor* thisx, PlayState* play);
 void ObjWind_Draw(Actor* thisx, PlayState* play);
 
-ActorInit Obj_Wind_InitVars = {
+ActorProfile Obj_Wind_Profile = {
     /**/ ACTOR_OBJ_WIND,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

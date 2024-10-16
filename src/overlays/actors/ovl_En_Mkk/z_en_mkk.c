@@ -5,9 +5,9 @@
  */
 
 #include "z_en_mkk.h"
-#include "objects/object_mkk/object_mkk.h"
+#include "assets/objects/object_mkk/object_mkk.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE)
 
 #define THIS ((EnMkk*)thisx)
 
@@ -35,7 +35,7 @@ void func_80A4E67C(EnMkk* this);
 void func_80A4E84C(EnMkk* this);
 void func_80A4EBBC(EnMkk* this, PlayState* play);
 
-ActorInit En_Mkk_InitVars = {
+ActorProfile En_Mkk_Profile = {
     /**/ ACTOR_EN_MKK,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,

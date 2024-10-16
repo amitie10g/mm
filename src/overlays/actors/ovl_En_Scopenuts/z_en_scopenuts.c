@@ -5,7 +5,7 @@
  */
 
 #include "z_en_scopenuts.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -32,7 +32,7 @@ void func_80BCC288(EnScopenuts* this, PlayState* play);
 s32 EnScopenuts_HasReachedPoint(EnScopenuts* this, Path* path, s32 pointIndex);
 f32 func_80BCC448(Path* path, s32 arg1, Vec3f* arg2, Vec3s* arg3);
 
-ActorInit En_Scopenuts_InitVars = {
+ActorProfile En_Scopenuts_Profile = {
     /**/ ACTOR_EN_SCOPENUTS,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

@@ -54,10 +54,10 @@
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
 #include "overlays/actors/ovl_En_Water_Effect/z_en_water_effect.h"
 #include "overlays/actors/ovl_Item_B_Heart/z_item_b_heart.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_water_effect/object_water_effect.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_water_effect/object_water_effect.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((Boss03*)thisx)
 
@@ -220,14 +220,14 @@ void Boss03_SpawnEffectBubble(PlayState* play, Vec3f* pos) {
 /* End of SpawnEffect section */
 
 void Boss03_UpdateSphereElement(s32 index, ColliderJntSph* collider, Vec3f* sphereCenter) {
-    ColliderJntSphElement* sphElement;
+    ColliderJntSphElement* jntSphElem;
 
     collider->elements[index].dim.worldSphere.center.x = sphereCenter->x;
     collider->elements[index].dim.worldSphere.center.y = sphereCenter->y;
     collider->elements[index].dim.worldSphere.center.z = sphereCenter->z;
 
-    sphElement = &collider->elements[index];
-    sphElement->dim.worldSphere.radius = sphElement->dim.scale * sphElement->dim.modelSphere.radius;
+    jntSphElem = &collider->elements[index];
+    jntSphElem->dim.worldSphere.radius = jntSphElem->dim.scale * jntSphElem->dim.modelSphere.radius;
 }
 
 /* Start of RNG section */
@@ -276,7 +276,7 @@ Actor* Boss03_FindActorDblueMovebg(PlayState* play) {
 
 /* Start of Gyorg's Init and actionFuncs section */
 
-ActorInit Boss_03_InitVars = {
+ActorProfile Boss_03_Profile = {
     /**/ ACTOR_BOSS_03,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -1828,7 +1828,7 @@ void Boss03_Damaged(Boss03* this, PlayState* play) {
 /* End of ActionFuncs section */
 
 void Boss03_UpdateCollision(Boss03* this, PlayState* play) {
-    ColliderInfo* hitbox;
+    ColliderElement* acHitElem;
     u8 sp4B = true;
     Player* player = GET_PLAYER(play);
     s32 i;
@@ -1843,16 +1843,16 @@ void Boss03_UpdateCollision(Boss03* this, PlayState* play) {
 
     if (this->waterHeight < player->actor.world.pos.y) {
         for (i = 0; i < ARRAY_COUNT(sHeadJntSphElementsInit); i++) {
-            if (this->headCollider.elements[i].info.toucherFlags & TOUCH_HIT) {
-                this->headCollider.elements[i].info.toucherFlags &= ~TOUCH_HIT;
+            if (this->headCollider.elements[i].base.toucherFlags & TOUCH_HIT) {
+                this->headCollider.elements[i].base.toucherFlags &= ~TOUCH_HIT;
                 player->pushedYaw = this->actor.shape.rot.y;
                 player->pushedSpeed = 20.0f;
             }
         }
 
         for (i = 0; i < ARRAY_COUNT(sBodyJntSphElementsInit); i++) {
-            if (this->bodyCollider.elements[i].info.toucherFlags & TOUCH_HIT) {
-                this->bodyCollider.elements[i].info.toucherFlags &= ~TOUCH_HIT;
+            if (this->bodyCollider.elements[i].base.toucherFlags & TOUCH_HIT) {
+                this->bodyCollider.elements[i].base.toucherFlags &= ~TOUCH_HIT;
                 player->pushedYaw = this->actor.shape.rot.y;
                 player->pushedSpeed = 20.0f;
             }
@@ -1862,16 +1862,16 @@ void Boss03_UpdateCollision(Boss03* this, PlayState* play) {
     if (this->unk_25C == 0) {
         if ((this->actionFunc == stunnedActionFunc) && sp4B) {
             for (i = 0; i < ARRAY_COUNT(sBodyJntSphElementsInit); i++) {
-                if (this->bodyCollider.elements[i].info.bumperFlags & BUMP_HIT) {
-                    hitbox = this->bodyCollider.elements[i].info.acHitInfo;
-                    this->bodyCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+                if (this->bodyCollider.elements[i].base.bumperFlags & BUMP_HIT) {
+                    acHitElem = this->bodyCollider.elements[i].base.acHitElem;
+                    this->bodyCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
                     this->unk_25C = 15;
                     this->unk_25E = 15;
 
                     // (DMG_SWORD_BEAM | DMG_SPIN_ATTACK | DMG_ZORA_PUNCH | DMG_ZORA_BARRIER | DMG_DEKU_LAUNCH |
                     // DMG_DEKU_SPIN | DMG_GORON_SPIKES | DMG_SWORD | DMG_GORON_PUNCH | DMG_DEKU_STICK)
-                    phi_v0 = (hitbox->toucher.dmgFlags & 0x038AC302)
-                                 ? this->bodyCollider.elements[i].info.acHitInfo->toucher.damage
+                    phi_v0 = (acHitElem->toucher.dmgFlags & 0x038AC302)
+                                 ? this->bodyCollider.elements[i].base.acHitElem->toucher.damage
                                  : 0;
 
                     phi_v1 = phi_v0;
@@ -1895,9 +1895,9 @@ void Boss03_UpdateCollision(Boss03* this, PlayState* play) {
         }
 
         for (i = 0; i < ARRAY_COUNT(sHeadJntSphElementsInit); i++) {
-            if (this->headCollider.elements[i].info.bumperFlags & BUMP_HIT) {
-                hitbox = this->headCollider.elements[i].info.acHitInfo;
-                this->headCollider.elements[i].info.bumperFlags &= ~BUMP_HIT;
+            if (this->headCollider.elements[i].base.bumperFlags & BUMP_HIT) {
+                acHitElem = this->headCollider.elements[i].base.acHitElem;
+                this->headCollider.elements[i].base.bumperFlags &= ~BUMP_HIT;
                 this->unk_25C = 15;
 
                 if (this->actionFunc != stunnedActionFunc) {
@@ -1919,8 +1919,8 @@ void Boss03_UpdateCollision(Boss03* this, PlayState* play) {
 
                     // (DMG_SWORD_BEAM | DMG_SPIN_ATTACK | DMG_ZORA_PUNCH | DMG_ZORA_BARRIER | DMG_DEKU_LAUNCH |
                     // DMG_DEKU_SPIN | DMG_GORON_SPIKES | DMG_SWORD | DMG_GORON_PUNCH | DMG_DEKU_STICK)
-                    phi_v0 = (hitbox->toucher.dmgFlags & 0x038AC302)
-                                 ? (this->headCollider.elements[i].info.acHitInfo->toucher.damage)
+                    phi_v0 = (acHitElem->toucher.dmgFlags & 0x038AC302)
+                                 ? (this->headCollider.elements[i].base.acHitElem->toucher.damage)
                                  : 0;
 
                     phi_v1 = phi_v0;

@@ -13,7 +13,7 @@
  */
 
 #include "z_en_bba_01.h"
-#include "objects/object_bba/object_bba.h"
+#include "assets/objects/object_bba/object_bba.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -28,7 +28,7 @@ void EnBba01_Walk(EnHy* this, PlayState* play);
 void EnBba01_FaceFoward(EnHy* this, PlayState* play);
 void EnBba01_Talk(EnHy* this, PlayState* play);
 
-ActorInit En_Bba_01_InitVars = {
+ActorProfile En_Bba_01_Profile = {
     /**/ ACTOR_EN_BBA_01,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

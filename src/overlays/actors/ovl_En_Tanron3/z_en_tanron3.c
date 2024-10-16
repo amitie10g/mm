@@ -6,9 +6,9 @@
 
 #include "z_en_tanron3.h"
 #include "overlays/actors/ovl_Boss_03/z_boss_03.h"
-#include "objects/object_boss03/object_boss03.h"
+#include "assets/objects/object_boss03/object_boss03.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((EnTanron3*)thisx)
 
@@ -31,7 +31,7 @@ static Vec3f sZeroVec[] = { 0.0f, 0.0f, 0.0f };
 
 static Boss03* sGyorg = NULL;
 
-ActorInit En_Tanron3_InitVars = {
+ActorProfile En_Tanron3_Profile = {
     /**/ ACTOR_EN_TANRON3,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,

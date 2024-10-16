@@ -10,9 +10,9 @@
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
 #include "overlays/actors/ovl_En_Tanron5/z_en_tanron5.h"
 #include "overlays/actors/ovl_Item_B_Heart/z_item_b_heart.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((Boss02*)thisx)
 
@@ -143,7 +143,7 @@ static DamageTable sRedTwinmoldDamageTable = {
     /* Powder Keg     */ DMG_ENTRY(1, 0xF),
 };
 
-ActorInit Boss_02_InitVars = {
+ActorProfile Boss_02_Profile = {
     /**/ ACTOR_BOSS_02,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -1107,8 +1107,8 @@ void func_809DBFB4(Boss02* this, PlayState* play) {
         }
 
         for (i = temp; i < ARRAY_COUNT(this->colliderSphere2Elements); i++) {
-            if (this->colliderSphere2.elements[i].info.bumperFlags & BUMP_HIT) {
-                this->colliderSphere2.elements[i].info.bumperFlags &= ~BUMP_HIT;
+            if (this->colliderSphere2.elements[i].base.bumperFlags & BUMP_HIT) {
+                this->colliderSphere2.elements[i].base.bumperFlags &= ~BUMP_HIT;
                 this->unk_0154 = 15;
                 this->unk_0156 = 15;
 

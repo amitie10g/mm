@@ -7,7 +7,7 @@
 #include "z_en_fishing.h"
 #include "z64rumble.h"
 #include "z64shrink_window.h"
-#include "objects/object_fish/object_fish.h"
+#include "assets/objects/object_fish/object_fish.h"
 #include "overlays/actors/ovl_En_Kanban/z_en_kanban.h"
 
 #define FLAGS (ACTOR_FLAG_10)
@@ -201,7 +201,7 @@ s16 D_80917272;
 u8 D_80917274;
 Vec3f D_80917278;
 
-ActorInit En_Fishing_InitVars = {
+ActorProfile En_Fishing_Profile = {
     /**/ ACTOR_EN_FISHING,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

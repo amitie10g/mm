@@ -7,10 +7,10 @@
 #include "z_en_test6.h"
 
 #include "z64cutscene_commands.h"
-#include "z64malloc.h"
+#include "zelda_arena.h"
 #include "z64quake.h"
 
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_200000 | ACTOR_FLAG_2000000)
 
@@ -54,7 +54,7 @@ void EnTest6_SharedSoTCutscene(EnTest6* this, PlayState* play);
 
 SoTCsAmmoDrops sSoTCsAmmoDrops[12];
 
-ActorInit En_Test6_InitVars = {
+ActorProfile En_Test6_Profile = {
     /**/ ACTOR_EN_TEST6,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -776,7 +776,7 @@ void EnTest6_DoubleSoTCutscene(EnTest6* this, PlayState* play) {
         play->unk_18844 = false;
     }
 
-    Actor_PlaySfx_FlaggedCentered1(&player->actor, NA_SE_PL_FLYING_AIR - SFX_FLAG);
+    Actor_PlaySfx_Flagged2(&player->actor, NA_SE_PL_FLYING_AIR - SFX_FLAG);
 
     switch (this->timer) {
         case 119:

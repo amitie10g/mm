@@ -5,7 +5,7 @@
  */
 #include "prevent_bss_reordering.h"
 #include "z_en_rg.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_80000000)
 
@@ -20,7 +20,7 @@ void func_80BF4FC4(EnRg* this, PlayState* play);
 
 s32 D_80BF5C10;
 
-ActorInit En_Rg_InitVars = {
+ActorProfile En_Rg_Profile = {
     /**/ ACTOR_EN_RG,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

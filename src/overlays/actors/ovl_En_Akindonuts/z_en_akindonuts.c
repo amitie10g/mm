@@ -5,7 +5,7 @@
  */
 
 #include "z_en_akindonuts.h"
-#include "objects/object_dnt/object_dnt.h"
+#include "assets/objects/object_dnt/object_dnt.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -31,7 +31,7 @@ void func_80BEF9F0(EnAkindonuts* this, PlayState* play);
 void func_80BEFAF0(EnAkindonuts* this, PlayState* play);
 void func_80BEFD74(EnAkindonuts* this, PlayState* play);
 
-ActorInit En_Akindonuts_InitVars = {
+ActorProfile En_Akindonuts_Profile = {
     /**/ ACTOR_EN_AKINDONUTS,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

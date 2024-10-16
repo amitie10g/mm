@@ -5,7 +5,7 @@
  */
 
 #include "z_demo_syoten.h"
-#include "objects/object_syoten/object_syoten.h"
+#include "assets/objects/object_syoten/object_syoten.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
@@ -25,7 +25,7 @@ void func_80C17008(DemoSyoten* this, PlayState* play);
 void func_80C173B4(Actor* thisx, PlayState* play);
 void func_80C17690(Actor* thisx, PlayState* play);
 
-ActorInit Demo_Syoten_InitVars = {
+ActorProfile Demo_Syoten_Profile = {
     /**/ ACTOR_DEMO_SYOTEN,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

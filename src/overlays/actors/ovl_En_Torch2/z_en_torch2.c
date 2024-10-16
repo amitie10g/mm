@@ -5,7 +5,7 @@
  */
 
 #include "z_en_torch2.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_10)
 
@@ -19,7 +19,7 @@ void EnTorch2_Draw(Actor* thisx, PlayState* play2);
 void EnTorch2_UpdateIdle(Actor* thisx, PlayState* play);
 void EnTorch2_UpdateDeath(Actor* thisx, PlayState* play);
 
-ActorInit En_Torch2_InitVars = {
+ActorProfile En_Torch2_Profile = {
     /**/ ACTOR_EN_TORCH2,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,

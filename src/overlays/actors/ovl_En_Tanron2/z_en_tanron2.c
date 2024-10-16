@@ -7,10 +7,10 @@
 #include "prevent_bss_reordering.h"
 #include "z_en_tanron2.h"
 #include "overlays/actors/ovl_Boss_04/z_boss_04.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
-#include "objects/object_boss04/object_boss04.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/object_boss04/object_boss04.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((EnTanron2*)thisx)
 
@@ -31,7 +31,7 @@ Boss04* D_80BB8450;
 f32 D_80BB8454;
 EnTanron2* D_80BB8458[82];
 
-ActorInit En_Tanron2_InitVars = {
+ActorProfile En_Tanron2_Profile = {
     /**/ ACTOR_EN_TANRON2,
     /**/ ACTORCAT_BOSS,
     /**/ FLAGS,
@@ -415,7 +415,7 @@ void func_80BB7408(EnTanron2* this, PlayState* play) {
 }
 
 void func_80BB7578(EnTanron2* this, PlayState* play) {
-    ColliderInfo* acHitInfo;
+    ColliderElement* acHitElem;
     s32 pad;
     Player* player = GET_PLAYER(play);
     s32 pad2[2];
@@ -424,21 +424,21 @@ void func_80BB7578(EnTanron2* this, PlayState* play) {
     if (this->unk_154 == 0) {
         if (this->collider1.base.acFlags & AC_HIT) {
             this->collider1.base.acFlags &= ~AC_HIT;
-            acHitInfo = this->collider1.info.acHitInfo;
-            if (acHitInfo->toucher.dmgFlags & 0x80) {
+            acHitElem = this->collider1.elem.acHitElem;
+            if (acHitElem->toucher.dmgFlags & 0x80) {
                 func_80BB6B80(this);
                 this->unk_158 = 1;
                 Actor_PlaySfx(&this->actor, NA_SE_EN_IKURA_DAMAGE);
-                if ((player->lockOnActor != NULL) && (&this->actor != player->lockOnActor)) {
-                    player->lockOnActor = &this->actor;
+                if ((player->focusActor != NULL) && (&this->actor != player->focusActor)) {
+                    player->focusActor = &this->actor;
                     play->actorCtx.targetCtx.fairyActor = &this->actor;
-                    play->actorCtx.targetCtx.lockOnActor = &this->actor;
+                    play->actorCtx.targetCtx.reticleActor = &this->actor;
                 }
             } else {
                 this->unk_154 = 15;
                 if (this->actionFunc != func_80BB69FC) {
                     Matrix_RotateYS(this->actor.yawTowardsPlayer, MTXMODE_NEW);
-                    if ((acHitInfo->toucher.dmgFlags & 0x300000) != 0) {
+                    if ((acHitElem->toucher.dmgFlags & 0x300000) != 0) {
                         this->unk_154 = 10;
                         Matrix_MultVecZ(-10.0f, &this->actor.velocity);
                     } else {

@@ -5,7 +5,7 @@
  */
 
 #include "z_bg_dblue_movebg.h"
-#include "objects/object_dblue_object/object_dblue_object.h"
+#include "assets/objects/object_dblue_object/object_dblue_object.h"
 #include "overlays/actors/ovl_Obj_Hunsui/z_obj_hunsui.h"
 
 #define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
@@ -44,7 +44,7 @@ u8 D_80A2B870[][2] = {
     { 0x03, 0x03 }, { 0x03, 0x05 }, { 0x03, 0x01 }, { 0x03, 0x06 }, { 0x03, 0x02 }, { 0x03, 0x04 }, { 0x03, 0x00 },
 };
 
-ActorInit Bg_Dblue_Movebg_InitVars = {
+ActorProfile Bg_Dblue_Movebg_Profile = {
     /**/ ACTOR_BG_DBLUE_MOVEBG,
     /**/ ACTORCAT_BG,
     /**/ FLAGS,

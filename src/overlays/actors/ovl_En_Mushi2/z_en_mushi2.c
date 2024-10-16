@@ -31,7 +31,7 @@ void func_80A6AE7C(EnMushi2* this, PlayState* play);
 void func_80A6B078(EnMushi2* this);
 void func_80A6B0D8(EnMushi2* this, PlayState* play);
 
-ActorInit En_Mushi2_InitVars = {
+ActorProfile En_Mushi2_Profile = {
     /**/ ACTOR_EN_MUSHI2,
     /**/ ACTORCAT_ITEMACTION,
     /**/ FLAGS,
@@ -1217,11 +1217,11 @@ void EnMushi2_Update(Actor* thisx, PlayState* play) {
                 }
 
                 if (phi_v0) {
-                    ColliderJntSphElement* element = &this->collider.elements[0];
+                    ColliderJntSphElement* jntSphElem = &this->collider.elements[0];
 
-                    element->dim.worldSphere.center.x = this->actor.world.pos.x;
-                    element->dim.worldSphere.center.y = this->actor.world.pos.y;
-                    element->dim.worldSphere.center.z = this->actor.world.pos.z;
+                    jntSphElem->dim.worldSphere.center.x = this->actor.world.pos.x;
+                    jntSphElem->dim.worldSphere.center.y = this->actor.world.pos.y;
+                    jntSphElem->dim.worldSphere.center.z = this->actor.world.pos.z;
                     CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
                 }
             }

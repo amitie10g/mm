@@ -6,7 +6,7 @@
 
 #include "z_en_tanron1.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_UNFRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
 
 #define THIS ((EnTanron1*)thisx)
 
@@ -18,7 +18,7 @@ void EnTanron1_Draw(Actor* thisx, PlayState* play);
 void func_80BB5318(EnTanron1* this, PlayState* play);
 void func_80BB5AAC(EnTanron1* this, PlayState* play);
 
-ActorInit En_Tanron1_InitVars = {
+ActorProfile En_Tanron1_Profile = {
     /**/ ACTOR_EN_TANRON1,
     /**/ ACTORCAT_ENEMY,
     /**/ FLAGS,
@@ -32,7 +32,7 @@ ActorInit En_Tanron1_InitVars = {
 
 static s32 sPad = 0;
 
-#include "overlays/ovl_En_Tanron1/ovl_En_Tanron1.c"
+#include "assets/overlays/ovl_En_Tanron1/ovl_En_Tanron1.c"
 
 void EnTanron1_Init(Actor* thisx, PlayState* play) {
     EnTanron1* this = THIS;

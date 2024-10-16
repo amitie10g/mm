@@ -5,7 +5,7 @@
  */
 
 #include "z_en_ossan.h"
-#include "objects/gameplay_keep/gameplay_keep.h"
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 #define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
 
@@ -57,7 +57,7 @@ typedef enum EnOssanCutsceneState {
     /* 2 */ ENOSSAN_CUTSCENESTATE_PLAYING
 } EnOssanCutsceneState;
 
-ActorInit En_Ossan_InitVars = {
+ActorProfile En_Ossan_Profile = {
     /**/ ACTOR_EN_OSSAN,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,

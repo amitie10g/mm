@@ -32,7 +32,7 @@ void EnAob01_AfterRace_AskToPlayAgain(EnAob01* this, PlayState* play);
 void EnAob01_AfterRace_Talk(EnAob01* this, PlayState* play);
 s32 EnAob01_PlayerIsHoldingDog(EnAob01* this, PlayState* play);
 
-ActorInit En_Aob_01_InitVars = {
+ActorProfile En_Aob_01_Profile = {
     /**/ ACTOR_EN_AOB_01,
     /**/ ACTORCAT_NPC,
     /**/ FLAGS,
@@ -636,7 +636,7 @@ void EnAob01_BeforeRace_Talk(EnAob01* this, PlayState* play) {
     if (this->stateFlags & ENAOB01_FLAG_TALKING_TO_PLAYER_HOLDING_DOG) {
         if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
             this->actor.flags &= ~ACTOR_FLAG_10000;
-            func_80123E90(play, &this->actor);
+            Player_SetAutoLockOnActor(play, &this->actor);
             if (this->stateFlags & ENAOB01_FLAG_PLAYER_TOLD_TO_PICK_A_DOG) {
                 EnAob01_BeforeRace_HandleConversation(this, play);
                 this->stateFlags &= ~ENAOB01_FLAG_PLAYER_TOLD_TO_PICK_A_DOG;
@@ -846,7 +846,7 @@ void EnAob01_Race_StartCutscene(EnAob01* this, PlayState* play) {
 void EnAob01_AfterRace_GiveRaceResult(EnAob01* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         this->actor.flags &= ~ACTOR_FLAG_10000;
-        func_80123E90(play, &this->actor);
+        Player_SetAutoLockOnActor(play, &this->actor);
         this->rupeesBet = gSaveContext.unk_3F5C;
         switch (GET_EVENTINF_DOG_RACE_RACE_STANDING) {
             case 1:
