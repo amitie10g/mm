@@ -5,11 +5,10 @@
  */
 
 #include "z_en_gm.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Door/z_en_door.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
-
-#define THIS ((EnGm*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnGm_Init(Actor* thisx, PlayState* play);
 void EnGm_Destroy(Actor* thisx, PlayState* play);
@@ -268,7 +267,7 @@ ActorProfile En_Gm_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -276,11 +275,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 14, 62, 0, { 0, 0, 0 } },
@@ -288,7 +287,7 @@ static ColliderCylinderInit sCylinderInit = {
 
 static ColliderSphereInit sSphereInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -296,11 +295,11 @@ static ColliderSphereInit sSphereInit = {
         COLSHAPE_SPHERE,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 0, { { 0, 0, 0 }, 20 }, 100 },
@@ -419,7 +418,7 @@ s32 EnGm_UpdateSkelAnime(EnGm* this, PlayState* play) {
 }
 
 s32 EnGm_ChangeAnim(EnGm* this, PlayState* play, s32 animIndex) {
-    s8 tmp = this->objectSlot;
+    s8 objectSlot = this->objectSlot;
     s32 changeAnim = false;
     s32 didAnimChange = false;
 
@@ -432,7 +431,7 @@ s32 EnGm_ChangeAnim(EnGm* this, PlayState* play, s32 animIndex) {
     }
 
     if (changeAnim) {
-        if (tmp >= 0) {
+        if (objectSlot > OBJECT_SLOT_NONE) {
             this->animIndex = animIndex;
             didAnimChange = SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, animIndex);
             this->animPlaySpeed = this->skelAnime.playSpeed;
@@ -569,7 +568,7 @@ s16 func_8094E4D0(EnGm* this, s32 numCutscenes) {
 }
 
 s32 func_8094E52C(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s16 csId = func_8094E4D0(this, 0);
     s32 ret = false;
 
@@ -578,7 +577,7 @@ s32 func_8094E52C(Actor* thisx, PlayState* play) {
             if (!func_8094E454(this, csId)) {
                 break;
             }
-
+            FALLTHROUGH;
         case 2:
             if (!CHECK_WEEKEVENTREG(WEEKEVENTREG_86_40) && (this->unk_3E0 == 2)) {
                 CutsceneManager_Stop(csId);
@@ -701,7 +700,7 @@ s32 func_8094E69C(Actor* thisx, PlayState* play) {
 }
 
 s32 func_8094EA34(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s32 pad;
     Actor* al;
     Actor* toto;
@@ -752,7 +751,7 @@ s32 func_8094EA34(Actor* thisx, PlayState* play) {
 }
 
 s32 func_8094EB1C(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s32 pad;
     s32 ret = false;
     s16 oldYaw;
@@ -768,7 +767,7 @@ s32 func_8094EB1C(Actor* thisx, PlayState* play) {
             EnGm_ChangeAnim(this, play, ENGM_ANIM_2);
             this->unk_3E2 = 0;
             this->unk_3E0++;
-
+            FALLTHROUGH;
         case 1:
             oldYaw = this->actor.yawTowardsPlayer;
             this->unk_3E2++;
@@ -787,7 +786,7 @@ s32 func_8094EB1C(Actor* thisx, PlayState* play) {
             Actor_PlaySfx(&this->actor, NA_SE_EV_CHAIR_ROLL);
             this->unk_3E2 = 0;
             this->unk_3E0++;
-
+            FALLTHROUGH;
         case 3:
             oldYaw = this->actor.world.rot.y;
             this->unk_3E2++;
@@ -1018,7 +1017,7 @@ s32 func_8094F53C(EnGm* this, PlayState* play) {
     Actor* al = EnGm_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_AL);
     Actor* toto = EnGm_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_TOTO);
 
-    if (player->stateFlags1 & (PLAYER_STATE1_40 | PLAYER_STATE1_400)) {
+    if (player->stateFlags1 & (PLAYER_STATE1_TALKING | PLAYER_STATE1_400)) {
         this->unk_3A4 |= 0x400;
         if (this->unk_3A6 != sp32) {
             switch (sp32) {
@@ -1165,7 +1164,7 @@ s32 func_8094F904(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
 
             this->unk_3B8 = scheduleOutput->time1 - scheduleOutput->time0;
             this->unk_3BA = sp56 - scheduleOutput->time0;
-            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+            this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
             this->unk_3A4 |= 0x100;
             this->unk_3A4 |= 0x200;
             EnGm_ChangeAnim(this, play, ENGM_ANIM_7);
@@ -1234,7 +1233,7 @@ s32 func_8094FCC4(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
             EnGm_ChangeAnim(this, play, ENGM_ANIM_0);
         } else {
             EnGm_ChangeAnim(this, play, ENGM_ANIM_9);
-            this->skelAnime.moveFlags = ANIM_FLAG_NOMOVE;
+            this->skelAnime.movementFlags = ANIM_FLAG_NOMOVE;
         }
         this->unk_3A4 |= 0x100;
         this->unk_3A4 |= 0x200;
@@ -1310,7 +1309,7 @@ s32 func_8094FF04(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
         } else {
             Math_Vec3f_Copy(&this->actor.world.pos, &sp30);
             EnGm_ChangeAnim(this, play, ENGM_ANIM_9);
-            this->skelAnime.moveFlags = ANIM_FLAG_NOMOVE;
+            this->skelAnime.movementFlags = ANIM_FLAG_NOMOVE;
         }
         this->unk_400 = 0;
         this->unk_3A4 |= 0x100;
@@ -1358,14 +1357,14 @@ s32 func_809501B8(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
     Math_Vec3f_Copy(&this->actor.world.pos, &D_80951DD0);
     Math_Vec3s_Copy(&this->actor.world.rot, &D_80951DDC);
     Math_Vec3s_Copy(&this->actor.shape.rot, &this->actor.world.rot);
-    this->actor.targetMode = TARGET_MODE_6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     SubS_SetOfferMode(&this->unk_3A4, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
     this->unk_3A4 |= (0x1000 | 0x100);
     this->unk_3A4 |= 0x200;
     this->unk_3C8 = 3;
     this->unk_3CA = 3;
     this->unk_3CC = 8;
-    this->actor.targetMode = TARGET_MODE_6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     this->unk_3B4 = 60.0f;
     EnGm_ChangeAnim(this, play, ENGM_ANIM_10);
     return true;
@@ -1374,8 +1373,8 @@ s32 func_809501B8(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
 s32 func_80950280(EnGm* this, PlayState* play, ScheduleOutput* scheduleOutput) {
     s32 phi_v1;
 
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     this->unk_3A4 = 0;
     this->unk_3C8 = 0;
     this->unk_3CA = 0;
@@ -1469,7 +1468,7 @@ s32 func_809503F8(EnGm* this, PlayState* play) {
             SubS_SetOfferMode(&this->unk_3A4, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
             EnGm_ChangeAnim(this, play, ENGM_ANIM_0);
         } else {
-            AnimTaskQueue_AddActorMove(play, &this->actor, &this->skelAnime, 1.0f);
+            AnimTaskQueue_AddActorMovement(play, &this->actor, &this->skelAnime, 1.0f);
         }
     }
     return false;
@@ -1506,7 +1505,7 @@ s32 func_80950490(EnGm* this, PlayState* play) {
                 EnGm_ChangeAnim(this, play, ENGM_ANIM_0);
                 func_8094E278(play);
             } else {
-                AnimTaskQueue_AddActorMove(play, &this->actor, &this->skelAnime, 1.0f);
+                AnimTaskQueue_AddActorMovement(play, &this->actor, &this->skelAnime, 1.0f);
             }
             break;
 
@@ -1542,7 +1541,7 @@ s32 func_80950690(EnGm* this, PlayState* play) {
             al = EnGm_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_AL);
             toto = EnGm_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_TOTO);
             if ((al != NULL) && (al->update != NULL) && (toto != NULL) && (toto->update != NULL) &&
-                !(player->stateFlags1 & PLAYER_STATE1_40)) {
+                !(player->stateFlags1 & PLAYER_STATE1_TALKING)) {
                 if (DECR(this->unk_3B8) == 0) {
                     if (al == this->unk_268) {
                         this->unk_268 = toto;
@@ -1721,11 +1720,11 @@ void func_80950CDC(EnGm* this, PlayState* play) {
     if (!Schedule_RunScript(play, D_80951820, &scheduleOutput) ||
         ((this->scheduleResult != scheduleOutput.result) && !func_80950280(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = 0;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
     this->scheduleResult = scheduleOutput.result;
     this->unk_268 = func_8094F074(this, play);
@@ -1796,7 +1795,7 @@ void func_80950F2C(EnGm* this, PlayState* play) {
 }
 
 void EnGm_Init(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
 
     if (EnGm_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_GM)) {
         Actor_Kill(&this->actor);
@@ -1821,14 +1820,14 @@ void EnGm_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnGm_Destroy(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
 
     Collider_DestroyCylinder(play, &this->colliderCylinder);
     Collider_DestroySphere(play, &this->colliderSphere);
 }
 
 void EnGm_Update(Actor* thisx, PlayState* play) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
 
     if (!func_8094E0F8(this, play)) {
         if (!func_8094EE84(this, play) && func_8094EFC4(this, play)) {
@@ -1858,7 +1857,7 @@ void EnGm_Update(Actor* thisx, PlayState* play) {
 
 s32 EnGm_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
     s32 pad;
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s32 fidgetIndex;
 
     if (limbIndex == OBJECT_IN2_LIMB_10) {
@@ -1893,7 +1892,7 @@ s32 EnGm_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 
 void EnGm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
     static Vec3f D_80951E24 = { 1400.0f, 0.0f, 0.0f };
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s32 pad[4];
     Vec3f sp30;
     s32 pad2;
@@ -1918,7 +1917,7 @@ void EnGm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void EnGm_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
     s32 overrideRot = true;
     s32 stepRot = false;
 
@@ -1963,7 +1962,7 @@ void EnGm_Draw(Actor* thisx, PlayState* play) {
         object_in2_Tex_0054A8, object_in2_Tex_005028, object_in2_Tex_006828,
         object_in2_Tex_005028, object_in2_Tex_005CE8, object_in2_Tex_006C68,
     };
-    EnGm* this = THIS;
+    EnGm* this = (EnGm*)thisx;
 
     if ((this->scheduleResult != 0) && (this->objectSlot > OBJECT_SLOT_NONE)) {
         OPEN_DISPS(play->state.gfxCtx);

@@ -6,9 +6,7 @@
 
 #include "z_mir_ray2.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((MirRay2*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void MirRay2_Init(Actor* thisx, PlayState* play);
 void MirRay2_Destroy(Actor* thisx, PlayState* play);
@@ -30,11 +28,11 @@ ActorProfile Mir_Ray2_Profile = {
 static ColliderJntSphElementInit sJntSphElementsInit[1] = {
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00200000, 0x00, 0x00 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 0, { { 0, 0, 0 }, 50 }, 100 },
@@ -43,7 +41,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[1] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_OTHER,
         AC_NONE,
         OC1_NONE,
@@ -73,7 +71,7 @@ void func_80AF3FE0(MirRay2* this, PlayState* play) {
 
 void MirRay2_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    MirRay2* this = THIS;
+    MirRay2* this = (MirRay2*)thisx;
 
     if (this->actor.home.rot.x <= 0) {
         this->range = 100.0f;
@@ -99,14 +97,14 @@ void MirRay2_Init(Actor* thisx, PlayState* play) {
 }
 
 void MirRay2_Destroy(Actor* thisx, PlayState* play) {
-    MirRay2* this = THIS;
+    MirRay2* this = (MirRay2*)thisx;
 
     LightContext_RemoveLight(play, &play->lightCtx, this->light);
     Collider_DestroyJntSph(play, &this->collider);
 }
 
 void MirRay2_Update(Actor* thisx, PlayState* play) {
-    MirRay2* this = THIS;
+    MirRay2* this = (MirRay2*)thisx;
 
     if (this->unk1A4 & 1) {
         if (Flags_GetSwitch(play, MIRRAY2_GET_SWITCH_FLAG(thisx))) {

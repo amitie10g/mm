@@ -5,6 +5,7 @@
  */
 
 #include "z_en_an.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Door/z_en_door.h"
 
 #include "assets/objects/object_an2/object_an2.h"
@@ -13,9 +14,9 @@
 #include "assets/objects/object_mask_kerfay/object_mask_kerfay.h"
 #include "assets/objects/object_msmo/object_msmo.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnAn*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnAn_Init(Actor* thisx, PlayState* play);
 void EnAn_Destroy(Actor* thisx, PlayState* play);
@@ -850,7 +851,7 @@ ActorProfile En_An_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -858,11 +859,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 14, 62, 0, { 0, 0, 0 } },
@@ -1165,7 +1166,7 @@ s32 EnAn_ChangeAnim(EnAn* this, PlayState* play, EnAnAnimation animIndex) {
             break;
 
         default:
-            if (animIndex != this->animIndex) {
+            if (this->animIndex != animIndex) {
                 changeAnim = true;
             }
             break;
@@ -1329,8 +1330,7 @@ void EnAn_DrawAccessory(EnAn* this, PlayState* play, EnAnAccessory accessoryId) 
                 this->trayTexScrollTimer2 -= 2;
                 Gfx_SetupDL25_Xlu(play->state.gfxCtx);
 
-                gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
                 gSPSegment(POLY_XLU_DISP++, 0x08,
                            Gfx_TwoTexScroll(play->state.gfxCtx, 0, this->trayTexScrollTimer1, 0, 16, 16, 1, 0,
                                             this->trayTexScrollTimer2, 16, 16));
@@ -1351,8 +1351,7 @@ void EnAn_DrawAccessory(EnAn* this, PlayState* play, EnAnAccessory accessoryId) 
 
                 Matrix_TranslateRotateZYX(&D_80B58E54, &D_80B58E60);
 
-                gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
                 gSPDisplayList(POLY_OPA_DISP++, gKafeisMaskDL);
                 gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[originalObjectSlot].segment);
             }
@@ -1392,8 +1391,7 @@ void EnAn_DrawAccessory(EnAn* this, PlayState* play, EnAnAccessory accessoryId) 
 
                 Matrix_TranslateRotateZYX(&D_80B58E68, &D_80B58E74);
 
-                gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
 
                 gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[otherObjectSlot].segment);
                 gSPDisplayList(POLY_OPA_DISP++, gMoonMaskDL);
@@ -1454,7 +1452,7 @@ s16 EnAn_GetChildCsId(EnAn* this, s32 numCutscenes) {
 }
 
 s32 EnAn_MsgEvent_ReceiveLetterFromPostman(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s16 csId = EnAn_GetCsId(this, 0);
     s32 ret = false;
 
@@ -1500,7 +1498,7 @@ s32 EnAn_MsgEvent_ReceiveLetterFromPostman(Actor* thisx, PlayState* play) {
 }
 
 s32 EnAn_MsgEvent_AttendGoron(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s16 csId = EnAn_GetCsId(this, 0);
     s32 ret = false;
 
@@ -1545,7 +1543,7 @@ s32 EnAn_MsgEvent_AttendGoron(Actor* thisx, PlayState* play) {
 }
 
 s32 EnAn_MsgEvent_GiveLunchToGranny(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s16 csId = EnAn_GetChildCsId(this, 0);
     s32 ret = false;
 
@@ -1592,7 +1590,7 @@ s32 EnAn_MsgEvent_GiveLunchToGranny(Actor* thisx, PlayState* play) {
 
 // Only used if Player is using Kafei's Mask or if Human and Promised midnight meeting
 s32 EnAn_MsgEvent_MidnightMeeting(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
 
     if (this->msgEventState == 0) {
         Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_WAIT);
@@ -1608,7 +1606,7 @@ s32 EnAn_MsgEvent_MidnightMeeting(Actor* thisx, PlayState* play) {
 }
 
 s32 EnAn_MsgEvent_Cooking(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s32 ret = false;
 
     switch (this->msgEventState) {
@@ -1638,7 +1636,7 @@ s32 EnAn_MsgEvent_Cooking(Actor* thisx, PlayState* play) {
 }
 
 s32 EnAn_MsgEvent_LaundryPool(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s32 ret = false;
 
     switch (this->msgEventState) {
@@ -1646,7 +1644,6 @@ s32 EnAn_MsgEvent_LaundryPool(Actor* thisx, PlayState* play) {
             if ((Player_GetMask(play) == PLAYER_MASK_KAFEIS_MASK) ||
                 CHECK_WEEKEVENTREG(WEEKEVENTREG_TALKED_ANJU_IN_LAUNDRY_POOL)) {
                 this->msgEventState++;
-                // fallthrough
             } else {
                 ret = true;
                 this->stateFlags |= ENAN_STATE_DRAW_KAFEIS_MASK;
@@ -2033,7 +2030,7 @@ s32 EnAn_HandleDialogue(EnAn* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     u16 textId = play->msgCtx.currentTextId;
 
-    if (player->stateFlags1 & PLAYER_STATE1_40) {
+    if (player->stateFlags1 & PLAYER_STATE1_TALKING) {
         this->stateFlags |= ENAN_STATE_TALKING;
 
         if (this->prevTextId != textId) {
@@ -2509,7 +2506,7 @@ s32 EnAn_ProcessSchedule_Door(EnAn* this, PlayState* play, ScheduleOutput* sched
                     break;
             }
 
-            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+            this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
             this->stateFlags |= ENAN_STATE_LOST_ATTENTION;
             this->actor.gravity = 0.0f;
             ret = true;
@@ -2834,8 +2831,8 @@ s32 EnAn_ProcessSchedule_WithKafei(EnAn* this, PlayState* play, ScheduleOutput* 
 s32 EnAn_ProcessScheduleOutput(EnAn* this, PlayState* play, ScheduleOutput* scheduleOutput) {
     s32 ret;
 
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
-    this->actor.targetMode = TARGET_MODE_6;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     this->stateFlags = 0;
     this->savedFaceIndex = ENAN_FACE_0;
     this->faceIndex = ENAN_FACE_0;
@@ -3284,11 +3281,11 @@ void EnAn_FollowSchedule(EnAn* this, PlayState* play) {
                ((this->scheduleResult != scheduleOutput.result) &&
                 !EnAn_ProcessScheduleOutput(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = ANJU_SCH_NONE;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
 
     this->scheduleResult = scheduleOutput.result;
@@ -3380,7 +3377,7 @@ void EnAn_HandleCouplesMaskCutscene(EnAn* this, PlayState* play) {
 
 void EnAn_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s32 temp_v1;
     s32 watchedCouplesMaskCs;
 
@@ -3415,13 +3412,13 @@ void EnAn_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnAn_Destroy(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnAn_Update(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
 
     if (EnAn_InitObjectSlots(this, play)) {
         return;
@@ -3453,7 +3450,7 @@ void EnAn_Update(Actor* thisx, PlayState* play) {
 }
 
 void EnAn_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
 
     if (limbIndex == ANJU1_LIMB_HEAD) {
         static Vec3f D_80B58ED4 = { 1000.0f, 0.0f, 0.0f };
@@ -3472,7 +3469,7 @@ void EnAn_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void EnAn_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
     s32 stepRot;
     s32 overrideRot;
 
@@ -3502,7 +3499,7 @@ void EnAn_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
 }
 
 void EnAn_Draw(Actor* thisx, PlayState* play) {
-    EnAn* this = THIS;
+    EnAn* this = (EnAn*)thisx;
 
     if ((this->scheduleResult != ANJU_SCH_NONE) || this->forceDraw) {
         static TexturePtr sMouthTextures[ENAN_MOUTH_MAX] = {

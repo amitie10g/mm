@@ -189,8 +189,8 @@ void func_800F0BB4(EnHy* enHy, PlayState* play, EnDoor* door, s16 arg3, s16 arg4
     EnHy_ChangeObjectAndAnim(enHy, play, (animIndex == 0) ? arg3 : arg4);
     enHy->skelAnime.baseTransl = enHy->skelAnime.jointTable[LIMB_ROOT_POS];
     enHy->skelAnime.prevTransl = enHy->skelAnime.jointTable[LIMB_ROOT_POS];
-    enHy->skelAnime.moveFlags |= (ANIM_FLAG_UPDATE_Y | ANIM_FLAG_1);
-    AnimTaskQueue_AddActorMove(play, &enHy->actor, &enHy->skelAnime, 1.0f);
+    enHy->skelAnime.movementFlags |= (ANIM_FLAG_UPDATE_Y | ANIM_FLAG_1);
+    AnimTaskQueue_AddActorMovement(play, &enHy->actor, &enHy->skelAnime, 1.0f);
     door->knobDoor.requestOpen = true;
     door->knobDoor.animIndex = animIndex;
 }
@@ -231,7 +231,7 @@ s32 func_800F0DD4(EnHy* enHy, PlayState* play, s16 arg2, s16 arg3) {
             enHy->actor.shape.rot.y = Math_Vec3f_Yaw(&enHy->actor.world.pos, &door->knobDoor.dyna.actor.world.pos);
             enHy->actor.world.rot.y = enHy->actor.shape.rot.y;
             enHy->actor.gravity = 0.0f;
-            enHy->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+            enHy->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         }
     }
     return ret;
@@ -239,7 +239,7 @@ s32 func_800F0DD4(EnHy* enHy, PlayState* play, s16 arg2, s16 arg3) {
 
 s32 EnHy_SetPointFowards(EnHy* enHy, PlayState* play, f32 gravity, s16 animIndex) {
     enHy->actor.gravity = gravity;
-    enHy->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    enHy->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     EnHy_ChangeObjectAndAnim(enHy, play, animIndex);
     enHy->curPoint++;
     return false;

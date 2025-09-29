@@ -6,9 +6,7 @@
 
 #include "z_dm_tag.h"
 
-#define FLAGS (ACTOR_FLAG_10)
-
-#define THIS ((DmTag*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void DmTag_Init(Actor* thisx, PlayState* play);
 void DmTag_Destroy(Actor* thisx, PlayState* play);
@@ -119,7 +117,7 @@ s16 func_80C2247C(DmTag* this, s32 numCutscenes) {
 }
 
 s32 func_80C224D8(Actor* thisx, PlayState* play) {
-    DmTag* this = THIS;
+    DmTag* this = (DmTag*)thisx;
     Actor* sp30;
     Actor* sp2C;
     s16 csId = this->actor.csId;
@@ -197,7 +195,7 @@ s32 func_80C224D8(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80C227E8(Actor* thisx, PlayState* play) {
-    DmTag* this = THIS;
+    DmTag* this = (DmTag*)thisx;
 
     if (this->unk_1A4 == 0) {
         Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_WAIT);
@@ -252,7 +250,7 @@ s32 func_80C2291C(DmTag* this, PlayState* play) {
 
 void func_80C229AC(DmTag* this, PlayState* play) {
     SubS_SetOfferMode(&this->unk_18C, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
 }
 
 void DmTag_DoNothing(DmTag* this, PlayState* play) {
@@ -278,12 +276,12 @@ void DmTag_Init(Actor* thisx, PlayState* play) {
         this->unk_18E = 2;
         this->unk_18C = 0;
         SubS_SetOfferMode(&this->unk_18C, SUBS_OFFER_MODE_AUTO, SUBS_OFFER_MODE_MASK);
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         this->actionFunc = DmTag_DoNothing;
     } else if (this->actor.room == 2) {
         Actor_Kill(&this->actor);
     } else {
-        this->actor.targetMode = TARGET_MODE_1;
+        this->actor.attentionRangeType = ATTENTION_RANGE_1;
         this->unk_18E = 1;
         this->unk_18C = 0;
         this->actionFunc = func_80C229AC;
@@ -294,7 +292,7 @@ void DmTag_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void DmTag_Update(Actor* thisx, PlayState* play) {
-    DmTag* this = THIS;
+    DmTag* this = (DmTag*)thisx;
 
     func_80C2291C(this, play);
     this->actionFunc(this, play);

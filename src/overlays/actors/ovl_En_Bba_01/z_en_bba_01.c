@@ -15,9 +15,7 @@
 #include "z_en_bba_01.h"
 #include "assets/objects/object_bba/object_bba.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
-
-#define THIS ((EnBba01*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnBba01_Init(Actor* thisx, PlayState* play);
 void EnBba01_Destroy(Actor* thisx, PlayState* play);
@@ -42,7 +40,7 @@ ActorProfile En_Bba_01_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT0,
+        COL_MATERIAL_HIT0,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -50,11 +48,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 18, 64, 0, { 0, 0, 0 } },
@@ -159,7 +157,7 @@ void EnBba01_FinishInit(EnHy* this, PlayState* play) {
     //! @bug: gBombShopLadySkel does not match EnHy's skeleton assumptions.
     //! Since gBombShopLadySkel has more limbs than expected, joint and morph tables will overflow
     if (EnHy_Init(this, play, &gBombShopLadySkel, ENHY_ANIM_BBA_6)) {
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.draw = EnBba01_Draw;
         this->waitingOnInit = false;
         if (ENBBA01_GET_PATH_INDEX(&this->actor) == ENBBA01_PATH_INDEX_NONE) {
@@ -214,7 +212,7 @@ void EnBba01_Talk(EnHy* this, PlayState* play) {
 
 void EnBba01_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
 
     this->enHy.animObjectSlot = SubS_GetObjectSlot(OBJECT_BBA, play);
     this->enHy.headObjectSlot = SubS_GetObjectSlot(OBJECT_BBA, play);
@@ -229,7 +227,7 @@ void EnBba01_Init(Actor* thisx, PlayState* play) {
     Collider_InitCylinder(play, &this->enHy.collider);
     Collider_SetCylinder(play, &this->enHy.collider, &this->enHy.actor, &sCylinderInit);
     CollisionCheck_SetInfo2(&this->enHy.actor.colChkInfo, &sDamageTable, &sColChkInfoInit);
-    this->enHy.actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->enHy.actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     this->enHy.path = SubS_GetPathByIndex(play, ENBBA01_GET_PATH_INDEX(&this->enHy.actor), ENBBA01_PATH_INDEX_NONE);
     this->enHy.waitingOnInit = true;
     Actor_SetScale(&this->enHy.actor, 0.01f);
@@ -237,13 +235,13 @@ void EnBba01_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnBba01_Destroy(Actor* thisx, PlayState* play) {
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
 
     Collider_DestroyCylinder(play, &this->enHy.collider);
 }
 
 void EnBba01_Update(Actor* thisx, PlayState* play) {
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
 
     EnBba01_TestIsTalking(this, play);
     this->enHy.actionFunc(&this->enHy, play);
@@ -253,7 +251,7 @@ void EnBba01_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnBba01_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
     s8 bodyPartIndex;
     Vec3f zeroVec = { 0.0f, 0.0f, 0.0f };
 
@@ -299,7 +297,7 @@ s32 EnBba01_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
 }
 
 void EnBba01_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
     GraphicsContext* gfxCtx = play->state.gfxCtx;
     Vec3f zeroVec = { 0.0f, 0.0f, 0.0f };
 
@@ -321,7 +319,7 @@ void EnBba01_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
 }
 
 void EnBba01_Draw(Actor* thisx, PlayState* play) {
-    EnBba01* this = THIS;
+    EnBba01* this = (EnBba01*)thisx;
     s32 i;
     u8* shadowTex = GRAPH_ALLOC(play->state.gfxCtx, SUBS_SHADOW_TEX_SIZE);
     u8* shadowTexIter;

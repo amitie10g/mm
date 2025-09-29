@@ -7,9 +7,9 @@
 #include "z_en_scopenuts.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnScopenuts*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnScopenuts_Init(Actor* thisx, PlayState* play);
 void EnScopenuts_Destroy(Actor* thisx, PlayState* play);
@@ -46,18 +46,18 @@ ActorProfile En_Scopenuts_Profile = {
 
 static ColliderCylinderInitType1 sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 27, 32, 0, { 0, 0, 0 } },
@@ -122,8 +122,8 @@ Gfx* D_80BCCCDC[] = { gKakeraLeafMiddleDL, gKakeraLeafTipDL };
 Vec3f D_80BCCCE4 = { 0.0f, -0.5f, 0.0f };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_U8(targetMode, TARGET_MODE_0, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 30, ICHAIN_STOP),
+    ICHAIN_U8(attentionRangeType, ATTENTION_RANGE_0, ICHAIN_CONTINUE),
+    ICHAIN_F32(lockOnArrowOffset, 30, ICHAIN_STOP),
 };
 
 s16 func_80BCABF0(Path* path) {
@@ -353,7 +353,7 @@ void func_80BCB6D0(EnScopenuts* this, PlayState* play) {
                 this->unk_328 &= ~1;
                 play->msgCtx.msgMode = MSGMODE_TEXT_CLOSING;
                 play->msgCtx.stateTimer = 4;
-                this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+                this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
                 this->unk_328 &= ~4;
                 this->animIndex = ENSCOPENUTS_ANIM_8;
                 SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, ENSCOPENUTS_ANIM_8);
@@ -723,7 +723,7 @@ f32 func_80BCC448(Path* path, s32 arg1, Vec3f* arg2, Vec3s* arg3) {
 
 void EnScopenuts_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     if (!CHECK_WEEKEVENTREG(WEEKEVENTREG_74_40) &&
         (gSaveContext.save.saveInfo.inventory.items[ITEM_OCARINA_OF_TIME] == ITEM_NONE)) {
@@ -783,13 +783,13 @@ void EnScopenuts_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnScopenuts_Destroy(Actor* thisx, PlayState* play) {
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnScopenuts_Update(Actor* thisx, PlayState* play) {
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     Actor_SetFocus(&this->actor, 60.0f);
     SkelAnime_Update(&this->skelAnime);
@@ -804,7 +804,7 @@ void EnScopenuts_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnScopenuts_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     if (((this->animIndex == ENSCOPENUTS_ANIM_4) && (this->unk_35A == 0)) ||
         ((this->animIndex == ENSCOPENUTS_ANIM_8) && (this->unk_35A == 0)) || (this->animIndex == ENSCOPENUTS_ANIM_18) ||
@@ -858,7 +858,7 @@ void EnScopenuts_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s
 }
 
 void EnScopenuts_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     if (((this->unk_35A == 1) || (this->unk_35A == 2)) &&
         ((limbIndex == BUSINESS_SCRUB_LIMB_SCALP) || (limbIndex == BUSINESS_SCRUB_LIMB_HAIR))) {
@@ -877,7 +877,7 @@ void EnScopenuts_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx)
 }
 
 void EnScopenuts_Draw(Actor* thisx, PlayState* play) {
-    EnScopenuts* this = THIS;
+    EnScopenuts* this = (EnScopenuts*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
     SkelAnime_DrawTransformFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable,

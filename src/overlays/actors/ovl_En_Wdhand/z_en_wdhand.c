@@ -6,9 +6,7 @@
 
 #include "z_en_wdhand.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE)
-
-#define THIS ((EnWdhand*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE)
 
 void EnWdhand_Init(Actor* thisx, PlayState* play);
 void EnWdhand_Destroy(Actor* thisx, PlayState* play);
@@ -47,77 +45,77 @@ ActorProfile En_Wdhand_Profile = {
 static ColliderJntSphElementInit sJntSphElementsInit[EN_WDHAND_NUM_COLLIDER_ELEMENTS] = {
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 575, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 1725, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 575, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 1725, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 575, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 1725, 0 }, 10 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK1,
+            ELEM_MATERIAL_UNK1,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NONE,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NONE,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 50, { { 0, 1000, 0 }, 15 }, 100 },
@@ -126,7 +124,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[EN_WDHAND_NUM_COLLIDER_ELEM
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_HIT0,
+        COL_MATERIAL_HIT0,
         AT_NONE | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -175,7 +173,7 @@ static DamageTable sDamageTable = {
 };
 
 void EnWdhand_Init(Actor* thisx, PlayState* play) {
-    EnWdhand* this = THIS;
+    EnWdhand* this = (EnWdhand*)thisx;
     s32 i;
     Vec3f initVel;
 
@@ -230,7 +228,7 @@ void EnWdhand_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnWdhand_Destroy(Actor* thisx, PlayState* play) {
-    EnWdhand* this = THIS;
+    EnWdhand* this = (EnWdhand*)thisx;
 
     Collider_DestroyJntSph(play, &this->collider);
 }
@@ -596,12 +594,12 @@ s32 EnWdhand_ShrinkLimb(EnWdhand* this, s32 limbIndex) {
 void EnWdhand_SetupDie(EnWdhand* this) {
     s32 i;
 
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-    this->actor.flags |= ACTOR_FLAG_10;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.flags |= ACTOR_FLAG_UPDATE_CULLING_DISABLED;
 
     // Finds the particular collider that was hit
     for (i = 0; i < ARRAY_COUNT(this->colliderElements); i++) {
-        if (this->collider.elements[i].base.bumperFlags & BUMP_HIT) {
+        if (this->collider.elements[i].base.acElemFlags & ACELEM_HIT) {
             break;
         }
     }
@@ -756,7 +754,7 @@ void EnWdhand_UpdateDamage(EnWdhand* this, PlayState* play) {
 }
 
 void EnWdhand_Update(Actor* thisx, PlayState* play) {
-    EnWdhand* this = THIS;
+    EnWdhand* this = (EnWdhand*)thisx;
 
     EnWdhand_UpdateDamage(this, play);
 
@@ -783,7 +781,7 @@ void EnWdhand_UpdateColliderLocationsForLimb(EnWdhand* this, s32 limbIndex, Vec3
 }
 
 void EnWdhand_Draw(Actor* thisx, PlayState* play) {
-    EnWdhand* this = THIS;
+    EnWdhand* this = (EnWdhand*)thisx;
     Vec3f limbPos;
     Gfx* gfx;
     s32 limbIndex;
@@ -794,7 +792,7 @@ void EnWdhand_Draw(Actor* thisx, PlayState* play) {
     gfx = POLY_OPA_DISP;
 
     gSPDisplayList(&gfx[0], gSetupDLs[25]);
-    gSPMatrix(&gfx[1], Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(&gfx[1], play->state.gfxCtx);
     gSPDisplayList(&gfx[2], gDexihandBaseDL);
 
     Matrix_MultVecY(300.0f, &limbPos);
@@ -805,7 +803,7 @@ void EnWdhand_Draw(Actor* thisx, PlayState* play) {
     for (i = 0; i < limbIndex; i++) {
         Matrix_Push();
         EnWdhand_UpdateColliderLocationsForLimb(this, i, &limbPos);
-        gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(gfx++, play->state.gfxCtx);
         gSPDisplayList(gfx++, gDexihandArmSegmentDL);
         Matrix_Pop();
     }
@@ -823,7 +821,7 @@ void EnWdhand_Draw(Actor* thisx, PlayState* play) {
     for (i = this->limbIndexAfterCut; i < EN_WDHAND_NUM_SEGMENTS; i++) {
         Matrix_Push();
         EnWdhand_UpdateColliderLocationsForLimb(this, i, &limbPos);
-        gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(gfx++, play->state.gfxCtx);
         gSPDisplayList(gfx++, gDexihandArmSegmentDL);
         Matrix_Pop();
     }

@@ -14,15 +14,16 @@
  */
 #include "z_en_go.h"
 #include "z64quake.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Bom/z_en_bom.h"
 #include "assets/objects/object_hakugin_demo/object_hakugin_demo.h"
 #include "assets/objects/object_taisou/object_taisou.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "overlays/actors/ovl_Obj_Aqua/z_obj_aqua.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_2000000)
-
-#define THIS ((EnGo*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_UPDATE_DURING_OCARINA)
 
 #define ENGO_STANDING_Y_OFFSET 0.0f  // Actor shape offset in use when a Goron is in any standing state.
 #define ENGO_ROLLEDUP_Y_OFFSET 14.0f // Actor shape offset in use when a Goron is "rolled up".
@@ -361,6 +362,8 @@ static MsgScript sMsgScriptGoronMedigoron[] = {
     /* 0x0014 0x01 */ MSCRIPT_CMD_DONE(),
 
     /* 0x0015 0x05 */ MSCRIPT_CMD_CHECK_WEEK_EVENT_REG(WEEKEVENTREG_18_40, 0x0037 - 0x001A),
+    //! @bug Incorrect sfx
+    //! The text associated with 0x0C80 makes use of an incorrect pop sound (`NA_SE_EN_SLIME_BREAK`)
     /* 0x001A 0x03 */ MSCRIPT_CMD_BEGIN_TEXT(0x0C80),
     /* 0x001D 0x01 */ MSCRIPT_CMD_AWAIT_TEXT(),
     /* 0x001E 0x03 */ MSCRIPT_CMD_SET_WEEK_EVENT_REG(WEEKEVENTREG_18_40),
@@ -588,7 +591,7 @@ ActorProfile En_Go_Profile = {
 
 static ColliderSphereInit sSphereInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -596,11 +599,11 @@ static ColliderSphereInit sSphereInit = {
         COLSHAPE_SPHERE,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x20000000, 0x00, 0x04 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 0, { { 0, 0, 0 }, 0 }, 100 },
@@ -609,7 +612,7 @@ static ColliderSphereInit sSphereInit = {
 // Collider for the frozen solid Gorons.
 static ColliderCylinderInit sCylinderInitFrozen = {
     {
-        COLTYPE_METAL,
+        COL_MATERIAL_METAL,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER | AC_TYPE_OTHER,
         OC1_ON | OC1_TYPE_ALL,
@@ -617,11 +620,11 @@ static ColliderCylinderInit sCylinderInitFrozen = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK2,
+        ELEM_MATERIAL_UNK2,
         { 0xF7CFFFFF, 0x02, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 0, 0, 0, { 0, 0, 0 } },
@@ -630,7 +633,7 @@ static ColliderCylinderInit sCylinderInitFrozen = {
 // Collider for normal Gorons.
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -638,11 +641,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 0, 0, 0, { 0, 0, 0 } },
@@ -800,7 +803,7 @@ void EnGo_DrawSteam(EnGoEffect effect[ENGO_EFFECT_COUNT], PlayState* play2) {
         Matrix_ReplaceRotation(&play->billboardMtxF);
         Matrix_Scale(effect->scaleXY, effect->scaleXY, 1.0f, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, gGoronSteamModelDL);
 
         Matrix_Pop();
@@ -895,7 +898,7 @@ void EnGo_DrawDust(EnGoEffect effect[ENGO_EFFECT_COUNT], PlayState* play2) {
         Matrix_Scale(effect->scaleXY, effect->scaleXY, 1.0f, MTXMODE_APPLY);
         Matrix_ReplaceRotation(&play->billboardMtxF);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPSegment(POLY_XLU_DISP++, 0x08, Lib_SegmentedToVirtual(sDustTextures[(s32)(alpha * 7.0f)]));
         gSPDisplayList(POLY_XLU_DISP++, gGoronDustModelDL);
 
@@ -1056,7 +1059,7 @@ void EnGo_DrawSnow(EnGoEffect effect[ENGO_SNOW_EFFECT_COUNT], PlayState* play, G
         Matrix_RotateXS(effect->rot.x, MTXMODE_APPLY);
         Matrix_RotateYS(effect->rot.y, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_OPA_DISP++, model);
 
         Matrix_Pop();
@@ -1339,7 +1342,7 @@ s32 EnGo_UpdateSpringArrivalCutscene(EnGo* this, PlayState* play) {
         (this->actor.draw != NULL) && (play->sceneId == SCENE_10YUKIYAMANOMURA2) && (gSaveContext.sceneLayer == 1) &&
         (play->csCtx.scriptIndex == 0)) {
         if (!this->springArrivalCutsceneActive) {
-            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+            this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
             this->springArrivalCueId = 255;
             this->springArrivalCutsceneActive = true;
             this->interruptedActionFunc = this->actionFunc;
@@ -1347,7 +1350,7 @@ s32 EnGo_UpdateSpringArrivalCutscene(EnGo* this, PlayState* play) {
         SubS_SetOfferMode(&this->actionFlags, SUBS_OFFER_MODE_NONE, SUBS_OFFER_MODE_MASK);
         this->actionFunc = EnGo_HandleSpringArrivalCutscene;
     } else if (this->springArrivalCutsceneActive) {
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         this->springArrivalCueId = 255;
         this->springArrivalCutsceneActive = false;
         SubS_SetOfferMode(&this->actionFlags, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
@@ -1364,19 +1367,19 @@ s32 EnGo_UpdateSpringArrivalCutscene(EnGo* this, PlayState* play) {
  */
 s32 EnGo_UpdateSkelAnime(EnGo* this, PlayState* play) {
     s8 objectSlot = this->actor.objectSlot;
-    s8 extraObjIndex = -1;
+    s8 extraObjectSlot = OBJECT_SLOT_NONE;
     s32 isAnimFinished = false;
 
     if ((this->animIndex >= ENGO_ANIM_SPRING_MIN) && (this->hakuginDemoObjectSlot > OBJECT_SLOT_NONE)) {
-        extraObjIndex = this->hakuginDemoObjectSlot;
+        extraObjectSlot = this->hakuginDemoObjectSlot;
     } else if ((this->animIndex >= ENGO_ANIM_ATHLETICS_MIN) && (this->taisouObjectSlot > OBJECT_SLOT_NONE)) {
-        extraObjIndex = this->taisouObjectSlot;
+        extraObjectSlot = this->taisouObjectSlot;
     } else if (this->animIndex < ENGO_ANIM_ATHLETICS_MIN) {
-        extraObjIndex = this->actor.objectSlot;
+        extraObjectSlot = this->actor.objectSlot;
     }
 
-    if (extraObjIndex >= 0) {
-        gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[extraObjIndex].segment);
+    if (extraObjectSlot > OBJECT_SLOT_NONE) {
+        gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[extraObjectSlot].segment);
         this->skelAnime.playSpeed = this->animPlaySpeed;
         isAnimFinished = SkelAnime_Update(&this->skelAnime);
         gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[objectSlot].segment);
@@ -1424,19 +1427,19 @@ s32 EnGo_UpdateSfx(EnGo* this, PlayState* play) {
  */
 s32 EnGo_ChangeAnim(EnGo* this, PlayState* play, EnGoAnimation animIndex) {
     s8 objectSlot = this->actor.objectSlot;
-    s8 extraObjIndex = -1;
+    s8 extraObjectSlot = OBJECT_SLOT_NONE;
     s32 didAnimChange = false;
 
     if ((animIndex >= ENGO_ANIM_SPRING_MIN) && (this->hakuginDemoObjectSlot > OBJECT_SLOT_NONE)) {
-        extraObjIndex = this->hakuginDemoObjectSlot;
+        extraObjectSlot = this->hakuginDemoObjectSlot;
     } else if ((animIndex >= ENGO_ANIM_ATHLETICS_MIN) && (this->taisouObjectSlot > OBJECT_SLOT_NONE)) {
-        extraObjIndex = this->taisouObjectSlot;
+        extraObjectSlot = this->taisouObjectSlot;
     } else if (animIndex < ENGO_ANIM_ATHLETICS_MIN) {
-        extraObjIndex = this->actor.objectSlot;
+        extraObjectSlot = this->actor.objectSlot;
     }
 
-    if (extraObjIndex >= 0) {
-        gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[extraObjIndex].segment);
+    if (extraObjectSlot > OBJECT_SLOT_NONE) {
+        gSegments[0x06] = OS_K0_TO_PHYSICAL(play->objectCtx.slots[extraObjectSlot].segment);
         this->animIndex = animIndex;
         didAnimChange = SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, animIndex);
         this->animPlaySpeed = this->skelAnime.playSpeed;
@@ -1485,7 +1488,7 @@ s32 EnGo_UpdateGraveyardAttentionTargetAndReactions(EnGo* this, PlayState* play)
         return false;
     }
 
-    if (player->stateFlags1 & PLAYER_STATE1_40) {
+    if (player->stateFlags1 & PLAYER_STATE1_TALKING) {
         if (this->lastTextId != textId) {
             switch (textId) {
                 case 0xE1A: // Awakening from frozen form, confused, turn to other Goron
@@ -1504,7 +1507,7 @@ s32 EnGo_UpdateGraveyardAttentionTargetAndReactions(EnGo* this, PlayState* play)
                     if (ENGO_GET_SUBTYPE(&this->actor) == ENGO_GRAVEYARD_FROZEN) {
                         this->attentionTarget = this->actor.child;
                     }
-
+                    FALLTHROUGH;
                 case 0xE16: // Surprised, questioning if player is Darmani
                 case 0xE1E: // Surprised, seeing Darmani
                     this->graveyardDialogActionFunc = EnGo_UpdateShiverSurprisedAnimation;
@@ -1792,7 +1795,7 @@ void EnGo_DrawIceBlockWhenFrozen(EnGo* this, PlayState* play, f32 scale, f32 alp
         Matrix_Scale(scale * 0.7f, scale * 0.8f, scale, MTXMODE_APPLY);
         func_800B8118(&this->actor, play, 0);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         y1 = play->gameplayFrames % 256;
         y2 = (play->gameplayFrames * 2) % 256;
         gSPSegment(POLY_XLU_DISP++, 0x08,
@@ -1831,7 +1834,7 @@ void EnGo_MakeSteam(EnGo* this) {
  */
 s32 EnGo_HandleOpenShrineCutscene(Actor* thisx, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
     s32 ret = false;
 
     switch (this->cutsceneState) {
@@ -1842,20 +1845,20 @@ s32 EnGo_HandleOpenShrineCutscene(Actor* thisx, PlayState* play) {
             }
             this->gatekeeperAnimState = 1;
             this->cutsceneState = 1;
-            // fallthrough
+            FALLTHROUGH;
         case 1:
             if (CutsceneManager_GetCurrentCsId() == this->csId) {
                 break;
             }
             this->csId = CutsceneManager_GetAdditionalCsId(this->csId);
             this->cutsceneState = 2;
-            // fallthrough
+            FALLTHROUGH;
         case 2:
             if (!EnGo_ChangeCutscene(this, this->csId)) {
                 break;
             }
             this->cutsceneState = 3;
-            // fallthrough
+            FALLTHROUGH;
         case 3:
             if (CutsceneManager_IsNext(CS_ID_GLOBAL_TALK)) {
                 CutsceneManager_StartWithPlayerCs(CS_ID_GLOBAL_TALK, NULL);
@@ -1863,7 +1866,8 @@ s32 EnGo_HandleOpenShrineCutscene(Actor* thisx, PlayState* play) {
             } else if (CutsceneManager_GetCurrentCsId() == this->csId) {
                 CutsceneManager_Queue(CS_ID_GLOBAL_TALK);
             }
-            // fallthrough
+            break;
+
         default:
             break;
     }
@@ -1957,7 +1961,7 @@ s32 EnGo_HandleOpenShrineCutscene(Actor* thisx, PlayState* play) {
  */
 s32 EnGo_HandleGivePowderKegCutscene(Actor* thisx, PlayState* play) {
     static Vec3f sPowderKegSpawnOffset = { 0.0f, 200.0f, 280.0f };
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
     Vec3f powderKegSpawnPos;
     s32 ret = false;
 
@@ -1972,7 +1976,7 @@ s32 EnGo_HandleGivePowderKegCutscene(Actor* thisx, PlayState* play) {
         case 1:
             EnGo_ChangeAnim(this, play, ENGO_ANIM_DROPKEG);
             this->cutsceneState++;
-
+            FALLTHROUGH;
         case 2:
             if (Animation_OnFrame(&this->skelAnime, 16.0f)) {
                 Actor_PlaySfx(&this->actor, NA_SE_EV_GORON_HAND_HIT);
@@ -2043,7 +2047,7 @@ void EnGo_ChangeToStretchingAnimation(EnGo* this, PlayState* play) {
         Math_Vec3f_Copy(&this->actor.world.pos, &newSittingStretcherPos);
     }
 
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     Actor_SetScale(&this->actor, this->scaleFactor);
     this->sleepState = ENGO_AWAKE;
     this->actionFlags = 0;
@@ -2067,7 +2071,7 @@ void EnGo_ChangeToSpectatingAnimation(EnGo* this, PlayState* play) {
     animFrame = Rand_ZeroOne() * this->skelAnime.endFrame;
     this->skelAnime.curFrame = animFrame;
 
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     Actor_SetScale(&this->actor, this->scaleFactor);
     this->sleepState = ENGO_AWAKE;
     this->actionFlags = 0;
@@ -2109,7 +2113,7 @@ void EnGo_ChangeToSnowballAnimation(EnGo* this, PlayState* play) {
 
     Math_Vec3f_Copy(&currentPos, &this->actor.world.pos);
     if (this->gatekeeperPath != NULL) {
-        this->actor.flags &= ~ACTOR_FLAG_2000000;
+        this->actor.flags &= ~ACTOR_FLAG_UPDATE_DURING_OCARINA;
         SubS_CopyPointFromPathCheckBounds(this->gatekeeperPath, 0, &startingPathPoint);
         yawToPathPoint = Math_Vec3f_Yaw(&currentPos, &startingPathPoint);
         this->actor.shape.rot.y = yawToPathPoint;
@@ -2261,8 +2265,8 @@ void EnGo_SetupMedigoron(EnGo* this, PlayState* play) {
     EnGo_ChangeAnim(this, play, ENGO_ANIM_LYINGDOWNIDLE);
     this->scaleFactor *= ENGO_MEDIGORON_SCALE_MULTIPLIER;
     Actor_SetScale(&this->actor, this->scaleFactor);
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-    this->actor.targetMode = TARGET_MODE_3;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.attentionRangeType = ATTENTION_RANGE_3;
     this->actionFlags = 0;
     this->actor.gravity = -1.0f;
     SubS_SetOfferMode(&this->actionFlags, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
@@ -2293,7 +2297,7 @@ void EnGo_SetupInitialAction(EnGo* this, PlayState* play) {
         CollisionCheck_SetInfo2(&this->actor.colChkInfo, &sDamageTable, &sColChkInfoInit);
         Effect_Add(play, &this->indexEffect, EFFECT_TIRE_MARK, 0, 0, &tireMarkInit);
 
-        this->actor.targetMode = TARGET_MODE_1;
+        this->actor.attentionRangeType = ATTENTION_RANGE_1;
         this->scaleFactor = ENGO_NORMAL_SCALE;
         this->msgScriptCallback = NULL;
 
@@ -2651,8 +2655,8 @@ void EnGo_Snowball(EnGo* this, PlayState* play) {
     if ((this->actionFlags & ENGO_FLAG_HIT_BY_OTHER) && (this->actor.colChkInfo.damageEffect == ENGO_DMGEFF_BREAK)) {
         // Stop the Gatekeeper when hit by an appropriate effect
         Actor_PlaySfx(&this->actor, NA_SE_EV_SNOWBALL_BROKEN);
-        this->actor.flags &= ~ACTOR_FLAG_10;
-        this->actor.flags |= ACTOR_FLAG_2000000;
+        this->actor.flags &= ~ACTOR_FLAG_UPDATE_CULLING_DISABLED;
+        this->actor.flags |= ACTOR_FLAG_UPDATE_DURING_OCARINA;
         EnGo_InitSnow(this->effectTable, this->actor.world.pos);
         this->actor.shape.rot.x = 0;
         this->actor.speed = 0.0f;
@@ -2795,7 +2799,7 @@ void EnGo_Talk(EnGo* this, PlayState* play) {
 }
 
 void EnGo_Init(Actor* thisx, PlayState* play) {
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
 
     this->taisouObjectSlot = SubS_GetObjectSlot(OBJECT_TAISOU, play);
     this->hakuginDemoObjectSlot = SubS_GetObjectSlot(OBJECT_HAKUGIN_DEMO, play);
@@ -2803,7 +2807,7 @@ void EnGo_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnGo_Destroy(Actor* thisx, PlayState* play) {
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
 
     Collider_DestroyCylinder(play, &this->colliderCylinder);
     Collider_DestroySphere(play, &this->colliderSphere);
@@ -2811,7 +2815,7 @@ void EnGo_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void EnGo_Update(Actor* thisx, PlayState* play) {
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
     f32 xzRange;
 
     EnGo_DetectCollisions(this, play);
@@ -2877,14 +2881,14 @@ void EnGo_Draw_NoSkeleton(EnGo* this, PlayState* play) {
 
     Matrix_RotateXS(this->actor.shape.rot.x, MTXMODE_APPLY);
 
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
     gSPDisplayList(POLY_OPA_DISP++, (this->actionFlags & ENGO_FLAG_SNOWBALLED) ? gGoronSnowballDL : gGoronRolledUpDL);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
 s32 EnGo_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
     Vec3f worldPos;
     s32 fidgetIndex;
 
@@ -2920,7 +2924,7 @@ s32 EnGo_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 }
 
 void EnGo_TransfromLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
     s32 stepRot;
     s32 overrideRot;
 
@@ -2975,7 +2979,7 @@ void EnGo_Draw(Actor* thisx, PlayState* play) {
     static TexturePtr sEyeTextures[] = {
         gGoronEyeOpenTex, gGoronEyeHalfTex, gGoronEyeClosedTex, gGoronEyeHalfTex, gGoronEyeClosed2Tex,
     };
-    EnGo* this = THIS;
+    EnGo* this = (EnGo*)thisx;
 
     if (!(this->actionFlags & (ENGO_FLAG_SNOWBALLED | ENGO_FLAG_ROLLED_UP))) {
         OPEN_DISPS(play->state.gfxCtx);

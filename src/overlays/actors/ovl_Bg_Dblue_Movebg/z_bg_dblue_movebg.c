@@ -8,9 +8,7 @@
 #include "assets/objects/object_dblue_object/object_dblue_object.h"
 #include "overlays/actors/ovl_Obj_Hunsui/z_obj_hunsui.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((BgDblueMovebg*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void BgDblueMovebg_Init(Actor* thisx, PlayState* play);
 void BgDblueMovebg_Destroy(Actor* thisx, PlayState* play);
@@ -99,9 +97,9 @@ s16 D_80A2B96C[] = { 0, 0x16C, -0x16C, 0 };
 static s16 sCsIdList[] = { CS_ID_NONE, CS_ID_NONE };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 1500, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 1100, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 1000, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeScale, 1500, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 1100, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDistance, 1000, ICHAIN_CONTINUE),
     ICHAIN_VEC3F_DIV1000(scale, 100, ICHAIN_STOP),
 };
 
@@ -155,7 +153,7 @@ s32 func_80A29A80(PlayState* play, s32 switchFlagBase, s32 arg2) {
 
 void BgDblueMovebg_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
     s32 i;
 
     Actor_ProcessInitChain(&this->dyna.actor, sInitChain);
@@ -265,7 +263,7 @@ void BgDblueMovebg_Init(Actor* thisx, PlayState* play) {
             Math_Vec3f_Sum(&this->unk_190, &this->dyna.actor.world.pos, &this->unk_190);
             Math_Vec3f_Sum(&this->unk_19C, &this->dyna.actor.world.pos, &this->unk_19C);
             D_80A2BBF0 = this;
-            this->dyna.actor.flags |= ACTOR_FLAG_20;
+            this->dyna.actor.flags |= ACTOR_FLAG_DRAW_CULLING_DISABLED;
             this->actionFunc = func_80A2AED0;
             break;
 
@@ -276,7 +274,7 @@ void BgDblueMovebg_Init(Actor* thisx, PlayState* play) {
         case 11:
             this->unk_1CC = D_80A2B96C[func_80A29A80(play, this->switchFlag, this->unk_1BC)];
             D_80A2BBF0 = this;
-            this->dyna.actor.flags |= ACTOR_FLAG_20;
+            this->dyna.actor.flags |= ACTOR_FLAG_DRAW_CULLING_DISABLED;
             this->dyna.actor.update = Actor_Noop;
             this->dyna.actor.draw = func_80A2B274;
             break;
@@ -284,7 +282,7 @@ void BgDblueMovebg_Init(Actor* thisx, PlayState* play) {
 }
 
 void BgDblueMovebg_Destroy(Actor* thisx, PlayState* play) {
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
 
     DynaPoly_DeleteBgActor(play, &play->colCtx.dyna, this->dyna.bgId);
     if ((this->unk_160 == 9) || (this->unk_160 == 8)) {
@@ -715,7 +713,7 @@ void func_80A2B1A0(BgDblueMovebg* this, PlayState* play) {
 }
 
 void BgDblueMovebg_Update(Actor* thisx, PlayState* play) {
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
 
     this->actionFunc(this, play);
 
@@ -727,7 +725,7 @@ void BgDblueMovebg_Update(Actor* thisx, PlayState* play) {
 }
 
 void func_80A2B274(Actor* thisx, PlayState* play) {
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
     s16 temp_v1;
 
     if (this != D_80A2BBF0) {
@@ -747,13 +745,13 @@ void func_80A2B274(Actor* thisx, PlayState* play) {
 
 void func_80A2B308(Actor* thisx, PlayState* play) {
     s32 pad;
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
 
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
     gSPDisplayList(POLY_OPA_DISP++, this->opaDList);
 
     CLOSE_DISPS(play->state.gfxCtx);
@@ -761,7 +759,7 @@ void func_80A2B308(Actor* thisx, PlayState* play) {
 
 void BgDblueMovebg_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    BgDblueMovebg* this = THIS;
+    BgDblueMovebg* this = (BgDblueMovebg*)thisx;
     s32 i;
     s32 j;
     Gfx* gfx;
@@ -771,7 +769,7 @@ void BgDblueMovebg_Draw(Actor* thisx, PlayState* play2) {
 
     OPEN_DISPS(play->state.gfxCtx);
 
-    if ((this->unk_160 == 9) || (this->unk_160 == 8) || (this->dyna.actor.flags & ACTOR_FLAG_40)) {
+    if ((this->unk_160 == 9) || (this->unk_160 == 8) || (this->dyna.actor.flags & ACTOR_FLAG_INSIDE_CULLING_VOLUME)) {
         if (this->texAnim != NULL) {
             AnimatedMat_Draw(play, Lib_SegmentedToVirtual(this->texAnim));
         }
@@ -779,7 +777,7 @@ void BgDblueMovebg_Draw(Actor* thisx, PlayState* play2) {
         if ((this->opaDList != NULL) || (this->unk_160 == 6)) {
             gfx2 = Gfx_SetupDL(POLY_OPA_DISP, SETUPDL_25);
 
-            gSPMatrix(&gfx2[0], Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(&gfx2[0], play->state.gfxCtx);
 
             if (this->unk_160 == 6) {
                 gSPDisplayList(&gfx2[1], gGreatBayTempleObjectGearShaftDL);
@@ -798,7 +796,7 @@ void BgDblueMovebg_Draw(Actor* thisx, PlayState* play2) {
         if (this->xluDList != NULL) {
             gfx = Gfx_SetupDL71(POLY_XLU_DISP);
 
-            gSPMatrix(&gfx[0], Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(&gfx[0], play->state.gfxCtx);
             gSPDisplayList(&gfx[1], this->xluDList);
 
             POLY_XLU_DISP = &gfx[2];
@@ -840,7 +838,7 @@ void BgDblueMovebg_Draw(Actor* thisx, PlayState* play2) {
                                  this->unk_1F8[j][i] * this->dyna.actor.scale.y,
                                  this->unk_1F8[j][i] * this->dyna.actor.scale.z, MTXMODE_APPLY);
 
-                    gSPMatrix(gfx++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                    MATRIX_FINALIZE_AND_LOAD(gfx++, play->state.gfxCtx);
                     gDPSetEnvColor(gfx++, 255, 255, 255, this->unk_1D8[j][i]);
                     gSPDisplayList(gfx++, gGreatBayTempleObjectWaterwheelSplashDL);
 

@@ -7,9 +7,7 @@
 #include "z_demo_syoten.h"
 #include "assets/objects/object_syoten/object_syoten.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((DemoSyoten*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void DemoSyoten_Init(Actor* thisx, PlayState* play);
 void DemoSyoten_Destroy(Actor* thisx, PlayState* play);
@@ -59,7 +57,7 @@ Color_RGBA8 D_80C17834[] = {
 
 void DemoSyoten_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     Actor_SetScale(&this->actor, 0.3f);
 
@@ -128,7 +126,7 @@ void DemoSyoten_Init(Actor* thisx, PlayState* play) {
 }
 
 void DemoSyoten_Destroy(Actor* thisx, PlayState* play) {
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     if (DEMOSYOTEN_GET_F(&this->actor) == DEMOSYOTEN_F_0) {
         Keyframe_DestroyFlex(&this->kfSkelAnime);
@@ -281,10 +279,6 @@ void func_80C16BD4(DemoSyoten* this, PlayState* play) {
         if (this->cueId != cueId) {
             this->cueId = cueId;
             switch (cueId) {
-                default:
-                    this->actor.draw = NULL;
-                    break;
-
                 case 1:
                 case 2:
                     this->actor.draw = NULL;
@@ -303,6 +297,10 @@ void func_80C16BD4(DemoSyoten* this, PlayState* play) {
                     func_80C16760(this, play);
                     this->unk_3E4 |= 4;
                     this->unk_3E4 &= ~1;
+                    break;
+
+                default:
+                    this->actor.draw = NULL;
                     break;
             }
         }
@@ -431,7 +429,7 @@ void func_80C17008(DemoSyoten* this, PlayState* play) {
 }
 
 void DemoSyoten_Update(Actor* thisx, PlayState* play) {
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     this->actionFunc(this, play);
 }
@@ -439,7 +437,7 @@ void DemoSyoten_Update(Actor* thisx, PlayState* play) {
 s32 DemoSyoten_OverrideLimbDraw(PlayState* play, KFSkelAnimeFlex* kfSkelAnime, s32 limbIndex, Gfx** dList, u8* flags,
                                 void* thisx, Vec3f* scale, Vec3s* rot, Vec3f* pos) {
     GraphicsContext* gfxCtx = play->state.gfxCtx;
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     OPEN_DISPS(gfxCtx);
 
@@ -483,7 +481,7 @@ s32 DemoSyoten_OverrideLimbDraw(PlayState* play, KFSkelAnimeFlex* kfSkelAnime, s
 
 void func_80C173B4(Actor* thisx, PlayState* play) {
     s32 pad;
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
     Mtx* mtxStack;
 
     AnimatedMat_DrawXlu(play, Lib_SegmentedToVirtual(&object_syoten_Matanimheader_001298));
@@ -514,7 +512,7 @@ void func_80C17468(PlayState* play) {
 
 void DemoSyoten_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -544,7 +542,7 @@ void DemoSyoten_Draw(Actor* thisx, PlayState* play) {
     }
 
     if (this->unk_3DC != NULL) {
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, this->unk_3DC);
     }
 
@@ -553,7 +551,7 @@ void DemoSyoten_Draw(Actor* thisx, PlayState* play) {
 
 void func_80C17690(Actor* thisx, PlayState* play) {
     s32 pad;
-    DemoSyoten* this = THIS;
+    DemoSyoten* this = (DemoSyoten*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -564,7 +562,7 @@ void func_80C17690(Actor* thisx, PlayState* play) {
         func_80C17468(play);
     }
 
-    gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
 
     AnimatedMat_DrawStepXlu(play, this->unk_3E0, this->unk_3E6);
 

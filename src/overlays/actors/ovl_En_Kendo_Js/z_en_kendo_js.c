@@ -7,10 +7,9 @@
 #include "z_en_kendo_js.h"
 #include "overlays/actors/ovl_En_Maruta/z_en_maruta.h"
 
-#define FLAGS \
-    (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_2000000 | ACTOR_FLAG_LOCK_ON_DISABLED)
-
-#define THIS ((EnKendoJs*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_UPDATE_DURING_OCARINA | ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnKendoJs_Init(Actor* thisx, PlayState* play);
 void EnKendoJs_Destroy(Actor* thisx, PlayState* play);
@@ -51,7 +50,7 @@ ActorProfile En_Kendo_Js_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -59,11 +58,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 18, 30, 0, { 0, 0, 0 } },
@@ -109,7 +108,7 @@ s16 D_80B27D10[] = {
 
 void EnKendoJs_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnKendoJs* this = THIS;
+    EnKendoJs* this = (EnKendoJs*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 36.0f);
 
@@ -141,7 +140,7 @@ void EnKendoJs_Init(Actor* thisx, PlayState* play) {
         this->pathPoints = Lib_SegmentedToVirtual(path->points);
     }
 
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     this->actor.focus.pos = this->actor.world.pos;
     this->actor.focus.pos.y += 30.0f;
     this->actor.child = NULL;
@@ -153,7 +152,7 @@ void EnKendoJs_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnKendoJs_Destroy(Actor* thisx, PlayState* play) {
-    EnKendoJs* this = THIS;
+    EnKendoJs* this = (EnKendoJs*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
     CLEAR_WEEKEVENTREG(WEEKEVENTREG_82_08);
@@ -266,6 +265,7 @@ void func_80B26758(EnKendoJs* this, PlayState* play) {
                 Audio_PlaySfx_MessageCancel();
                 Message_StartTextbox(play, 0x2717, &this->actor);
                 this->unk_288 = 0x2717;
+                break;
 
             default:
                 break;
@@ -355,6 +355,7 @@ void func_80B26AFC(EnKendoJs* this, PlayState* play) {
                 player->stateFlags1 &= ~PLAYER_STATE1_20;
                 func_80B26538(this);
             }
+            break;
 
         case TEXT_STATE_NONE:
         case TEXT_STATE_NEXT:
@@ -512,9 +513,9 @@ void func_80B27030(EnKendoJs* this, PlayState* play) {
     sp20.z += 200.0f;
 
     if (EnKendoJs_MovePlayerToPos(play, sp20)) {
-        this->actor.flags |= ACTOR_FLAG_10000;
+        this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
-            this->actor.flags &= ~ACTOR_FLAG_10000;
+            this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
             player->stateFlags1 &= ~PLAYER_STATE1_20;
             func_80B279F0(this, play, 0);
             Message_StartTextbox(play, 0x271A, &this->actor);
@@ -771,7 +772,7 @@ void func_80B27A90(EnKendoJs* this, PlayState* play) {
 }
 
 void EnKendoJs_Update(Actor* thisx, PlayState* play) {
-    EnKendoJs* this = THIS;
+    EnKendoJs* this = (EnKendoJs*)thisx;
 
     this->actionFunc(this, play);
 
@@ -782,7 +783,7 @@ void EnKendoJs_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnKendoJs_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnKendoJs* this = THIS;
+    EnKendoJs* this = (EnKendoJs*)thisx;
 
     if (limbIndex == OBJECT_JS_LIMB_0C) {
         rot->y -= this->headRot.y;
@@ -794,7 +795,7 @@ void EnKendoJs_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* 
 }
 
 void EnKendoJs_Draw(Actor* thisx, PlayState* play) {
-    EnKendoJs* this = THIS;
+    EnKendoJs* this = (EnKendoJs*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
     SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,

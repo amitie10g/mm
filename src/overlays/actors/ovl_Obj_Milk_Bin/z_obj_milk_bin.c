@@ -9,8 +9,6 @@
 
 #define FLAGS 0x00000000
 
-#define THIS ((ObjMilkBin*)thisx)
-
 void ObjMilkBin_Init(Actor* thisx, PlayState* play);
 void ObjMilkBin_Destroy(Actor* thisx, PlayState* play);
 void ObjMilkBin_Update(Actor* thisx, PlayState* play2);
@@ -30,7 +28,7 @@ ActorProfile Obj_Milk_Bin_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HARD,
+        COL_MATERIAL_HARD,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -38,18 +36,18 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 12, 30, 0, { 0, 0, 0 } },
 };
 
 void ObjMilkBin_Init(Actor* thisx, PlayState* play) {
-    ObjMilkBin* this = THIS;
+    ObjMilkBin* this = (ObjMilkBin*)thisx;
 
     Collider_InitAndSetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
     Collider_UpdateCylinder(&this->actor, &this->collider);
@@ -64,14 +62,14 @@ void ObjMilkBin_Init(Actor* thisx, PlayState* play) {
 }
 
 void ObjMilkBin_Destroy(Actor* thisx, PlayState* play) {
-    ObjMilkBin* this = THIS;
+    ObjMilkBin* this = (ObjMilkBin*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void ObjMilkBin_Update(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    ObjMilkBin* this = THIS;
+    ObjMilkBin* this = (ObjMilkBin*)thisx;
 
     if (this->type == OBJ_MILK_BIN_TYPE_1) {
         if (CHECK_WEEKEVENTREG(WEEKEVENTREG_DEFENDED_AGAINST_ALIENS)) {
@@ -95,7 +93,7 @@ void ObjMilkBin_Update(Actor* thisx, PlayState* play2) {
 }
 
 void ObjMilkBin_Draw(Actor* thisx, PlayState* play) {
-    ObjMilkBin* this = THIS;
+    ObjMilkBin* this = (ObjMilkBin*)thisx;
 
     if (!(this->disableDraw & 1)) {
         Gfx_DrawDListOpa(play, gMilkBinMilkJarDL);

@@ -6,9 +6,7 @@
 
 #include "z_en_pst.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE)
-
-#define THIS ((EnPst*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED)
 
 void EnPst_Init(Actor* thisx, PlayState* play);
 void EnPst_Destroy(Actor* thisx, PlayState* play);
@@ -368,7 +366,7 @@ ActorProfile En_Pst_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -376,11 +374,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 28, 72, 0, { 0, 0, 0 } },
@@ -449,7 +447,7 @@ s32 EnPst_HandleLetterDay2(EnPst* this) {
 s32 EnPst_ChooseBehaviour(Actor* thisx, PlayState* play) {
     PlayerItemAction itemAction = PLAYER_IA_NONE;
     s32 scriptBranch = 0;
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
 
     switch (this->behaviour) {
         case POSTBOX_BEHAVIOUR_WAIT_FOR_ITEM:
@@ -618,11 +616,11 @@ void EnPst_FollowSchedule(EnPst* this, PlayState* play) {
         ((this->scheduleResult != scheduleOutput.result) &&
          !EnPst_ProcessScheduleOutput(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = POSTBOX_SCH_NONE;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
     this->scheduleResult = scheduleOutput.result;
     EnPst_HandleSchedule(this, play);
@@ -657,7 +655,7 @@ void EnPst_Talk(EnPst* this, PlayState* play) {
 
 void EnPst_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 18.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &gPostboxSkel, NULL, this->jointTable, this->morphTable,
@@ -666,20 +664,20 @@ void EnPst_Init(Actor* thisx, PlayState* play) {
     CollisionCheck_SetInfo2(&this->actor.colChkInfo, DamageTable_Get(0x16), &sColChkInfoInit);
     SubS_SetOfferMode(&this->stateFlags, SUBS_OFFER_MODE_ONSCREEN, SUBS_OFFER_MODE_MASK);
     SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, POSTBOX_ANIM_IDLE);
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     Actor_SetScale(&this->actor, 0.02f);
     this->actionFunc = EnPst_FollowSchedule;
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, UPDBGCHECKINFO_FLAG_4);
 }
 
 void EnPst_Destroy(Actor* thisx, PlayState* play) {
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnPst_Update(Actor* thisx, PlayState* play) {
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
 
     EnPst_CheckTalk(this, play);
     this->actionFunc(this, play);
@@ -694,7 +692,7 @@ void EnPst_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnPst_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
     f32 yTranslation;
 
     if (limbIndex == POSTBOX_LIMB_MAIL_SLOT) {
@@ -709,7 +707,7 @@ s32 EnPst_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* p
 }
 
 void EnPst_Draw(Actor* thisx, PlayState* play) {
-    EnPst* this = THIS;
+    EnPst* this = (EnPst*)thisx;
 
     if (this->scheduleResult != POSTBOX_SCH_NONE) {
         Gfx_SetupDL25_Opa(play->state.gfxCtx);

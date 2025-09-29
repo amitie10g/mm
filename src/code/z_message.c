@@ -1,4 +1,3 @@
-#include "prevent_bss_reordering.h"
 #include "z64message.h"
 #include "global.h"
 
@@ -7,6 +6,7 @@
 #include "padmgr.h"
 #include "sys_cmpdma.h"
 #include "segment_symbols.h"
+#include "attributes.h"
 
 #include "z64actor.h"
 #include "z64horse.h"
@@ -1188,7 +1188,7 @@ void Message_DrawTextDefault(PlayState* play, Gfx** gfxP) {
 
             case 0xA:
                 msgCtx->textPosY += msgCtx->unk11FFC;
-                // fallthrough
+                FALLTHROUGH;
             case 0xC:
                 sp130++;
                 msgCtx->textPosX = msgCtx->unk11F1A[sp130] + msgCtx->unk11FF8;
@@ -4337,7 +4337,10 @@ void Message_DrawMain(PlayState* play, Gfx** gfxP) {
                     if ((msgCtx->ocarinaAction == OCARINA_ACTION_PROMPT_EVAN_PART1_SECOND_HALF) ||
                         (msgCtx->ocarinaAction == OCARINA_ACTION_PROMPT_EVAN_PART2_SECOND_HALF)) {
                         AudioOcarina_StartForSongCheck(
-                            (1 << (OCARINA_ACTION_PROMPT_SONATA + msgCtx->ocarinaAction)) | 0x80000000, 4);
+                            (1 << ((msgCtx->ocarinaAction - OCARINA_ACTION_PROMPT_EVAN_PART1_SECOND_HALF) +
+                                   OCARINA_SONG_EVAN_PART1)) |
+                                0x80000000,
+                            4);
                         msgCtx->msgMode = MSGMODE_SONG_PROMPT;
                     } else {
                         if ((msgCtx->ocarinaAction >= OCARINA_ACTION_PROMPT_WIND_FISH_HUMAN) &&
@@ -4510,7 +4513,7 @@ void Message_DrawMain(PlayState* play, Gfx** gfxP) {
             case MSGMODE_OCARINA_FAIL:
             case MSGMODE_SONG_PROMPT_FAIL:
                 Message_DrawText(play, &gfx);
-                // fallthrough
+                FALLTHROUGH;
             case MSGMODE_OCARINA_FAIL_NO_TEXT:
                 msgCtx->stateTimer--;
                 if (msgCtx->stateTimer == 0) {
@@ -4696,7 +4699,7 @@ void Message_DrawMain(PlayState* play, Gfx** gfxP) {
                         sOcarinaButtonIndexBufPos++;
                     }
                 }
-                // fallthrough
+                FALLTHROUGH;
             case MSGMODE_SONG_DEMONSTRATION_DONE:
                 Message_DrawText(play, &gfx);
                 break;

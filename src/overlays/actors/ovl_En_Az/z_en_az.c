@@ -4,14 +4,11 @@
  * Description: Beaver Bros
  */
 
-#include "prevent_bss_reordering.h"
 #include "z_en_az.h"
 #include "overlays/actors/ovl_En_Twig/z_en_twig.h"
 #include "overlays/actors/ovl_En_Fish/z_en_fish.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_80000000)
-
-#define THIS ((EnAz*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_MINIMAP_ICON_ENABLED)
 
 typedef struct {
     /* 0x0 */ s16 unk_0;
@@ -108,7 +105,7 @@ ActorProfile En_Az_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT0,
+        COL_MATERIAL_HIT0,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER | AC_TYPE_ENEMY,
         OC1_ON | OC1_TYPE_ALL,
@@ -116,11 +113,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 18, 46, 0, { 0, 0, 0 } },
@@ -190,15 +187,15 @@ s32 func_80A94B98(EnAz* this, PlayState* play) {
 }
 
 static InitChainEntry sInitChain[3] = {
-    ICHAIN_F32(uncullZoneScale, 80, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneDownward, 80, ICHAIN_CONTINUE),
-    ICHAIN_F32(uncullZoneForward, 4000, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeScale, 80, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDownward, 80, ICHAIN_CONTINUE),
+    ICHAIN_F32(cullingVolumeDistance, 4000, ICHAIN_STOP),
 };
 
 void EnAz_Init(Actor* thisx, PlayState* play2) {
     static s16 D_80A9914C[] = { 1, 0, 3, 2, 5, 4, -1 };
     static s16 D_80A9915C[] = { 0, 1, 0, 1, 0, 1, 1 };
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
     PlayState* play = play2;
     s16 sp4E;
     s32 phi_v1;
@@ -206,7 +203,7 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
     Actor_ProcessInitChain(&this->actor, sInitChain);
     this->unk_374 = 0;
     this->actor.colChkInfo.mass = MASS_IMMOVABLE;
-    this->actor.targetMode = TARGET_MODE_1;
+    this->actor.attentionRangeType = ATTENTION_RANGE_1;
     switch (BEAVER_GET_PARAM_F00(thisx)) {
         case 0:
             phi_v1 =
@@ -264,7 +261,7 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
     }
     SubS_FillCutscenesList(&this->actor, this->csIdList, ARRAY_COUNT(this->csIdList));
     if (D_80A9913C == NULL) {
-        D_80A9913C = THIS;
+        D_80A9913C = (EnAz*)thisx;
         this->unk_374 |= 1;
     }
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 30.0f);
@@ -304,12 +301,12 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
             if (CHECK_WEEKEVENTREG(WEEKEVENTREG_93_01)) {
                 this->unk_2FA = 5;
                 if (this->unk_374 & 2) {
-                    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+                    this->actor.flags |= (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
                     this->unk_374 |= 0x20;
                 }
             } else {
                 this->unk_2FA = 0;
-                this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+                this->actor.flags |= (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
                 this->unk_374 |= 0x20;
             }
             func_80A94B20(play);
@@ -323,7 +320,8 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
         case ENTRANCE(WATERFALL_RAPIDS, 3):
             this->unk_2FA = 0;
             if (!(this->unk_374 & 2)) {
-                this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10000);
+                this->actor.flags |=
+                    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED);
             }
             if (gSaveContext.save.entrance == ENTRANCE(WATERFALL_RAPIDS, 3)) {
                 this->unk_2FA = 0xA;
@@ -379,18 +377,20 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
             if (this->unk_2FA == 2) {
                 if (!(this->unk_374 & 2)) {
                     this->unk_374 |= 0x20;
-                    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10000);
+                    this->actor.flags |=
+                        (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED);
                     this->actionFunc = func_80A97C24;
                 } else {
-                    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+                    this->actor.flags |= (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
                     func_80A95C5C(this, play);
                 }
             } else {
                 if (this->unk_374 & 2) {
                     this->unk_374 |= 0x20;
-                    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10000);
+                    this->actor.flags |=
+                        (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED);
                 } else {
-                    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+                    this->actor.flags |= (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
                 }
                 this->actionFunc = func_80A97C24;
             }
@@ -414,7 +414,7 @@ void EnAz_Init(Actor* thisx, PlayState* play2) {
 }
 
 void EnAz_Destroy(Actor* thisx, PlayState* play2) {
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
 
     if (gSaveContext.save.entrance != ENTRANCE(WATERFALL_RAPIDS, 1)) {
         gSaveContext.timerStates[TIMER_ID_MINIGAME_2] = TIMER_STATE_STOP;
@@ -593,7 +593,7 @@ void func_80A95C5C(EnAz* this, PlayState* play) {
     this->actor.world.pos.y = this->actor.home.pos.y + 120.0f;
     this->actor.gravity = -1.0f;
     SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, BEAVER_ANIM_IDLE, &this->animIndex);
-    this->actor.flags &= ~(ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+    this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
     this->actor.bgCheckFlags &= ~(BGCHECKFLAG_GROUND | BGCHECKFLAG_WATER);
     this->unk_3C0 = 0;
     this->actionFunc = func_80A95CEC;
@@ -628,7 +628,7 @@ void func_80A95DA0(EnAz* this, PlayState* play) {
     this->actor.gravity = 0.0f;
     SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, BEAVER_ANIM_SWIM_WITH_SPINNING_TAIL,
                                     &this->animIndex);
-    this->actor.flags |= (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+    this->actor.flags |= (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
     this->actor.bgCheckFlags &= ~(BGCHECKFLAG_GROUND | BGCHECKFLAG_WATER);
     this->unk_374 |= 0x1000;
     Math_Vec3f_Copy(&this->actor.world.pos, &sp40->curPoint);
@@ -959,7 +959,6 @@ s32 func_80A9617C(EnAz* this, PlayState* play) {
                                 case 9:
                                 default:
                                     this->unk_2FA = 8;
-
                                     break;
                             }
                             ret = 0;
@@ -1225,7 +1224,7 @@ void func_80A97114(EnAz* this, PlayState* play) {
     EnAz* brother = this->brother;
     s32 sp20 = false;
 
-    this->actor.flags &= ~ACTOR_FLAG_10000;
+    this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
     switch (this->actor.textId) {
         case 0x10DA:
         case 0x10DD:
@@ -1383,7 +1382,7 @@ void func_80A97410(EnAz* this, PlayState* play) {
     if (this->unk_378 == 2) {
         this->unk_378 = func_80A9617C(this, play);
         if (this->unk_378 == 0) {
-            this->actor.flags &= ~ACTOR_FLAG_10000;
+            this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         }
     }
     if (this->unk_378 == 3) {
@@ -1548,6 +1547,8 @@ void func_80A97AB4(EnAz* this, PlayState* play) {
                         break;
                 }
             }
+            break;
+
         case TEXT_STATE_NEXT:
         case TEXT_STATE_CLOSING:
         default:
@@ -1622,7 +1623,7 @@ void func_80A97EAC(EnAz* this, PlayState* play) {
     SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, BEAVER_ANIM_SWIM_WITH_SPINNING_TAIL,
                                     &this->animIndex);
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
-    this->actor.flags &= ~(ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+    this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
     this->actor.bgCheckFlags &= ~(BGCHECKFLAG_GROUND | BGCHECKFLAG_WATER);
     this->unk_374 |= 0x1000;
     this->unk_3C2 = 0;
@@ -1667,10 +1668,10 @@ void func_80A97F9C(EnAz* this, PlayState* play) {
             func_80A97A28(this, play);
         }
         if (this->unk_374 & 0x100) {
-            if (this->actor.flags & ACTOR_FLAG_40) {
+            if (this->actor.flags & ACTOR_FLAG_INSIDE_CULLING_VOLUME) {
                 func_80A98414(this, play);
             }
-            if ((DECR(this->unk_37A) == 0) && (this->actor.flags & ACTOR_FLAG_40)) {
+            if ((DECR(this->unk_37A) == 0) && (this->actor.flags & ACTOR_FLAG_INSIDE_CULLING_VOLUME)) {
                 EffectSsBubble_Spawn(play, &this->actor.world.pos, 0.0f, 20.0f, 20.0f, 0.35f);
                 this->unk_37A = (Rand_ZeroOne() * 70.0f) + 10.0f;
             }
@@ -1728,7 +1729,7 @@ void func_80A98414(EnAz* this, PlayState* play) {
 
 void EnAz_Update(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
 
     this->unk_374 &= ~0x100;
     if ((this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.depthInWater > 22.0f)) {
@@ -1884,7 +1885,7 @@ static TexturePtr sYoungerBrotherBeltTextures[] = {
 
 void EnAz_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -1936,8 +1937,7 @@ void EnAz_Draw(Actor* thisx, PlayState* play2) {
                     gSPSegment(POLY_XLU_DISP++, 0x09,
                                Gfx_PrimColor(play->state.gfxCtx, 0x80, 255, 255, 255, D_80A9919C[i]));
                 }
-                gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
                 gSPDisplayList(POLY_XLU_DISP++, D_80A9916C[i]);
                 Matrix_Pop();
             }
@@ -1951,13 +1951,13 @@ void EnAz_Draw(Actor* thisx, PlayState* play2) {
             } else {
                 gSPSegment(POLY_XLU_DISP++, 0x08, Gfx_PrimColor(play->state.gfxCtx, 0x80, 255, 255, 255, 85));
             }
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gBeaverYoungerBrotherTailVortexDL);
             Matrix_Pop();
             Matrix_Translate(0.0f, 2000.0f, -2100.0f, MTXMODE_APPLY);
             Matrix_RotateZS(DEG_TO_BINANG(D_80A993D0[this->unk_384].z), MTXMODE_APPLY);
             Matrix_Scale(D_80A993D0[this->unk_384].x, D_80A993D0[this->unk_384].y, 0.0f, MTXMODE_APPLY);
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gBeaverYoungerBrotherTailSplashDL);
         }
     }
@@ -1966,7 +1966,7 @@ void EnAz_Draw(Actor* thisx, PlayState* play2) {
 }
 
 s32 EnAz_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
 
     if ((limbIndex == BEAVER_OLDER_BROTHER_LIMB_NONE) && ((play->gameplayFrames % 2) != 0)) {
         *dList = NULL;
@@ -1993,7 +1993,7 @@ void EnAz_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
     static Vec3f D_80A99410 = { 700.0f, 0.0f, 0.0f };
     static Vec3f D_80A9941C = { -500.0f, 0.0f, 0.0f };
     static Vec3f D_80A99428 = { -1200.0f, 0.0f, 1000.0f };
-    EnAz* this = THIS;
+    EnAz* this = (EnAz*)thisx;
 
     if (limbIndex == BEAVER_OLDER_BROTHER_LIMB_PELVIS) {
         Matrix_MultVec3f(&D_80A99410, &this->unk_3A8);

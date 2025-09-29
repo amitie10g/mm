@@ -8,14 +8,15 @@
  */
 
 #include "z_en_syateki_man.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Syateki_Crow/z_en_syateki_crow.h"
 #include "overlays/actors/ovl_En_Syateki_Dekunuts/z_en_syateki_dekunuts.h"
 #include "overlays/actors/ovl_En_Syateki_Okuta/z_en_syateki_okuta.h"
 #include "overlays/actors/ovl_En_Syateki_Wf/z_en_syateki_wf.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_LOCK_ON_DISABLED)
-
-#define THIS ((EnSyatekiMan*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnSyatekiMan_Init(Actor* thisx, PlayState* play);
 void EnSyatekiMan_Destroy(Actor* thisx, PlayState* play);
@@ -201,12 +202,12 @@ void EnSyatekiMan_Swamp_SpawnTargetActors(EnSyatekiMan* this, PlayState* play2, 
 }
 
 void EnSyatekiMan_Init(Actor* thisx, PlayState* play) {
-    EnSyatekiMan* this = THIS;
+    EnSyatekiMan* this = (EnSyatekiMan*)thisx;
     s32 pad;
     Path* path = &play->setupPathList[SG_MAN_GET_PATH_INDEX(&this->actor)];
     s32 actorListLength = sSwampTargetActorListLengths[this->swampTargetActorListIndex];
 
-    this->actor.targetMode = TARGET_MODE_1;
+    this->actor.attentionRangeType = ATTENTION_RANGE_1;
     Actor_SetScale(&this->actor, 0.01f);
     if (play->sceneId == SCENE_SYATEKI_MORI) {
         SkelAnime_InitFlex(play, &this->skelAnime, &gBurlyGuySkel, &gBurlyGuyHeadScratchLoopAnim, this->jointTable,
@@ -929,7 +930,7 @@ void EnSyatekiMan_Swamp_GiveReward(EnSyatekiMan* this, PlayState* play) {
         }
 
         player->stateFlags1 &= ~PLAYER_STATE1_20;
-        this->actor.flags &= ~ACTOR_FLAG_10000;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         this->score = 0;
         this->shootingGameState = SG_GAME_STATE_NONE;
         this->actionFunc = EnSyatekiMan_Swamp_Talk;
@@ -994,7 +995,7 @@ void EnSyatekiMan_Town_GiveReward(EnSyatekiMan* this, PlayState* play) {
         Message_StartTextbox(play, 0x408, &this->actor);
         this->prevTextId = 0x408;
         player->stateFlags1 &= ~PLAYER_STATE1_20;
-        this->actor.flags &= ~ACTOR_FLAG_10000;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         this->score = 0;
         this->shootingGameState = SG_GAME_STATE_NONE;
         this->actionFunc = EnSyatekiMan_Town_Talk;
@@ -1471,7 +1472,7 @@ void EnSyatekiMan_Blink(EnSyatekiMan* this) {
 
         case 40:
             this->blinkTimer = 0;
-
+            FALLTHROUGH;
         default:
             this->eyeIndex = 0;
             break;
@@ -1481,7 +1482,7 @@ void EnSyatekiMan_Blink(EnSyatekiMan* this) {
 }
 
 void EnSyatekiMan_Update(Actor* thisx, PlayState* play) {
-    EnSyatekiMan* this = THIS;
+    EnSyatekiMan* this = (EnSyatekiMan*)thisx;
 
     this->actionFunc(this, play);
     EnSyatekiMan_Blink(this);
@@ -1494,7 +1495,7 @@ void EnSyatekiMan_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnSyatekiMan_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnSyatekiMan* this = THIS;
+    EnSyatekiMan* this = (EnSyatekiMan*)thisx;
 
     if ((play->sceneId == SCENE_SYATEKI_MIZU) && (limbIndex == BURLY_GUY_LIMB_HEAD)) {
         *dList = gTownShootingGalleryManHeadDL;
@@ -1513,7 +1514,7 @@ s32 EnSyatekiMan_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, V
 }
 
 void EnSyatekiMan_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnSyatekiMan* this = THIS;
+    EnSyatekiMan* this = (EnSyatekiMan*)thisx;
     Vec3f sFocusOffset = { 1600.0f, 0.0f, 0.0f };
 
     if (limbIndex == BURLY_GUY_LIMB_HEAD) {
@@ -1527,7 +1528,7 @@ void EnSyatekiMan_Draw(Actor* thisx, PlayState* play) {
         gSwampShootingGalleryManEyeHalfTex,
         gSwampShootingGalleryManEyeHalfTex,
     };
-    EnSyatekiMan* this = THIS;
+    EnSyatekiMan* this = (EnSyatekiMan*)thisx;
     s32 pad;
 
     if (play->sceneId == SCENE_SYATEKI_MIZU) {

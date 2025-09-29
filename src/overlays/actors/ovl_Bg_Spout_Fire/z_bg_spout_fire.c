@@ -9,8 +9,6 @@
 
 #define FLAGS 0x00000000
 
-#define THIS ((BgSpoutFire*)thisx)
-
 void BgSpoutFire_Init(Actor* thisx, PlayState* play);
 void BgSpoutFire_Destroy(Actor* thisx, PlayState* play);
 void BgSpoutFire_Update(Actor* thisx, PlayState* play);
@@ -36,7 +34,7 @@ ActorProfile Bg_Spout_Fire_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_ON | AT_TYPE_ENEMY,
         AC_NONE,
         OC1_ON | OC1_TYPE_PLAYER,
@@ -44,11 +42,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x20000000, 0x01, 0x04 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NONE,
-        BUMP_NONE,
+        ATELEM_ON | ATELEM_SFX_NONE,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 30, 83, 0, { 0, 0, 0 } },
@@ -65,7 +63,7 @@ static s32 sTexturesDesegmented = false;
 
 void BgSpoutFire_Init(Actor* thisx, PlayState* play) {
     s32 i;
-    BgSpoutFire* this = THIS;
+    BgSpoutFire* this = (BgSpoutFire*)thisx;
 
     this->actor.scale.z = 1350.0f * 0.0001f;
     this->actor.scale.x = 1350.0f * 0.0001f;
@@ -85,7 +83,7 @@ void BgSpoutFire_Init(Actor* thisx, PlayState* play) {
 }
 
 void BgSpoutFire_Destroy(Actor* thisx, PlayState* play) {
-    BgSpoutFire* this = THIS;
+    BgSpoutFire* this = (BgSpoutFire*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -168,7 +166,7 @@ void func_80A60E08(BgSpoutFire* this, PlayState* play) {
 
 void BgSpoutFire_Update(Actor* thisx, PlayState* play) {
     s32 pad;
-    BgSpoutFire* this = THIS;
+    BgSpoutFire* this = (BgSpoutFire*)thisx;
 
     this->flameTexIndex = (this->flameTexIndex + 1) % 8;
     if ((this->collider.base.atFlags & AT_HIT)) {
@@ -185,7 +183,7 @@ void BgSpoutFire_Update(Actor* thisx, PlayState* play) {
 }
 
 void BgSpoutFire_Draw(Actor* thisx, PlayState* play) {
-    BgSpoutFire* this = THIS;
+    BgSpoutFire* this = (BgSpoutFire*)thisx;
     Gfx* gfx;
 
     OPEN_DISPS(play->state.gfxCtx);
@@ -196,7 +194,7 @@ void BgSpoutFire_Draw(Actor* thisx, PlayState* play) {
     gDPSetPrimColor(&gfx[1], 0, 1, 255, 255, 0, 150);
     gDPSetEnvColor(&gfx[2], 255, 0, 0, 255);
     Matrix_Translate(-55.0f, 0.0f, 0.0f, MTXMODE_APPLY);
-    gSPMatrix(&gfx[3], Matrix_NewMtx(play->state.gfxCtx), (G_MTX_NOPUSH | G_MTX_LOAD) | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(&gfx[3], play->state.gfxCtx);
     gSPDisplayList(&gfx[4], object_fwall_DL_000040);
     POLY_XLU_DISP = &gfx[5];
 

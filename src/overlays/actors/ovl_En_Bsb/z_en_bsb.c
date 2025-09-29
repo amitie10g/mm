@@ -8,6 +8,7 @@
 
 #include "z64rumble.h"
 #include "z64shrink_window.h"
+#include "attributes.h"
 
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "overlays/effects/ovl_Effect_Ss_Hahen/z_eff_ss_hahen.h"
@@ -15,9 +16,9 @@
 
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_2000000)
-
-#define THIS ((EnBsb*)thisx)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_UPDATE_DURING_OCARINA)
 
 void EnBsb_Init(Actor* thisx, PlayState* play);
 void EnBsb_Destroy(Actor* thisx, PlayState* play);
@@ -67,77 +68,77 @@ f32 D_80C0F8D0 = 0.0f;
 static ColliderJntSphElementInit sJntSphElementsInit[7] = {
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 10, { { 1000, 400, 0 }, 40 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0xF7CFFFFF, 0x04, 0x08 },
             { 0x00000000, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 9, { { 0, 700, 200 }, 35 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 6, { { 100, 600, 0 }, 35 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_NONE,
         },
         { 3, { { 400, 200, 0 }, 40 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 13, { { 700, -100, 0 }, 35 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 16, { { 200, 300, 0 }, 30 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0x00000000, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 19, { { 200, 300, 0 }, 30 }, 100 },
@@ -146,7 +147,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[7] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_HIT6,
+        COL_MATERIAL_HIT6,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_PLAYER,
@@ -342,7 +343,7 @@ void func_80C0B31C(PlayState* play, EnBsb* this, Vec3f* pos) {
 }
 
 void EnBsb_Init(Actor* thisx, PlayState* play) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
     s32 csId;
     s32 i;
 
@@ -385,7 +386,7 @@ void EnBsb_Init(Actor* thisx, PlayState* play) {
     while (csId != CS_ID_NONE) { this->csIdList[i] = csId; csId = CutsceneManager_GetAdditionalCsId(csId); i++; }
     // clang-format on
 
-    this->actor.targetMode = TARGET_MODE_10;
+    this->actor.attentionRangeType = ATTENTION_RANGE_10;
 
     if (CHECK_WEEKEVENTREG(WEEKEVENTREG_23_04)) {
         Actor_Kill(&this->actor);
@@ -395,7 +396,7 @@ void EnBsb_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnBsb_Destroy(Actor* thisx, PlayState* play) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
 
     if (this->unk_02B0 == OBJECT_BSB_LIMB_NONE) {
         Audio_RestorePrevBgm();
@@ -528,10 +529,10 @@ void func_80C0BF2C(EnBsb* this) {
     this->collider.elements[0].dim.modelSphere.radius = 110;
     this->collider.elements[0].dim.modelSphere.center.x = 300;
     this->collider.elements[0].dim.modelSphere.center.y = 400;
-    this->collider.base.colType = COLTYPE_HARD;
+    this->collider.base.colMaterial = COL_MATERIAL_HARD;
 
     for (i = 0; i < ARRAY_COUNT(this->colliderElements); i++) {
-        this->collider.elements[i].base.elemType = ELEMTYPE_UNK2;
+        this->collider.elements[i].base.elemMaterial = ELEM_MATERIAL_UNK2;
     }
 
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
@@ -545,7 +546,7 @@ void func_80C0BFE8(EnBsb* this, PlayState* play) {
     s16 yaw = ABS_ALT((s16)(this->actor.yawTowardsPlayer - this->actor.shape.rot.y));
 
     if ((yaw < 0x4300) && !(this->actor.xzDistToPlayer > 300.0f)) {
-        if (player->stateFlags2 & PLAYER_STATE2_8000000) {
+        if (player->stateFlags2 & PLAYER_STATE2_USING_OCARINA) {
             if (!this->playedSfx) {
                 Audio_PlaySfx(NA_SE_SY_TRE_BOX_APPEAR);
                 this->playedSfx = true;
@@ -565,15 +566,15 @@ void func_80C0BFE8(EnBsb* this, PlayState* play) {
 void func_80C0C0F4(EnBsb* this, PlayState* play) {
     s32 i;
 
-    this->actor.flags |= ACTOR_FLAG_2000000;
+    this->actor.flags |= ACTOR_FLAG_UPDATE_DURING_OCARINA;
     this->unk_02A4 = 0;
     this->collider.elements[0].dim.modelSphere.radius = 40;
     this->collider.elements[0].dim.modelSphere.center.x = 1000;
     this->collider.elements[0].dim.modelSphere.center.y = 400;
-    this->collider.base.colType = COLTYPE_NONE;
+    this->collider.base.colMaterial = COL_MATERIAL_NONE;
 
     for (i = 0; i < ARRAY_COUNT(this->colliderElements); i++) {
-        this->collider.elements[i].base.elemType = ELEMTYPE_UNK0;
+        this->collider.elements[i].base.elemMaterial = ELEM_MATERIAL_UNK0;
     }
 
     this->unk_02AE = false;
@@ -673,7 +674,7 @@ void func_80C0C484(EnBsb* this, PlayState* play) {
     func_80C0BC30(this);
 
     if (func_80C0B888(this, play)) {
-        this->actor.flags &= ~ACTOR_FLAG_2000000;
+        this->actor.flags &= ~ACTOR_FLAG_UPDATE_DURING_OCARINA;
         func_80C0C86C(this);
         return;
     }
@@ -681,7 +682,7 @@ void func_80C0C484(EnBsb* this, PlayState* play) {
     var_a1 = this->actor.yawTowardsPlayer;
 
     if (this->unk_0294 == 1) {
-        this->actor.flags &= ~ACTOR_FLAG_2000000;
+        this->actor.flags &= ~ACTOR_FLAG_UPDATE_DURING_OCARINA;
     }
 
     if (this->path != NULL) {
@@ -886,9 +887,9 @@ void func_80C0CDE4(EnBsb* this, PlayState* play) {
     f32 dy;
     f32 dz;
 
-    hitPos.x = this->collider.elements[1].base.bumper.hitPos.x;
-    hitPos.y = this->collider.elements[1].base.bumper.hitPos.y;
-    hitPos.z = this->collider.elements[1].base.bumper.hitPos.z;
+    hitPos.x = this->collider.elements[1].base.acDmgInfo.hitPos.x;
+    hitPos.y = this->collider.elements[1].base.acDmgInfo.hitPos.y;
+    hitPos.z = this->collider.elements[1].base.acDmgInfo.hitPos.z;
 
     dx = hitPos.x - player->actor.world.pos.x;
     dy = hitPos.y - player->actor.world.pos.y;
@@ -1311,7 +1312,7 @@ void func_80C0E178(EnBsb* this) {
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
     this->unk_02AE = false;
     this->unk_02A4 = 0;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     this->unk_02B4 = 14;
     this->actionFunc = func_80C0E1C0;
     this->actor.speed = 0.0f;
@@ -1371,7 +1372,7 @@ void func_80C0E3B8(EnBsb* this) {
     Math_Vec3s_Copy(&this->unk_031C, &gZeroVec3s);
 
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
 
     Animation_Change(&this->skelAnime, &object_bsb_Anim_004894, 1.0f, D_80C0F8D0,
                      Animation_GetLastFrame(&object_bsb_Anim_004894), 2, 0.0f);
@@ -1425,8 +1426,8 @@ void func_80C0E618(EnBsb* this, PlayState* play) {
     if ((this->unk_02B4 != 0) && (this->unk_02B4 != 1) && (this->unk_02B4 != 9) && (this->unk_02B4 != 12) &&
         (this->unk_02B4 != 13) && (this->unk_02B4 != 5) && ((this->unk_02B4 != 8) || !this->unk_02DC)) {
         if (!(this->collider.base.atFlags & AT_BOUNCED)) {
-            if (this->collider.elements[1].base.toucherFlags & TOUCH_HIT) {
-                this->collider.elements[1].base.toucherFlags &= ~TOUCH_HIT;
+            if (this->collider.elements[1].base.atElemFlags & ATELEM_HIT) {
+                this->collider.elements[1].base.atElemFlags &= ~ATELEM_HIT;
                 if ((this->unk_02B4 != 11) && (this->unk_02B4 != 7)) {
                     func_80C0D334(this);
                 }
@@ -1439,7 +1440,7 @@ void func_80C0E618(EnBsb* this, PlayState* play) {
                         var_s0 = 1;
                         break;
                     }
-                    // fallthrough
+                    FALLTHROUGH;
                 case 15:
                     var_s0 = -1;
                     break;
@@ -1519,15 +1520,15 @@ void func_80C0E618(EnBsb* this, PlayState* play) {
                 Enemy_StartFinishingBlow(play, &this->actor);
                 Actor_PlaySfx(&this->actor, NA_SE_EN_KITA_DEAD);
                 this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
-                this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+                this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
                 Actor_ChangeCategory(play, &play->actorCtx, &this->actor, ACTORCAT_NPC);
                 func_80C0D3C0(this, play);
             } else {
                 for (i = 0; i < ARRAY_COUNT(this->colliderElements); i++) {
-                    if (this->collider.elements[i].base.bumperFlags & BUMP_HIT) {
-                        sp48.x = this->collider.elements[i].base.bumper.hitPos.x;
-                        sp48.y = this->collider.elements[i].base.bumper.hitPos.y;
-                        sp48.z = this->collider.elements[i].base.bumper.hitPos.z;
+                    if (this->collider.elements[i].base.acElemFlags & ACELEM_HIT) {
+                        sp48.x = this->collider.elements[i].base.acDmgInfo.hitPos.x;
+                        sp48.y = this->collider.elements[i].base.acDmgInfo.hitPos.y;
+                        sp48.z = this->collider.elements[i].base.acDmgInfo.hitPos.z;
                         CollisionCheck_BlueBlood(play, NULL, &sp48);
                     }
                 }
@@ -1593,7 +1594,7 @@ s32 func_80C0E9CC(EnBsb* this, PlayState* play) {
 }
 
 void EnBsb_Update(Actor* thisx, PlayState* play) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
     s32 pad;
 
     DECR(this->unk_0292);
@@ -1658,7 +1659,7 @@ void EnBsb_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnBsb_OverrideLimbDrawOpa(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -1707,7 +1708,7 @@ s32 EnBsb_OverrideLimbDrawOpa(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f
 
 s32 EnBsb_OverrideLimbDrawXlu(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx,
                               Gfx** gfx) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
 
     if (limbIndex != this->unk_02B0) {
         *dList = NULL;
@@ -1731,7 +1732,7 @@ s32 EnBsb_OverrideLimbDrawXlu(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f
 }
 
 void EnBsb_PostLimbDrawOpa(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
 
     if (this->unk_02B0 == OBJECT_BSB_LIMB_NONE) {
         if (limbIndex == OBJECT_BSB_LIMB_0A) {
@@ -1766,7 +1767,7 @@ void EnBsb_PostLimbDrawOpa(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* r
 }
 
 void EnBsb_Draw(Actor* thisx, PlayState* play) {
-    EnBsb* this = THIS;
+    EnBsb* this = (EnBsb*)thisx;
     s32 pad;
 
     OPEN_DISPS(play->state.gfxCtx);
@@ -1876,7 +1877,7 @@ void EnBsb_DrawEffects(EnBsb* this, PlayState* play) {
             Matrix_RotateZS(effect->rot.z, MTXMODE_APPLY);
             Matrix_Scale(effect->scale, effect->scale, effect->scale, MTXMODE_APPLY);
 
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, gfxCtx);
 
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0x80, 255, 255, 255, 255);
 

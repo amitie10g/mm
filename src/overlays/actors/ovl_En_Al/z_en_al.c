@@ -5,10 +5,11 @@
  */
 
 #include "z_en_al.h"
+#include "attributes.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnAl*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnAl_Init(Actor* thisx, PlayState* play);
 void EnAl_Destroy(Actor* thisx, PlayState* play);
@@ -389,7 +390,7 @@ ActorProfile En_Al_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -397,11 +398,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 14, 62, 0, { 0, 0, 0 } },
@@ -621,7 +622,7 @@ s32 func_80BDE678(EnAl* this, s16* arg1, s16 arg2) {
 }
 
 s32 func_80BDE7FC(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
     s16 csId = func_80BDE484(this, 0);
     s32 pad2;
     s32 sp20 = false;
@@ -631,7 +632,7 @@ s32 func_80BDE7FC(Actor* thisx, PlayState* play) {
             if (!func_80BDE408(this, csId)) {
                 break;
             }
-
+            FALLTHROUGH;
         case 2:
         case 4:
         case 6:
@@ -667,7 +668,7 @@ s32 func_80BDE7FC(Actor* thisx, PlayState* play) {
 
 s32 func_80BDE92C(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
     Actor* sp1C = EnAl_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_GM);
     Actor* temp_v0 = EnAl_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_TOTO);
 
@@ -714,7 +715,7 @@ s32 func_80BDE92C(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80BDEA14(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
     s32 sp18 = false;
 
     switch (this->unk_4E6) {
@@ -891,7 +892,7 @@ s32 func_80BDF064(EnAl* this, PlayState* play) {
     Actor* sp1C = EnAl_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_GM);
     Actor* temp_v0 = EnAl_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_TOTO);
 
-    if (player->stateFlags1 & PLAYER_STATE1_40) {
+    if (player->stateFlags1 & PLAYER_STATE1_TALKING) {
         this->unk_4C2 |= 0x400;
         if (this->unk_4C4 != sp22) {
             switch (sp22) {
@@ -992,8 +993,8 @@ s32 func_80BDF308(EnAl* this, PlayState* play, ScheduleOutput* scheduleOutput) {
 s32 func_80BDF390(EnAl* this, PlayState* play, ScheduleOutput* scheduleOutput) {
     s32 ret;
 
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     this->unk_4F0 = PLAYER_IA_NONE;
     this->unk_4C2 = 0;
     this->unk_4D4 = 40.0f;
@@ -1077,11 +1078,11 @@ void func_80BDF5E8(EnAl* this, PlayState* play) {
     if (!Schedule_RunScript(play, D_80BDFC70, &scheduleOutput) ||
         ((this->scheduleResult != scheduleOutput.result) && !func_80BDF390(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = 0;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
     this->scheduleResult = scheduleOutput.result;
     this->unk_368 = func_80BDE384(this, play);
@@ -1103,7 +1104,7 @@ void func_80BDF6C4(EnAl* this, PlayState* play) {
 }
 
 void EnAl_Init(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, NULL, 0.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &gMadameAromaSkel, NULL, this->jointTable, this->morphTable,
@@ -1120,13 +1121,13 @@ void EnAl_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnAl_Destroy(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
 
     Collider_DestroyCylinder(play, &this->unk_310);
 }
 
 void EnAl_Update(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
 
     func_80BDEC2C(this, play);
 
@@ -1163,7 +1164,7 @@ s32 EnAl_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 }
 
 void EnAl_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
 
     switch (limbIndex) {
         case MADAME_AROMA_LIMB_SHAWL_MIDDLE:
@@ -1201,7 +1202,7 @@ void EnAl_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void EnAl_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
     s32 stepRot;
     s32 overrideRot;
 
@@ -1231,7 +1232,7 @@ void EnAl_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
 }
 
 void EnAl_Draw(Actor* thisx, PlayState* play) {
-    EnAl* this = THIS;
+    EnAl* this = (EnAl*)thisx;
     s32 i;
 
     if (this->scheduleResult != 0) {
@@ -1246,7 +1247,7 @@ void EnAl_Draw(Actor* thisx, PlayState* play) {
         for (i = 0; i < ARRAY_COUNT(this->unk_190); i++) {
             Matrix_Put(&this->unk_190[i]);
 
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_OPA_DISP++, D_80BE007C[i]);
         }
 

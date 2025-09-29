@@ -5,10 +5,9 @@
  */
 
 #include "z_en_kitan.h"
+#include "attributes.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnKitan*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnKitan_Init(Actor* thisx, PlayState* play);
 void EnKitan_Destroy(Actor* thisx, PlayState* play);
@@ -32,7 +31,7 @@ ActorProfile En_Kitan_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_ON | AC_TYPE_ENEMY,
         OC1_ON | OC1_TYPE_ALL,
@@ -40,18 +39,18 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 20, 40, 0, { 0, 0, 0 } },
 };
 
 void EnKitan_Init(Actor* thisx, PlayState* play) {
-    EnKitan* this = THIS;
+    EnKitan* this = (EnKitan*)thisx;
     s32 pad;
 
     Actor_SetScale(&this->actor, 0.0f);
@@ -77,11 +76,11 @@ void EnKitan_Init(Actor* thisx, PlayState* play) {
     }
 
     this->timer = 120;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
 }
 
 void EnKitan_Destroy(Actor* thisx, PlayState* play) {
-    EnKitan* this = THIS;
+    EnKitan* this = (EnKitan*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -165,7 +164,7 @@ void EnKitan_TalkAfterGivingPrize(EnKitan* this, PlayState* play) {
     if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         this->actionFunc = EnKitan_Talk;
         Message_ContinueTextbox(play, 0x04B5);
-        this->actor.flags &= ~ACTOR_FLAG_10000;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         Animation_MorphToLoop(&this->skelAnime, &gKeatonChuckleAnim, -5.0f);
     } else {
         Actor_OfferTalkExchange(&this->actor, play, 1000.0f, 1000.0f, PLAYER_IA_MINUS1);
@@ -176,7 +175,7 @@ void EnKitan_WaitForPrizeTextboxClosed(EnKitan* this, PlayState* play) {
     SkelAnime_Update(&this->skelAnime);
 
     if (Actor_TextboxIsClosing(&this->actor, play)) {
-        this->actor.flags |= ACTOR_FLAG_10000;
+        this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         this->actionFunc = EnKitan_TalkAfterGivingPrize;
         Actor_OfferTalkExchange(&this->actor, play, 1000.0f, 1000.0f, PLAYER_IA_MINUS1);
     }
@@ -337,7 +336,7 @@ void EnKitan_Appear(EnKitan* this, PlayState* play) {
     // Done scaling, continue
     Actor_SetScale(&this->actor, 0.015f);
     this->actionFunc = EnKitan_WaitForPlayer;
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     this->timer = 600;
 }
 
@@ -356,7 +355,7 @@ void EnKitan_WaitToAppear(EnKitan* this, PlayState* play) {
 }
 
 void EnKitan_Update(Actor* thisx, PlayState* play) {
-    EnKitan* this = THIS;
+    EnKitan* this = (EnKitan*)thisx;
 
     if (this->actor.draw != NULL) {
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
@@ -377,7 +376,7 @@ s32 EnKitan_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
 
 void EnKitan_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
     static Vec3f sFocusOffset = { 0.0f, 0.0f, 0.0f };
-    EnKitan* this = THIS;
+    EnKitan* this = (EnKitan*)thisx;
 
     if (limbIndex == KEATON_LIMB_RIGHT_SHOULDER) {
         Matrix_MultVec3f(&sFocusOffset, &this->actor.focus.pos);
@@ -385,7 +384,7 @@ void EnKitan_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* ro
 }
 
 void EnKitan_Draw(Actor* thisx, PlayState* play) {
-    EnKitan* this = THIS;
+    EnKitan* this = (EnKitan*)thisx;
 
     Gfx_SetupDL37_Opa(play->state.gfxCtx);
     SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,

@@ -1,4 +1,3 @@
-#include "prevent_bss_reordering.h"
 #include "z64bgcheck.h"
 
 #include "libc64/fixed_point.h"
@@ -8,6 +7,8 @@
 #include "fault.h"
 #include "vt.h"
 #include "z64actor.h"
+
+#pragma increment_block_number "n64-us:128"
 
 #define DYNA_RAYCAST_FLOORS 1
 #define DYNA_RAYCAST_WALLS 2
@@ -2773,12 +2774,13 @@ void DynaPoly_EnableFloorCollision(PlayState* play, DynaCollisionContext* dyna, 
 void DynaPoly_DeleteBgActor(PlayState* play, DynaCollisionContext* dyna, s32 bgId) {
     DynaPolyActor* actor;
 
-    if (DynaPoly_IsBgIdBgActor(bgId) == false) {
+    if (!DynaPoly_IsBgIdBgActor(bgId)) {
         return;
     }
-    actor = DynaPoly_GetActor(&play->colCtx, bgId);
-    if (actor != NULL) {
 
+    actor = DynaPoly_GetActor(&play->colCtx, bgId);
+
+    if (actor != NULL) {
         actor->bgId = BGACTOR_NEG_ONE;
         dyna->bgActors[bgId].actor = NULL;
         dyna->bgActorFlags[bgId] |= BGACTOR_1;
@@ -2872,7 +2874,7 @@ void DynaPoly_AddBgActorToLookup(PlayState* play, DynaCollisionContext* dyna, s3
     pos.y += actor->shape.yOffset * actor->scale.y;
 
     //! FAKE:
-    if (pbgdata && pbgdata) {}
+    if (1) {}
 
     ScaleRotPos_SetValue(&dyna->bgActors[bgId].curTransform, &actor->scale, &actor->shape.rot, &pos);
 

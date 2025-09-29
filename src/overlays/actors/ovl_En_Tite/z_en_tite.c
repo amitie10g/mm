@@ -7,9 +7,7 @@
 #include "z_en_tite.h"
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_200)
-
-#define THIS ((EnTite*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR)
 
 void EnTite_Init(Actor* thisx, PlayState* play);
 void EnTite_Destroy(Actor* thisx, PlayState* play);
@@ -60,7 +58,7 @@ ActorProfile En_Tite_Profile = {
 
 static ColliderSphereInit sSphereInit = {
     {
-        COLTYPE_HIT6,
+        COL_MATERIAL_HIT6,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -68,11 +66,11 @@ static ColliderSphereInit sSphereInit = {
         COLSHAPE_SPHERE,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0xF7CFFFFF, 0x00, 0x08 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_HARD,
-        BUMP_ON | BUMP_HOOKABLE,
+        ATELEM_ON | ATELEM_SFX_HARD,
+        ACELEM_ON | ACELEM_HOOKABLE,
         OCELEM_ON,
     },
     { 0, { { 0, 1500, 0 }, 20 }, 100 },
@@ -126,14 +124,14 @@ static Vec3f D_80896B44 = { 0.0f, 0.45f, 0.0f };
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(hintId, TATL_HINT_ID_BLUE_TEKTITE, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 2000, ICHAIN_CONTINUE),
+    ICHAIN_F32(lockOnArrowOffset, 2000, ICHAIN_CONTINUE),
     ICHAIN_F32(terminalVelocity, -40, ICHAIN_CONTINUE),
     ICHAIN_F32_DIV1000(gravity, -1000, ICHAIN_STOP),
 };
 
 void EnTite_Init(Actor* thisx, PlayState* play) {
     static s32 sTexturesDesegmented = false;
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
     s32 i;
     s32 j;
 
@@ -160,7 +158,7 @@ void EnTite_Init(Actor* thisx, PlayState* play) {
     if (this->actor.params == ENTITE_MINUS_3) {
         this->actor.params = ENTITE_MINUS_2;
         this->unk_2BE = 240;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.shape.yOffset = -3000.0f;
         this->actor.shape.shadowDraw = NULL;
         func_80895A10(this);
@@ -183,13 +181,13 @@ void EnTite_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnTite_Destroy(Actor* thisx, PlayState* play) {
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
 
     Collider_DestroySphere(play, &this->collider);
 }
 
 void func_80893A18(EnTite* this) {
-    this->collider.base.colType = COLTYPE_HIT6;
+    this->collider.base.colMaterial = COL_MATERIAL_HIT6;
     this->collider.base.acFlags &= ~AC_HARD;
 }
 
@@ -266,22 +264,22 @@ void func_80893BCC(EnTite* this, PlayState* play) {
 
 void func_80893DD4(EnTite* this) {
     this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX;
-    this->collider.base.colType = COLTYPE_HIT3;
+    this->collider.base.colMaterial = COL_MATERIAL_HIT3;
     this->unk_2BC = 80;
     this->drawDmgEffScale = 0.5f;
     this->drawDmgEffFrozenSteamScale = 0.75f;
     this->drawDmgEffAlpha = 1.0f;
     Actor_SetColorFilter(&this->actor, COLORFILTER_COLORFLAG_RED, 255, COLORFILTER_BUFFLAG_OPA, 80);
-    this->actor.flags &= ~ACTOR_FLAG_200;
+    this->actor.flags &= ~ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR;
 }
 
 void func_80893E54(EnTite* this, PlayState* play) {
     if (this->drawDmgEffType == ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) {
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
-        this->collider.base.colType = COLTYPE_HIT6;
+        this->collider.base.colMaterial = COL_MATERIAL_HIT6;
         this->drawDmgEffAlpha = 0.0f;
         Actor_SpawnIceEffects(play, &this->actor, this->bodyPartsPos, ENTITE_BODYPART_MAX, 2, 0.2f, 0.2f);
-        this->actor.flags |= ACTOR_FLAG_200;
+        this->actor.flags |= ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR;
     }
 }
 
@@ -351,7 +349,7 @@ void func_8089408C(EnTite* this, PlayState* play) {
         this->actor.shape.rot.y = this->actor.yawTowardsPlayer;
         this->actor.world.rot.y = this->actor.shape.rot.y;
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.velocity.y = 10.0f;
     } else {
         this->actor.velocity.y = 8.0f;
@@ -385,7 +383,7 @@ void func_808942B4(EnTite* this, PlayState* play) {
             }
         }
     } else if (!(this->collider.base.atFlags & AT_HIT)) {
-        this->actor.flags |= ACTOR_FLAG_1000000;
+        this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
     } else {
         this->collider.base.atFlags &= ~AT_HIT;
@@ -638,8 +636,8 @@ void func_80895020(EnTite* this, PlayState* play) {
     this->collider.base.acFlags &= ~AC_ON;
     this->actor.colorFilterTimer = 0;
     SoundSource_PlaySfxAtFixedWorldPos(play, &this->actor.world.pos, 40, NA_SE_EN_TEKU_DEAD);
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-    this->actor.flags |= ACTOR_FLAG_10;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.flags |= ACTOR_FLAG_UPDATE_CULLING_DISABLED;
     this->unk_2BA = 1;
     Item_DropCollectibleRandom(play, &this->actor, &this->actor.world.pos, this->unk_2BE);
     this->unk_2BC = 25;
@@ -749,7 +747,7 @@ void func_80895640(EnTite* this, PlayState* play) {
 void func_808956B8(EnTite* this) {
     this->unk_2BC = 400;
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
-    this->collider.base.colType = COLTYPE_HARD;
+    this->collider.base.colMaterial = COL_MATERIAL_HARD;
     this->collider.base.acFlags |= AC_HARD;
     this->actor.gravity = -1.0f;
     this->actionFunc = func_80895738;
@@ -784,7 +782,7 @@ void func_80895738(EnTite* this, PlayState* play) {
     } else if (this->unk_2BC > 0) {
         this->unk_2BC--;
         Math_StepToF(&this->actor.speed, 10.0f, 0.3f);
-        this->actor.flags |= ACTOR_FLAG_1000000;
+        this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
         CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
         if (!func_80893A34(this, play)) {
             this->unk_2BC = 0;
@@ -927,7 +925,7 @@ void func_80895E28(EnTite* this, PlayState* play) {
     func_800B0DE0(play, &sp44, &sp38, &D_80896B44, &D_80896B3C, &D_80896B40, 500, 50);
 
     if (Math_StepToF(&this->actor.shape.yOffset, 0.0f, 200.0f)) {
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.world.rot.y = this->actor.shape.rot.y;
         this->collider.base.acFlags |= AC_ON;
         func_808945EC(this);
@@ -938,16 +936,16 @@ void func_80895FF8(EnTite* this, PlayState* play) {
     if (this->collider.base.acFlags & AC_HIT) {
         this->collider.base.acFlags &= ~AC_HIT;
         this->collider.base.atFlags &= ~AT_HIT;
-        if (this->collider.base.colType == COLTYPE_HARD) {
+        if (this->collider.base.colMaterial == COL_MATERIAL_HARD) {
             func_808956FC(this);
             func_800BE568(&this->actor, &this->collider);
             return;
         }
 
-        Actor_SetDropFlag(&this->actor, &this->collider.info);
+        Actor_SetDropFlag(&this->actor, &this->collider.elem);
 
         if ((this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) ||
-            !(this->collider.info.acHitElem->toucher.dmgFlags & 0xDB0B3)) {
+            !(this->collider.elem.acHitElem->atDmgInfo.dmgFlags & 0xDB0B3)) {
             func_80893E54(this, play);
             if (this->actor.shape.yOffset < 0.0f) {
                 func_80895DE8(this);
@@ -996,8 +994,8 @@ void func_80895FF8(EnTite* this, PlayState* play) {
                     this->drawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
                     this->drawDmgEffAlpha = 4.0f;
                     this->drawDmgEffScale = 0.5f;
-                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.info.bumper.hitPos.x,
-                                this->collider.info.bumper.hitPos.y, this->collider.info.bumper.hitPos.z, 0, 0, 0,
+                    Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.elem.acDmgInfo.hitPos.x,
+                                this->collider.elem.acDmgInfo.hitPos.y, this->collider.elem.acDmgInfo.hitPos.z, 0, 0, 0,
                                 CLEAR_TAG_PARAMS(CLEAR_TAG_LARGE_LIGHT_RAYS));
                 }
 
@@ -1020,7 +1018,7 @@ void func_80895FF8(EnTite* this, PlayState* play) {
     } else if ((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) && (this->collider.base.acFlags & AC_ON) &&
                (this->actor.colChkInfo.health != 0) && (play->actorCtx.unk2 != 0) &&
                (this->actor.xyzDistToPlayerSq < SQ(200.0f))) {
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         if (this->actor.shape.yOffset < 0.0f) {
             this->actor.shape.yOffset = 0.0f;
             this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
@@ -1055,7 +1053,7 @@ void func_808963B4(EnTite* this, PlayState* play) {
 }
 
 void EnTite_Update(Actor* thisx, PlayState* play) {
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
 
     func_80895FF8(this, play);
 
@@ -1103,7 +1101,7 @@ void EnTite_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnTite_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
 
     if (this->unk_2BA == -1) {
         this->unk_3A8 = *dList;
@@ -1169,7 +1167,7 @@ static s8 sLimbToBodyParts2[OBJECT_TITE_LIMB_MAX] = {
 };
 
 void EnTite_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
     MtxF* matrix;
     s8 bodyPart1Index;
 
@@ -1198,7 +1196,7 @@ void EnTite_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot
         matrix->zw = this->bodyPartsPos[sLimbToBodyParts2[limbIndex]].z;
         Matrix_RotateZS(this->actor.world.rot.z, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_OPA_DISP++, this->unk_3A8);
 
         CLOSE_DISPS(play->state.gfxCtx);
@@ -1206,7 +1204,7 @@ void EnTite_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot
 }
 
 void EnTite_Draw(Actor* thisx, PlayState* play) {
-    EnTite* this = THIS;
+    EnTite* this = (EnTite*)thisx;
     Gfx* gfx;
 
     OPEN_DISPS(play->state.gfxCtx);

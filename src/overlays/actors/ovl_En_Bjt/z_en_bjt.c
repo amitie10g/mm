@@ -5,10 +5,9 @@
  */
 
 #include "z_en_bjt.h"
+#include "attributes.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnBjt*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnBjt_Init(Actor* thisx, PlayState* play);
 void EnBjt_Destroy(Actor* thisx, PlayState* play);
@@ -99,7 +98,7 @@ ActorProfile En_Bjt_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -107,11 +106,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 10, 68, 0, { 0, 0, 0 } },
@@ -275,7 +274,7 @@ typedef enum {
 // msgevent callback/communication. Follow and choose parts of script to run
 s32 EnBjt_ChooseBehaviour(Actor* thisx, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    EnBjt* this = THIS;
+    EnBjt* this = (EnBjt*)thisx;
     PlayerItemAction itemAction;
     s32 scriptBranch = 0;
 
@@ -287,7 +286,7 @@ s32 EnBjt_ChooseBehaviour(Actor* thisx, PlayState* play) {
                     if (!Message_ShouldAdvance(play)) {
                         break;
                     }
-                    // Fallthrough
+                    FALLTHROUGH;
                 case TEXT_STATE_PAUSE_MENU:
                     itemAction = func_80123810(play);
 
@@ -375,7 +374,7 @@ s32 EnBjt_ChooseAnimation(EnBjt* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     u16 curTextId = play->msgCtx.currentTextId;
 
-    if (player->stateFlags1 & (PLAYER_STATE1_40 | PLAYER_STATE1_400)) { // Talking, show item?
+    if (player->stateFlags1 & (PLAYER_STATE1_TALKING | PLAYER_STATE1_400)) { // Talking, show item?
         this->stateFlags |= TOILET_HAND_STATE_TEXTBOX;
         if (this->textId != curTextId) {
             switch (curTextId) {
@@ -456,7 +455,7 @@ void EnBjt_FollowSchedule(EnBjt* this, PlayState* play) {
 }
 
 void EnBjt_Init(Actor* thisx, PlayState* play) {
-    EnBjt* this = THIS;
+    EnBjt* this = (EnBjt*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, NULL, 0.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &gToiletHandSkel, NULL, this->jointTable, this->morphTable,
@@ -479,7 +478,7 @@ void EnBjt_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void EnBjt_Update(Actor* thisx, PlayState* play) {
-    EnBjt* this = THIS;
+    EnBjt* this = (EnBjt*)thisx;
 
     EnBjt_CheckTalk(this, play);
     this->actionFunc(this, play);
@@ -494,7 +493,7 @@ void EnBjt_Update(Actor* thisx, PlayState* play) {
 }
 
 void EnBjt_Draw(Actor* thisx, PlayState* play) {
-    EnBjt* this = THIS;
+    EnBjt* this = (EnBjt*)thisx;
 
     if (this->scheduleResult != TOILET_HAND_SCH_NONE) {
         Gfx_SetupDL25_Opa(play->state.gfxCtx);

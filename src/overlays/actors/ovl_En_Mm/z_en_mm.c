@@ -7,9 +7,7 @@
 #include "z_en_mm.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_10)
-
-#define THIS ((EnMm*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnMm_Init(Actor* thisx, PlayState* play);
 void EnMm_Destroy(Actor* thisx, PlayState* play);
@@ -35,7 +33,7 @@ ActorProfile En_Mm_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_METAL,
+        COL_MATERIAL_METAL,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -43,11 +41,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK2,
+        ELEM_MATERIAL_UNK2,
         { 0x00100000, 0x00, 0x00 },
         { 0x01000202, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 6, 30, 0, { 0, 0, 0 } },
@@ -71,7 +69,7 @@ void func_80965BBC(EnMm* this) {
 }
 
 void EnMm_Init(Actor* thisx, PlayState* play) {
-    EnMm* this = THIS;
+    EnMm* this = (EnMm*)thisx;
     EnMmActionFunc action;
 
     if ((this->actor.params >= 0) && (!CHECK_WEEKEVENTREG(WEEKEVENTREG_37_10) ||
@@ -96,7 +94,7 @@ void EnMm_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnMm_Destroy(Actor* thisx, PlayState* play) {
-    EnMm* this = THIS;
+    EnMm* this = (EnMm*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -197,7 +195,7 @@ void func_8096611C(EnMm* this, PlayState* play) {
 }
 
 void EnMm_Update(Actor* thisx, PlayState* play) {
-    EnMm* this = THIS;
+    EnMm* this = (EnMm*)thisx;
 
     Collider_ResetCylinderAC(play, &this->collider.base);
     this->actionFunc(this, play);
@@ -208,7 +206,7 @@ void EnMm_Update(Actor* thisx, PlayState* play) {
 }
 
 void EnMm_Draw(Actor* thisx, PlayState* play) {
-    EnMm* this = THIS;
+    EnMm* this = (EnMm*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -220,7 +218,7 @@ void EnMm_Draw(Actor* thisx, PlayState* play) {
         Matrix_RotateXS(this->unk_190, MTXMODE_APPLY);
         Matrix_RotateYS(-rotY, MTXMODE_APPLY);
     }
-    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
     gSPDisplayList(POLY_OPA_DISP++, gameplay_keep_DL_055628);
 
     CLOSE_DISPS(play->state.gfxCtx);

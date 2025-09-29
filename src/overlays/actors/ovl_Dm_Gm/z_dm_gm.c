@@ -8,9 +8,7 @@
 #include "assets/objects/object_an4/object_an4.h"
 #include "assets/objects/object_msmo/object_msmo.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((DmGm*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void DmGm_Init(Actor* thisx, PlayState* play);
 void DmGm_Destroy(Actor* thisx, PlayState* play);
@@ -231,7 +229,7 @@ void DmGm_WaitForObject(DmGm* this, PlayState* play) {
 
         this->animIndex = DMGM_ANIM_NONE;
         DmGm_ChangeAnim(this, play, DMGM_ANIM_SITTING_IN_DISBELIEF);
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         Actor_SetScale(&this->actor, 0.01f);
         this->stateFlags |= 1;
         this->actor.draw = DmGm_Draw;
@@ -311,7 +309,7 @@ void DmGm_DoNothing(DmGm* this, PlayState* play) {
 }
 
 void DmGm_Init(Actor* thisx, PlayState* play) {
-    DmGm* this = THIS;
+    DmGm* this = (DmGm*)thisx;
 
     this->an4ObjectSlot = SubS_GetObjectSlot(OBJECT_AN4, play);
     this->msmoObjectSlot = SubS_GetObjectSlot(OBJECT_MSMO, play);
@@ -322,7 +320,7 @@ void DmGm_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void DmGm_Update(Actor* thisx, PlayState* play) {
-    DmGm* this = THIS;
+    DmGm* this = (DmGm*)thisx;
 
     this->actionFunc(this, play);
 
@@ -337,7 +335,7 @@ void DmGm_Update(Actor* thisx, PlayState* play) {
 
 void DmGm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
     s32 pad[2];
-    DmGm* this = THIS;
+    DmGm* this = (DmGm*)thisx;
     s8 objectSlot = this->actor.objectSlot;
     s8 msmoObjectSlot = this->msmoObjectSlot;
 
@@ -350,7 +348,7 @@ void DmGm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
         Matrix_Push();
         Matrix_TranslateRotateZYX(&D_80C25218, &D_80C25224);
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[msmoObjectSlot].segment);
         gSPDisplayList(POLY_OPA_DISP++, gMoonMaskDL);
         gSPSegment(POLY_OPA_DISP++, 0x06, play->objectCtx.slots[objectSlot].segment);
@@ -369,7 +367,7 @@ void DmGm_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void DmGm_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    DmGm* this = THIS;
+    DmGm* this = (DmGm*)thisx;
     s16 stepRot;
     s16 overrideRot;
 
@@ -424,7 +422,7 @@ void DmGm_Draw(Actor* thisx, PlayState* play) {
         gAnju1EyeSadTex,            // DMGM_EYES_SAD
         gAnju1EyeRelievedClosedTex, // DMGM_EYES_RELIEVED_CLOSED
     };
-    DmGm* this = THIS;
+    DmGm* this = (DmGm*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

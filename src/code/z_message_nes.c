@@ -1,6 +1,7 @@
 #include "global.h"
 #include "message_data_fmt_nes.h"
 #include "message_data_static.h"
+#include "attributes.h"
 
 f32 sNESFontWidths[160] = {
     8.0f,  8.0f,  6.0f,  9.0f,  9.0f,  14.0f, 12.0f, 3.0f,  7.0f,  7.0f,  7.0f,  9.0f,  4.0f,  6.0f,  4.0f,  9.0f,
@@ -536,7 +537,7 @@ void Message_DrawTextNES(PlayState* play, Gfx** gfxP, u16 textDrawPos) {
 
             case MESSAGE_NEWLINE:
                 msgCtx->textPosY += msgCtx->unk11FFC;
-                // fallthrough
+                FALLTHROUGH;
             case MESSAGE_CARRIAGE_RETURN:
                 sp130++;
 
@@ -1004,8 +1005,23 @@ void Message_DecodeNES(PlayState* play) {
     s16 value;
     u32 timeToMoonCrash;
     s16 i;
+#ifndef AVOID_UB
+    // UB: digits is accessed out-of-bounds below (see bug annotation).
+    // On the IDO compiler the stack in memory is in the reverse
+    // order to variable declarations, so this ends up accessing
+    // numLines.
     s16 numLines;
     s16 digits[4];
+#else
+    // Make this behavior consistent across compilers that allocate
+    // stack differently.
+    struct {
+        s16 digits[4];
+        s16 numLines;
+    } forceLayout;
+#define numLines (forceLayout.numLines)
+#define digits (forceLayout.digits)
+#endif
     s16 spC6 = 0;
     u16 sfxHi;
     f32 var_fs0;
@@ -1939,4 +1955,8 @@ void Message_DecodeNES(PlayState* play) {
         decodedBufPos++;
         msgCtx->msgBufPos++;
     }
+#ifdef AVOID_UB
+#undef numLines
+#undef digits
+#endif
 }

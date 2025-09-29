@@ -5,11 +5,12 @@
  */
 
 #include "z_en_ma_yto.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Ma_Yts/z_en_ma_yts.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_100000 | ACTOR_FLAG_2000000)
-
-#define THIS ((EnMaYto*)thisx)
+#define FLAGS                                                                           \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_FREEZE_EXCEPTION | \
+     ACTOR_FLAG_UPDATE_DURING_OCARINA)
 
 void EnMaYto_Init(Actor* thisx, PlayState* play);
 void EnMaYto_Destroy(Actor* thisx, PlayState* play);
@@ -83,7 +84,7 @@ ActorProfile En_Ma_Yto_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -91,11 +92,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 18, 46, 0, { 0, 0, 0 } },
@@ -168,15 +169,15 @@ static TexturePtr sMouthTextures[] = {
     gCremiaMouthHangingOpenTex,
 };
 
-static TexturePtr sEyesTextures[] = {
+static TexturePtr sEyeTextures[] = {
     gCremiaEyeOpenTex, gCremiaEyeHalfTex, gCremiaEyeClosedTex, gCremiaEyeHappyTex, gCremiaEyeAngryTex, gCremiaEyeSadTex,
 };
 
 void EnMaYto_Init(Actor* thisx, PlayState* play) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
     s32 pad;
 
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     this->unk200 = 0;
     this->unk310 = 0;
     this->unk320 = 0;
@@ -297,7 +298,7 @@ void EnMaYto_ChooseAction(EnMaYto* this, PlayState* play) {
             break;
 
         case MA_YTO_TYPE_DINNER:
-            this->actor.targetMode = TARGET_MODE_6;
+            this->actor.attentionRangeType = ATTENTION_RANGE_6;
             EnMaYto_SetupDinnerWait(this);
             break;
 
@@ -316,7 +317,7 @@ void EnMaYto_ChooseAction(EnMaYto* this, PlayState* play) {
             break;
 
         case MA_YTO_TYPE_4:
-            this->actor.flags |= ACTOR_FLAG_10;
+            this->actor.flags |= ACTOR_FLAG_UPDATE_CULLING_DISABLED;
             EnMaYto_SetupWarmFuzzyFeelingCs(this);
             break;
 
@@ -391,7 +392,7 @@ s32 EnMaYto_TryFindRomani(EnMaYto* this, PlayState* play) {
 }
 
 void EnMaYto_Destroy(Actor* thisx, PlayState* play) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -920,10 +921,10 @@ void EnMaYto_SetupAfterMilkRunInit(EnMaYto* this) {
 }
 
 void EnMaYto_AfterMilkRunInit(EnMaYto* this, PlayState* play) {
-    this->actor.flags |= ACTOR_FLAG_10000;
+    this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
 
     if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
-        this->actor.flags &= ~ACTOR_FLAG_10000;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
 
         if (CHECK_WEEKEVENTREG(WEEKEVENTREG_ESCORTED_CREMIA)) {
             Message_StartTextbox(play, 0x33C1, &this->actor);
@@ -1432,12 +1433,12 @@ s32 EnMaYto_HasSpokenToPlayer(void) {
             if (CHECK_WEEKEVENTREG(WEEKEVENTREG_13_10)) {
                 return true;
             }
-            // fallthrough
+            FALLTHROUGH;
         case 2:
             if (CHECK_WEEKEVENTREG(WEEKEVENTREG_13_08)) {
                 return true;
             }
-            // fallthrough
+            FALLTHROUGH;
         case 1:
             if (CHECK_WEEKEVENTREG(WEEKEVENTREG_13_04)) {
                 return true;
@@ -1470,7 +1471,7 @@ void EnMaYto_SetTalkedFlag(void) {
 }
 
 void EnMaYto_Update(Actor* thisx, PlayState* play) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
 
     this->actionFunc(this, play);
     EnMaYto_UpdateCollision(this, play);
@@ -1478,7 +1479,7 @@ void EnMaYto_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnMaYto_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
     Vec3s limbRot;
 
     if (limbIndex == CREMIA_LIMB_HEAD) {
@@ -1502,7 +1503,7 @@ s32 EnMaYto_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
 }
 
 void EnMaYto_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
 
     if (limbIndex == CREMIA_LIMB_HEAD) {
         Matrix_MultZero(&this->actor.focus.pos);
@@ -1510,19 +1511,19 @@ void EnMaYto_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* ro
 }
 
 void EnMaYto_Draw(Actor* thisx, PlayState* play) {
-    EnMaYto* this = THIS;
+    EnMaYto* this = (EnMaYto*)thisx;
     s32 pad;
 
     OPEN_DISPS(play->state.gfxCtx);
 
     if ((this->type == MA_YTO_TYPE_BARN) && CHECK_WEEKEVENTREG(WEEKEVENTREG_DEFENDED_AGAINST_ALIENS)) {
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_OPA_DISP++, gCremiaWoodenBoxDL);
     }
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
 
     gSPSegment(POLY_OPA_DISP++, 0x09, Lib_SegmentedToVirtual(sMouthTextures[this->mouthTexIndex]));
-    gSPSegment(POLY_OPA_DISP++, 0x08, Lib_SegmentedToVirtual(sEyesTextures[this->eyeTexIndex]));
+    gSPSegment(POLY_OPA_DISP++, 0x08, Lib_SegmentedToVirtual(sEyeTextures[this->eyeTexIndex]));
 
     SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,
                           EnMaYto_OverrideLimbDraw, EnMaYto_PostLimbDraw, &this->actor);

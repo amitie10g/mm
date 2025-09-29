@@ -7,9 +7,7 @@
 #include "z_en_encount3.h"
 #include "assets/objects/object_big_fwall/object_big_fwall.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_LOCK_ON_DISABLED)
-
-#define THIS ((EnEncount3*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnEncount3_Init(Actor* thisx, PlayState* play);
 void EnEncount3_Destroy(Actor* thisx, PlayState* play);
@@ -37,7 +35,7 @@ ActorProfile En_Encount3_Profile = {
 s32 D_809AD810 = false;
 
 void EnEncount3_Init(Actor* thisx, PlayState* play) {
-    EnEncount3* this = THIS;
+    EnEncount3* this = (EnEncount3*)thisx;
 
     this->unk14A = ENCOUNT3_GET_SPAWN_INDEX(thisx);
     this->childParams = ENCOUNT3_GET_PARAM_F80(thisx);
@@ -56,7 +54,7 @@ void EnEncount3_Init(Actor* thisx, PlayState* play) {
         Actor_Kill(&this->actor);
     }
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     func_809AD058(this);
 }
 
@@ -109,7 +107,7 @@ void func_809AD1EC(EnEncount3* this, PlayState* play) {
 }
 
 void EnEncount3_Update(Actor* thisx, PlayState* play2) {
-    EnEncount3* this = THIS;
+    EnEncount3* this = (EnEncount3*)thisx;
     f32 new_var;
     PlayState* play = play2;
     Player* player = GET_PLAYER(play);
@@ -177,7 +175,7 @@ void EnEncount3_Update(Actor* thisx, PlayState* play2) {
 }
 
 void EnEncount3_Draw(Actor* thisx, PlayState* play) {
-    EnEncount3* this = THIS;
+    EnEncount3* this = (EnEncount3*)thisx;
     s32 pad;
 
     if (this->unk170 > 0.0f) {
@@ -198,7 +196,7 @@ void EnEncount3_Draw(Actor* thisx, PlayState* play) {
                          MTXMODE_NEW);
         Matrix_Scale(this->unk168, this->unk174, this->unk168, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, gRingOfFireDL);
 
         Matrix_Pop();

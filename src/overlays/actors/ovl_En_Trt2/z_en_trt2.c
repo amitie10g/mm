@@ -7,9 +7,7 @@
 #include "z_en_trt2.h"
 #include "assets/objects/object_trt/object_trt.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnTrt2*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnTrt2_Init(Actor* thisx, PlayState* play);
 void EnTrt2_Destroy(Actor* thisx, PlayState* play);
@@ -67,7 +65,7 @@ ActorProfile En_Trt2_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -75,11 +73,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 32, 56, 30, { 0, 0, 0 } },
@@ -241,8 +239,8 @@ void func_80AD381C(EnTrt2* this, PlayState* play) {
             this->actor.world.pos.y -= 50.0f;
             this->unk_3D9 = 0;
             this->unk_3B2 = 0;
-            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
-            this->actor.flags |= ACTOR_FLAG_10;
+            this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
+            this->actor.flags |= ACTOR_FLAG_UPDATE_CULLING_DISABLED;
         }
     } else {
         Actor_Kill(&this->actor);
@@ -719,7 +717,7 @@ s32 func_80AD4CCC(EnTrt2* this, PlayState* play) {
 void func_80AD4DB4(EnTrt2* this, PlayState* play) {
     static Vec3f D_80AD5904 = { 0.0f, 50.0f, 0.0f };
 
-    this->actor.flags &= ~ACTOR_FLAG_10;
+    this->actor.flags &= ~ACTOR_FLAG_UPDATE_CULLING_DISABLED;
     Actor_SetObjectDependency(play, &this->actor);
     Actor_SetScale(&this->actor, 0.008f);
     this->path = SubS_GetPathByIndex(play, ENTRT2_GET_PATH_INDEX(&this->actor), ENTRT2_PATH_INDEX_NONE);
@@ -800,12 +798,12 @@ void func_80AD4FE4(EnTrt2* this, PlayState* play) {
 }
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_U8(targetMode, TARGET_MODE_3, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 500, ICHAIN_STOP),
+    ICHAIN_U8(attentionRangeType, ATTENTION_RANGE_3, ICHAIN_CONTINUE),
+    ICHAIN_F32(lockOnArrowOffset, 500, ICHAIN_STOP),
 };
 
 void EnTrt2_Init(Actor* thisx, PlayState* play) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     Collider_InitCylinder(play, &this->collider);
     Collider_SetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
@@ -815,14 +813,14 @@ void EnTrt2_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnTrt2_Destroy(Actor* thisx, PlayState* play) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     SkelAnime_Free(&this->skelAnime, play);
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnTrt2_Update(Actor* thisx, PlayState* play) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     if ((this->unk_3B2 != 6) && (this->unk_3B2 != 10) && (this->unk_3B2 != 13) && (this->unk_3B2 != 14) &&
         (this->unk_3B2 != 16) && (this->unk_3B2 != 8) && (this->unk_3B2 != 9)) {
@@ -888,7 +886,7 @@ void func_80AD5394(s16 arg0, s16 arg1, Vec3f* arg2, Vec3s* arg3, s32 arg4) {
 }
 
 s32 EnTrt2_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     if ((limbIndex == KOTAKE_LIMB_TORSO_LIMB) || (limbIndex == KOTAKE_LIMB_LEFT_HAND) ||
         (limbIndex == KOTAKE_LIMB_RIGHT_HAND)) {
@@ -899,7 +897,7 @@ s32 EnTrt2_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* 
 }
 
 void EnTrt2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
     Vec3f sp30 = { 0.0f, -30.0f, 0.0f };
     s32 phi_v0 = false;
 
@@ -919,7 +917,7 @@ void EnTrt2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot
 }
 
 void EnTrt2_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     if (limbIndex == KOTAKE_LIMB_HEAD) {
         Matrix_Translate(this->unk_3C8.x, this->unk_3C8.y, this->unk_3C8.z, MTXMODE_NEW);
@@ -937,7 +935,7 @@ void func_80AD56E8(Actor* thisx, PlayState* play) {
         gKotakeEyeClosedTex,
     };
     s32 pad;
-    EnTrt2* this = THIS;
+    EnTrt2* this = (EnTrt2*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

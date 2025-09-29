@@ -7,14 +7,17 @@
 #include "z_boss_02.h"
 #include "z64rumble.h"
 #include "z64shrink_window.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_Door_Warp1/z_door_warp1.h"
 #include "overlays/actors/ovl_En_Tanron5/z_en_tanron5.h"
 #include "overlays/actors/ovl_Item_B_Heart/z_item_b_heart.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_20)
+#pragma increment_block_number "n64-us:128"
 
-#define THIS ((Boss02*)thisx)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void Boss02_Init(Actor* thisx, PlayState* play);
 void Boss02_Destroy(Actor* thisx, PlayState* play);
@@ -172,242 +175,242 @@ s16 D_809DF5E4[] = {
 static ColliderJntSphElementInit sJntSphElementsInit1[] = {
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 1, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 2, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 3, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 4, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 5, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 6, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 7, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 8, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 9, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 10, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 11, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 12, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 13, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 14, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 15, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 16, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 17, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 18, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 19, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 20, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 21, { { 0, 0, 0 }, 85 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 0, { { 0, 0, 0 }, 130 }, 100 },
@@ -416,7 +419,7 @@ static ColliderJntSphElementInit sJntSphElementsInit1[] = {
 
 static ColliderJntSphInit sJntSphInit1 = {
     {
-        COLTYPE_METAL,
+        COL_MATERIAL_METAL,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_HARD | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_PLAYER,
@@ -430,22 +433,22 @@ static ColliderJntSphInit sJntSphInit1 = {
 static ColliderJntSphElementInit sJntSphElementsInit2[] = {
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 0, { { 0, 0, 0 }, 130 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK3,
+            ELEM_MATERIAL_UNK3,
             { 0xF7CFFFFF, 0x04, 0x10 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_NORMAL,
-            BUMP_ON,
+            ATELEM_ON | ATELEM_SFX_NORMAL,
+            ACELEM_ON,
             OCELEM_ON,
         },
         { 22, { { 0, 0, 0 }, 110 }, 100 },
@@ -454,7 +457,7 @@ static ColliderJntSphElementInit sJntSphElementsInit2[] = {
 
 static ColliderJntSphInit sJntSphInit2 = {
     {
-        COLTYPE_HIT0,
+        COL_MATERIAL_HIT0,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_PLAYER,
@@ -467,7 +470,7 @@ static ColliderJntSphInit sJntSphInit2 = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_METAL,
+        COL_MATERIAL_METAL,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_HARD | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -475,11 +478,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK2,
+        ELEM_MATERIAL_UNK2,
         { 0xF7CFFFFF, 0x04, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 150, 200, 0, { 0, 0, 0 } },
@@ -581,7 +584,7 @@ void func_809DA50C(s32 arg0, ColliderJntSph* collider, Vec3f* arg2) {
 }
 
 void Boss02_Init(Actor* thisx, PlayState* play) {
-    Boss02* this = THIS;
+    Boss02* this = (Boss02*)thisx;
     s32 i;
     s32 pad[2];
 
@@ -592,7 +595,7 @@ void Boss02_Init(Actor* thisx, PlayState* play) {
         Actor_Spawn(&play->actorCtx, play, ACTOR_ITEM_B_HEART, 0.0f, 30.0f, -150.0f, 0, 1, 0, BHEART_PARAM_NORMAL);
     }
 
-    this->actor.targetMode = TARGET_MODE_10;
+    this->actor.attentionRangeType = ATTENTION_RANGE_10;
     this->subCamUp.z = this->subCamUp.x = 0.0f;
     this->subCamUp.y = 1.0f;
     if (TWINMOLD_GET_TYPE(&this->actor) == TWINMOLD_TYPE_BATTLE_HANDLER) {
@@ -600,7 +603,7 @@ void Boss02_Init(Actor* thisx, PlayState* play) {
         play->specialEffects = (void*)sTwinmoldEffects;
         this->actor.update = Boss02_BattleHandler_Update;
         this->actor.draw = Boss02_BattleHandler_Draw;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         this->playerScale = 0.01f;
         if ((KREG(64) != 0) || CHECK_EVENTINF(EVENTINF_INTRO_CS_WATCHED_TWINMOLD) || (sBlueWarp != NULL)) {
             this->unk_1D20 = 0;
@@ -712,7 +715,7 @@ void func_809DAB78(Boss02* this, PlayState* play) {
     f32 sp9C;
     Vec3f sp90;
     CollisionPoly* sp8C;
-    s32 sp88;
+    s32 bgId;
     Vec3f sp7C;
     Vec3f sp70;
     Vec3f sp64;
@@ -771,7 +774,7 @@ void func_809DAB78(Boss02* this, PlayState* play) {
             Actor_PlaySfx(&this->actor, NA_SE_EN_INBOSS_ROAR_OLD);
         }
 
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         if (this->unk_0195 != 0) {
             this->actor.world.rot.z = Math_SinS(this->unk_014C * 0x1200) * 0xE00;
         } else {
@@ -802,9 +805,6 @@ void func_809DAB78(Boss02* this, PlayState* play) {
     }
 
     switch (this->unk_0144) {
-        default:
-            return;
-
         case 0:
             if ((TWINMOLD_GET_TYPE(&this->actor) == TWINMOLD_TYPE_RED) && (Rand_ZeroOne() < 0.75f)) {
                 this->actor.world.pos.x = player->actor.world.pos.x;
@@ -823,7 +823,7 @@ void func_809DAB78(Boss02* this, PlayState* play) {
                 (fabsf(this->actor.world.pos.z) < (500.0f * sGiantModeScaleFactor))) {
                 return;
             }
-
+            FALLTHROUGH;
         case 100:
             this->actor.shape.rot.x = 0x4000;
             this->unk_01B0.x = this->actor.world.pos.x;
@@ -831,7 +831,7 @@ void func_809DAB78(Boss02* this, PlayState* play) {
             this->unk_01B0.z = this->actor.world.pos.z;
             this->unk_0146[0] = 100;
             this->unk_0144 = 1;
-
+            FALLTHROUGH;
         case 1:
             if (this->unk_0146[0] == 0) {
                 if (Rand_ZeroOne() < 0.3f) {
@@ -1068,7 +1068,7 @@ void func_809DAB78(Boss02* this, PlayState* play) {
                     spD0.x = this->unk_0170.x + sp90.x;
                     spD0.y = this->unk_0170.y + (1000.0f * sGiantModeScaleFactor);
                     spD0.z = this->unk_0170.z + sp90.z;
-                    if (BgCheck_EntityRaycastFloor3(&play->colCtx, &sp8C, &sp88, &spD0) != BGCHECK_Y_MIN) {
+                    if (BgCheck_EntityRaycastFloor3(&play->colCtx, &sp8C, &bgId, &spD0) != BGCHECK_Y_MIN) {
                         spA0 = BgCheck_EntityRaycastFloor1(&play->colCtx, &sp8C, &spD0);
                         Matrix_MultVecZ(5.0f * sGiantModeScaleFactor, &sp70);
                         sp70.y = 2.0f * sGiantModeScaleFactor;
@@ -1084,6 +1084,10 @@ void func_809DAB78(Boss02* this, PlayState* play) {
                     }
                 }
             }
+            break;
+
+        default:
+            return;
     }
 
     this->colliderCylinder.dim.radius = 150.0f * sGiantModeScaleFactor;
@@ -1107,8 +1111,8 @@ void func_809DBFB4(Boss02* this, PlayState* play) {
         }
 
         for (i = temp; i < ARRAY_COUNT(this->colliderSphere2Elements); i++) {
-            if (this->colliderSphere2.elements[i].base.bumperFlags & BUMP_HIT) {
-                this->colliderSphere2.elements[i].base.bumperFlags &= ~BUMP_HIT;
+            if (this->colliderSphere2.elements[i].base.acElemFlags & ACELEM_HIT) {
+                this->colliderSphere2.elements[i].base.acElemFlags &= ~ACELEM_HIT;
                 this->unk_0154 = 15;
                 this->unk_0156 = 15;
 
@@ -1129,11 +1133,7 @@ void func_809DBFB4(Boss02* this, PlayState* play) {
                 damage = this->actor.colChkInfo.damage;
 
                 if (otherTwinmold->unk_0144 < 20) {
-                    do {
-                        do {
-                            this->actor.colChkInfo.health -= damage;
-                        } while (0);
-                    } while (0);
+                    this->actor.colChkInfo.health -= damage;
 
                     if ((s8)this->actor.colChkInfo.health <= 0) {
                         Actor_Kill(this->actor.child);
@@ -1175,7 +1175,7 @@ void func_809DBFB4(Boss02* this, PlayState* play) {
 }
 
 void Boss02_Tail_Update(Actor* thisx, PlayState* play) {
-    Boss02* this = THIS;
+    Boss02* this = (Boss02*)thisx;
     s32 pad;
     Vec3f pos;
     CollisionPoly* outPoly;
@@ -1191,16 +1191,16 @@ void Boss02_Tail_Update(Actor* thisx, PlayState* play) {
         }
 
         if ((this->actor.focus.pos.y < BgCheck_EntityRaycastFloor1(&play->colCtx, &outPoly, &pos)) || sIsInGiantMode) {
-            this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+            this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         } else {
-            this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+            this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         }
     }
 }
 
 void Boss02_Twinmold_Update(Actor* thisx, PlayState* play) {
     Vec3f sp3C;
-    Boss02* this = THIS;
+    Boss02* this = (Boss02*)thisx;
     s32 pad;
     s16 i;
 
@@ -1273,7 +1273,7 @@ void Boss02_Twinmold_Update(Actor* thisx, PlayState* play) {
                 this->unk_015A = 0;
                 this->unk_0158 = this->unk_015A;
                 this->unk_015C++;
-
+                FALLTHROUGH;
             case 2:
                 this->unk_015A += 2;
                 if (this->unk_015A > 20) {
@@ -1294,7 +1294,7 @@ void Boss02_Twinmold_Update(Actor* thisx, PlayState* play) {
                 this->unk_015A = 21;
                 this->unk_0158 = this->unk_015A;
                 this->unk_015C++;
-
+                FALLTHROUGH;
             case 11:
                 this->unk_0158 -= 2;
                 if (this->unk_0158 <= 0) {
@@ -1317,7 +1317,7 @@ void Boss02_Twinmold_Update(Actor* thisx, PlayState* play) {
 }
 
 void Boss02_BattleHandler_Update(Actor* thisx, PlayState* play) {
-    Boss02* this = THIS;
+    Boss02* this = (Boss02*)thisx;
 
     this->giantModeScaleFactor = sGiantModeScaleFactor;
     play->envCtx.sandstormState = SANDSTORM_D;
@@ -1372,7 +1372,7 @@ Vec3f D_809DFAF4 = { -10000.0f, -100000.0f, -100000.0f };
 
 void Boss02_Twinmold_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    Boss02* this = THIS;
+    Boss02* this = (Boss02*)thisx;
     s32 i;
     s32 idx;
     Mtx* mtxHead = GRAPH_ALLOC(play->state.gfxCtx, 23 * sizeof(Mtx));
@@ -1586,7 +1586,7 @@ void Boss02_DrawEffects(PlayState* play) {
             Matrix_Scale(effect->scale * sGiantModeScaleFactor, effect->scale * sGiantModeScaleFactor, 1.0f,
                          MTXMODE_APPLY);
 
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gTwinmoldDustModelDL);
         }
     }
@@ -1607,7 +1607,7 @@ void Boss02_DrawEffects(PlayState* play) {
             Matrix_Scale(effect->scale * sGiantModeScaleFactor, effect->scale * sGiantModeScaleFactor,
                          effect->scale * sGiantModeScaleFactor, MTXMODE_APPLY);
 
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_OPA_DISP++, gEffFragments1DL);
         }
     }
@@ -1627,7 +1627,7 @@ void Boss02_DrawEffects(PlayState* play) {
             Matrix_Scale(effect->scale * sGiantModeScaleFactor, effect->scale * sGiantModeScaleFactor, 1.0f,
                          MTXMODE_APPLY);
 
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gLightOrbModelDL);
         }
     }
@@ -1651,7 +1651,7 @@ void Boss02_DrawEffects(PlayState* play) {
             Matrix_Scale(effect->scale * sGiantModeScaleFactor, effect->scale * sGiantModeScaleFactor, 1.0f,
                          MTXMODE_APPLY);
 
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gTwinmoldDustModelDL);
         }
     }
@@ -1815,7 +1815,7 @@ void Boss02_HandleGiantsMaskCutscene(Boss02* this, PlayState* play) {
             func_80169AFC(play, this->subCamId, 0);
             this->subCamId = SUB_CAM_ID_DONE;
             Cutscene_StopManual(play, &play->csCtx);
-            this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+            this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
             player->stateFlags1 &= ~PLAYER_STATE1_100;
             this->playerScale = 0.01f;
             Play_DisableMotionBlur();
@@ -2071,7 +2071,7 @@ void Boss02_HandleGiantsMaskCutscene(Boss02* this, PlayState* play) {
             Boss02_FillScreen(play, 255, 255, 255, 0);
             this->giantsMaskCsFlashState = GIANTS_MASK_CS_FLASH_STATE_INCREASE_ALPHA;
             Audio_PlaySfx(NA_SE_SY_TRANSFORM_MASK_FLASH);
-            // fallthrough
+            FALLTHROUGH;
         case GIANTS_MASK_CS_FLASH_STATE_INCREASE_ALPHA:
             this->giantsMaskCsFlashAlpha += 40;
             if (this->giantsMaskCsFlashAlpha >= 400) {
@@ -2145,7 +2145,7 @@ void func_809DEAC4(Boss02* this, PlayState* play) {
             Play_ChangeCameraStatus(play, this->subCamId, CAM_STATUS_ACTIVE);
             this->unk_1D20 = 2;
             this->unk_1D1C = 0;
-
+            FALLTHROUGH;
         case 2:
             player->actor.shape.rot.y = -0x8000;
             player->actor.world.rot.y = player->actor.shape.rot.y;
@@ -2217,7 +2217,7 @@ void func_809DEAC4(Boss02* this, PlayState* play) {
             }
 
             if (this->unk_1D1C == (u32)(KREG(92) + 125)) {
-                TitleCard_InitBossName(&play->state, &play->actorCtx.titleCtxt,
+                TitleCard_InitBossName(&play->state, &play->actorCtx.titleCtx,
                                        Lib_SegmentedToVirtual(gTwinmoldTitleCardTex), 160, 180, 128, 40);
             }
 
@@ -2226,7 +2226,7 @@ void func_809DEAC4(Boss02* this, PlayState* play) {
                 this->subCamId = SUB_CAM_ID_DONE;
                 Cutscene_StopManual(play, &play->csCtx);
                 Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_END);
-                this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+                this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
                 this->unk_1D20 = 0;
                 sRedTwinmold->unk_0144 = sBlueTwinmold->unk_0144 = 3;
                 sRedTwinmold->unk_0146[0] = sBlueTwinmold->unk_0146[0] = 60;
@@ -2247,7 +2247,7 @@ void func_809DEAC4(Boss02* this, PlayState* play) {
             } else {
                 break;
             }
-
+            FALLTHROUGH;
         case 101:
         case 102:
         case_10x:
@@ -2288,7 +2288,7 @@ void func_809DEAC4(Boss02* this, PlayState* play) {
                 Cutscene_StopManual(play, &play->csCtx);
                 Player_SetCsActionWithHaltedActors(play, &this->actor, PLAYER_CSACTION_END);
                 this->unk_1D20 = 0;
-                this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+                this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
                 sp68->unk_0144 = 10;
                 if ((sRedTwinmold->unk_0144 >= 10) && (sBlueTwinmold->unk_0144 >= 10)) {
                     f32 phi_f0;

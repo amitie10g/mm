@@ -6,9 +6,7 @@
 
 #include "z_item_inbox.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((ItemInbox*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void ItemInbox_Init(Actor* thisx, PlayState* play);
 void ItemInbox_Destroy(Actor* thisx, PlayState* play);
@@ -30,7 +28,7 @@ ActorProfile Item_Inbox_Profile = {
 };
 
 void ItemInbox_Init(Actor* thisx, PlayState* play) {
-    ItemInbox* this = THIS;
+    ItemInbox* this = (ItemInbox*)thisx;
 
     this->actionFunc = ItemInbox_Idle;
     Actor_SetScale(&this->actor, 0.2f);
@@ -46,13 +44,13 @@ void ItemInbox_Idle(ItemInbox* this, PlayState* play) {
 }
 
 void ItemInbox_Update(Actor* thisx, PlayState* play) {
-    ItemInbox* this = THIS;
+    ItemInbox* this = (ItemInbox*)thisx;
 
     this->actionFunc(this, play);
 }
 
 void ItemInbox_Draw(Actor* thisx, PlayState* play) {
-    ItemInbox* this = THIS;
+    ItemInbox* this = (ItemInbox*)thisx;
 
     func_800B8050(&this->actor, play, 0);
     func_800B8118(&this->actor, play, 0);

@@ -7,9 +7,7 @@
 #include "z_en_syateki_okuta.h"
 #include "overlays/actors/ovl_En_Syateki_Man/z_en_syateki_man.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_LOCK_ON_DISABLED)
-
-#define THIS ((EnSyatekiOkuta*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnSyatekiOkuta_Init(Actor* thisx, PlayState* play);
 void EnSyatekiOkuta_Destroy(Actor* thisx, PlayState* play);
@@ -42,7 +40,7 @@ ActorProfile En_Syateki_Okuta_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT3,
+        COL_MATERIAL_HIT3,
         AT_NONE,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -50,11 +48,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 20, 40, -30, { 0, 0, 0 } },
@@ -83,12 +81,12 @@ static AnimationInfo sAnimationInfo[SG_OCTO_ANIM_MAX] = {
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(hintId, TATL_HINT_ID_OCTOROK, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 6500, ICHAIN_STOP),
+    ICHAIN_F32(lockOnArrowOffset, 6500, ICHAIN_STOP),
 };
 
 void EnSyatekiOkuta_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnSyatekiOkuta* this = THIS;
+    EnSyatekiOkuta* this = (EnSyatekiOkuta*)thisx;
     WaterBox* waterbox;
     f32 ySurface;
     s32 bgId;
@@ -116,7 +114,7 @@ void EnSyatekiOkuta_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnSyatekiOkuta_Destroy(Actor* thisx, PlayState* play) {
-    EnSyatekiOkuta* this = THIS;
+    EnSyatekiOkuta* this = (EnSyatekiOkuta*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -417,7 +415,7 @@ void EnSyatekiOkuta_CheckForSignal(EnSyatekiOkuta* this, PlayState* play) {
 
 void EnSyatekiOkuta_Update(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnSyatekiOkuta* this = THIS;
+    EnSyatekiOkuta* this = (EnSyatekiOkuta*)thisx;
     EnSyatekiMan* syatekiMan;
 
     this->actionFunc(this, play);
@@ -537,7 +535,7 @@ s32 EnSyatekiOkuta_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList,
     s32 pad;
     Vec3f scale;
     f32 curFrame;
-    EnSyatekiOkuta* this = THIS;
+    EnSyatekiOkuta* this = (EnSyatekiOkuta*)thisx;
 
     curFrame = this->skelAnime.curFrame;
     if (this->actionFunc == EnSyatekiOkuta_Die) {
@@ -555,7 +553,7 @@ s32 EnSyatekiOkuta_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList,
 }
 
 void EnSyatekiOkuta_Draw(Actor* thisx, PlayState* play) {
-    EnSyatekiOkuta* this = THIS;
+    EnSyatekiOkuta* this = (EnSyatekiOkuta*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -581,7 +579,7 @@ void EnSyatekiOkuta_Draw(Actor* thisx, PlayState* play) {
             gDPSetPrimColor(POLY_XLU_DISP++, 0, 0, 210, 64, 32, this->hitResultAlpha);
         }
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
 
         if (this->type == SG_OCTO_TYPE_BLUE) {
             gSPDisplayList(POLY_XLU_DISP++, gShootingGalleryOctorokCrossDL);

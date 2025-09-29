@@ -5,11 +5,12 @@
  */
 
 #include "z_en_nb.h"
+#include "attributes.h"
 #include "assets/objects/object_nb/object_nb.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnNb*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnNb_Init(Actor* thisx, PlayState* play);
 void EnNb_Destroy(Actor* thisx, PlayState* play);
@@ -225,7 +226,7 @@ ActorProfile En_Nb_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -233,11 +234,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 10, 68, 0, { 0, 0, 0 } },
@@ -292,7 +293,7 @@ s32 EnNb_ChangeAnim(EnNb* this, EnNbAnimation animIndex) {
         if ((this->animIndex != EN_NB_ANIM_0) && (this->animIndex != EN_NB_ANIM_1)) {
             changeAnim = true;
         }
-    } else if (animIndex != this->animIndex) {
+    } else if (this->animIndex != animIndex) {
         changeAnim = true;
     }
 
@@ -368,7 +369,7 @@ typedef enum EnNbBehaviour {
 } EnNbBehaviour;
 
 s32 func_80BC00AC(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
     s16 csId = func_80BC0050(this, 0);
     s32 ret = false;
 
@@ -377,7 +378,7 @@ s32 func_80BC00AC(Actor* thisx, PlayState* play) {
             if (!func_80BBFFD4(this, csId)) {
                 break;
             }
-        // fallthrough
+            FALLTHROUGH;
         case ENNB_BEHAVIOUR_2:
         case ENNB_BEHAVIOUR_4:
         case ENNB_BEHAVIOUR_6:
@@ -413,7 +414,7 @@ s32 func_80BC00AC(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80BC01DC(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
     s32 pad;
     s32 ret = false;
 
@@ -461,7 +462,7 @@ s32 func_80BC01DC(Actor* thisx, PlayState* play) {
         case ENNB_BEHAVIOUR_4:
             play->interfaceCtx.storyState = STORY_STATE_FADE_OUT;
             this->behaviour++;
-            // fallthrough
+            FALLTHROUGH;
         case ENNB_BEHAVIOUR_5:
             if (!CHECK_EVENTINF(EVENTINF_42)) {
                 gSaveContext.save.time = CLOCK_TIME(8, 0);
@@ -621,7 +622,7 @@ s32 func_80BC0A18(EnNb* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     u16 currentTextId = play->msgCtx.currentTextId;
 
-    if (player->stateFlags1 & PLAYER_STATE1_40) {
+    if (player->stateFlags1 & PLAYER_STATE1_TALKING) {
         this->stateFlags |= EN_NB_FLAG_80;
 
         if (this->textId != currentTextId) {
@@ -702,8 +703,8 @@ s32 func_80BC0C0C(EnNb* this, PlayState* play, ScheduleOutput* scheduleOutput) {
 s32 EnNb_ProcessScheduleOutput(EnNb* this, PlayState* play, ScheduleOutput* scheduleOutput) {
     s32 success;
 
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     this->stateFlags = EN_NB_FLAG_NONE;
     this->unk_274 = 40.0f;
 
@@ -747,16 +748,16 @@ void EnNb_FollowSchedule(EnNb* this, PlayState* play) {
         scheduleOutput.result = EN_NB_SCH_1;
         EnNb_ProcessScheduleOutput(this, play, &scheduleOutput);
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     } else if (!Schedule_RunScript(play, sScheduleScript, &scheduleOutput) ||
                ((this->scheduleResult != scheduleOutput.result) &&
                 !EnNb_ProcessScheduleOutput(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = EN_NB_SCH_NONE;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
 
     this->scheduleResult = scheduleOutput.result;
@@ -785,7 +786,7 @@ void func_80BC0EAC(EnNb* this, PlayState* play) {
 }
 
 void EnNb_Init(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, NULL, 0.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &gNbSkel, NULL, this->jointTable, this->morphTable, NB_LIMB_MAX);
@@ -810,14 +811,14 @@ void EnNb_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnNb_Destroy(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
     play->interfaceCtx.storyState = STORY_STATE_DESTROY;
 }
 
 void EnNb_Update(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
 
     func_80BC04FC(this, play);
     this->actionFunc(this, play);
@@ -835,7 +836,7 @@ void EnNb_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnNb_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
 
     if (limbIndex == NB_LIMB_HEAD) {
         func_80BC05A8(this, play);
@@ -845,7 +846,7 @@ s32 EnNb_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 }
 
 void EnNb_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
     Vec3f focusTarget;
 
     if ((CutsceneManager_GetCurrentCsId() == CS_ID_NONE) && (limbIndex == NB_LIMB_HEAD)) {
@@ -858,7 +859,7 @@ void EnNb_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void EnNb_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
     s32 stepRot;
     s32 overrideRot;
 
@@ -889,7 +890,7 @@ void EnNb_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
 }
 
 void EnNb_Draw(Actor* thisx, PlayState* play) {
-    EnNb* this = THIS;
+    EnNb* this = (EnNb*)thisx;
 
     if (this->scheduleResult != EN_NB_SCH_NONE) {
         Gfx_SetupDL37_Opa(play->state.gfxCtx);

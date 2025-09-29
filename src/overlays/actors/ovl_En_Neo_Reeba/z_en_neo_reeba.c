@@ -5,11 +5,10 @@
  */
 
 #include "z_en_neo_reeba.h"
+#include "attributes.h"
 #include "assets/objects/object_rb/object_rb.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_200)
-
-#define THIS ((EnNeoReeba*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR)
 
 void EnNeoReeba_Init(Actor* thisx, PlayState* play);
 void EnNeoReeba_Destroy(Actor* thisx, PlayState* play);
@@ -97,7 +96,7 @@ static DamageTable sDamageTable = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT5,
+        COL_MATERIAL_HIT5,
         AT_ON | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -105,18 +104,18 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0xF7CFFFFF, 0x08, 0x04 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON | BUMP_HOOKABLE,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON | ACELEM_HOOKABLE,
         OCELEM_ON,
     },
     { 18, 30, 0, { 0, 0, 0 } },
 };
 
 void EnNeoReeba_Init(Actor* thisx, PlayState* play) {
-    EnNeoReeba* this = THIS;
+    EnNeoReeba* this = (EnNeoReeba*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 0.0f);
     SkelAnime_Init(play, &this->skelAnime, &gLeeverSkel, &gLeeverSpinAnim, this->jointTable, this->morphTable,
@@ -133,7 +132,7 @@ void EnNeoReeba_Init(Actor* thisx, PlayState* play) {
     }
 
     this->actor.colChkInfo.damageTable = &sDamageTable;
-    this->actor.targetMode = TARGET_MODE_2;
+    this->actor.attentionRangeType = ATTENTION_RANGE_2;
     this->actor.hintId = TATL_HINT_ID_LEEVER;
     this->actor.gravity = -0.5f;
 
@@ -154,13 +153,13 @@ void EnNeoReeba_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnNeoReeba_Destroy(Actor* thisx, PlayState* play) {
-    EnNeoReeba* this = THIS;
+    EnNeoReeba* this = (EnNeoReeba*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnNeoReeba_SetupWaitUnderground(EnNeoReeba* this) {
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     this->actor.draw = NULL;
     this->actionTimer = 10;
     this->actionFunc = EnNeoReeba_WaitUnderground;
@@ -246,7 +245,7 @@ void EnNeoReeba_SetupRise(EnNeoReeba* this) {
     this->sinkRiseRate = 300.0f;
     this->skelAnime.playSpeed = 2.0f;
     Actor_PlaySfx(&this->actor, NA_SE_EN_STALKID_APPEAR);
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     this->actionFunc = EnNeoReeba_RiseOutOfGround;
 }
 
@@ -446,7 +445,7 @@ void EnNeoReeba_SetupDeathEffects(EnNeoReeba* this) {
     this->rotationSpeed = 3640.0f;
     Actor_SetColorFilter(&this->actor, COLORFILTER_COLORFLAG_RED, 255, COLORFILTER_BUFFLAG_OPA, 25);
     this->actor.flags |= ACTOR_FLAG_LOCK_ON_DISABLED;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
 
     Actor_PlaySfx(&this->actor, NA_SE_EN_RIVA_DEAD);
     this->actionFunc = EnNeoReeba_PlayDeathEffects;
@@ -522,6 +521,7 @@ void EnNeoReeba_HandleHit(EnNeoReeba* this, PlayState* play) {
                         EnNeoReeba_SpawnIce(this, play);
                     }
                     this->stunTimer = 0;
+                    break;
             }
         }
 
@@ -543,7 +543,7 @@ void EnNeoReeba_HandleHit(EnNeoReeba* this, PlayState* play) {
                 }
                 this->drawEffectAlpha = 1.0f;
                 this->drawEffectScale = 0.0f;
-                // fallthrough
+                FALLTHROUGH;
             case EN_NEO_REEBA_DMGEFF_NONE:
             case EN_NEO_REEBA_DMGEFF_SHATTER:
                 if ((this->actor.colChkInfo.damageEffect == EN_NEO_REEBA_DMGEFF_SHATTER) ||
@@ -700,7 +700,7 @@ void EnNeoReeba_SinkIfStoneMask(EnNeoReeba* this, PlayState* play) {
 }
 
 void EnNeoReeba_Update(Actor* thisx, PlayState* play) {
-    EnNeoReeba* this = THIS;
+    EnNeoReeba* this = (EnNeoReeba*)thisx;
 
     if (EN_NEO_REEBA_IS_LARGE(&this->actor)) {
         this->collider.dim.radius = 27;
@@ -720,7 +720,7 @@ void EnNeoReeba_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnNeoReeba_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnNeoReeba* this = THIS;
+    EnNeoReeba* this = (EnNeoReeba*)thisx;
 
     if ((limbIndex == OBJECT_RB_LIMB_03) && (this->rotationSpeed != 0.0f)) {
         rot->y += TRUNCF_BINANG(this->rotationSpeed * Math_SinS(this->rotationAngle));
@@ -731,7 +731,7 @@ s32 EnNeoReeba_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec
 }
 
 void EnNeoReeba_Draw(Actor* thisx, PlayState* play) {
-    EnNeoReeba* this = THIS;
+    EnNeoReeba* this = (EnNeoReeba*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
 

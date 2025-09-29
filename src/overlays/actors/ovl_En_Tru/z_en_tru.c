@@ -5,11 +5,12 @@
  */
 
 #include "z_en_tru.h"
+#include "attributes.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnTru*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnTru_Init(Actor* thisx, PlayState* play);
 void EnTru_Destroy(Actor* thisx, PlayState* play);
@@ -153,7 +154,7 @@ static TexturePtr sDustTextures[] = {
 
 static ColliderSphereInit sSphereInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -161,11 +162,11 @@ static ColliderSphereInit sSphereInit = {
         COLSHAPE_SPHERE,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 0, { { 0, 0, 0 }, 32 }, 100 },
@@ -264,7 +265,7 @@ void func_80A85788(EnTruUnkStruct* arg0, PlayState* play) {
         Matrix_Scale(arg0->unk_28, arg0->unk_28, 1.0f, MTXMODE_APPLY);
         Matrix_Translate(0.0f, 14.0f, 0.0f, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, D_80A890A8);
     }
 
@@ -320,7 +321,7 @@ void func_80A85BCC(EnTruUnkStruct* arg0, PlayState* play) {
         Matrix_ReplaceRotation(&play->billboardMtxF);
         Matrix_Scale(arg0->unk_28, arg0->unk_28, 1.0f, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, D_80A8A108);
     }
 
@@ -386,7 +387,7 @@ void func_80A85F84(EnTruUnkStruct* arg0, PlayState* play) {
         Matrix_Scale(arg0->unk_28, arg0->unk_28, 1.0f, MTXMODE_APPLY);
         Matrix_ReplaceRotation(&play->billboardMtxF);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         index = ((f32)arg0->unk_02 / arg0->unk_01) * 8.0f;
         gSPSegment(POLY_XLU_DISP++, 0x08, Lib_SegmentedToVirtual(sDustTextures[index]));
         gSPDisplayList(POLY_XLU_DISP++, gKoumeDustModelDL);
@@ -493,20 +494,20 @@ s32 func_80A86770(EnTru* this) {
 }
 
 void EnTru_UpdateSkelAnime(EnTru* this) {
-    this->skelAnime.playSpeed = this->playSpeed;
+    this->skelAnime.playSpeed = this->animPlaySpeed;
     SkelAnime_Update(&this->skelAnime);
 }
 
 s32 EnTru_ChangeAnim(EnTru* this, s32 animIndex) {
-    s32 didChange = false;
+    s32 didAnimChange = false;
 
-    if (animIndex != this->animIndex) {
+    if (this->animIndex != animIndex) {
         this->animIndex = animIndex;
-        didChange = SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, animIndex);
-        this->playSpeed = this->skelAnime.playSpeed;
+        didAnimChange = SubS_ChangeAnimationByInfoS(&this->skelAnime, sAnimationInfo, animIndex);
+        this->animPlaySpeed = this->skelAnime.playSpeed;
     }
 
-    return didChange;
+    return didAnimChange;
 }
 
 void func_80A8697C(EnTru* this, PlayState* play) {
@@ -574,7 +575,7 @@ s32 func_80A86BAC(EnTru* this, PlayState* play) {
 
         Matrix_RotateXS(-0x4000, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_OPA_DISP++, gKoumePotionDL);
 
         Matrix_Pop();
@@ -592,7 +593,7 @@ s32 func_80A86BAC(EnTru* this, PlayState* play) {
 
         Matrix_RotateXS(-0x4000, MTXMODE_APPLY);
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, gKoumeBottleDL);
 
         Matrix_Pop();
@@ -824,7 +825,7 @@ s32 func_80A87400(EnTru* this, PlayState* play) {
 }
 
 s32 func_80A875AC(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     s32 ret = false;
 
     switch (this->unk_364) {
@@ -837,7 +838,7 @@ s32 func_80A875AC(Actor* thisx, PlayState* play) {
                 this->unk_364++;
                 break;
             }
-
+            FALLTHROUGH;
         case 1:
             if (CutsceneManager_GetCurrentCsId() == CS_ID_GLOBAL_TALK) {
                 CutsceneManager_Stop(CS_ID_GLOBAL_TALK);
@@ -884,7 +885,7 @@ s32 func_80A875AC(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80A8777C(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     s32 ret = 0;
     PlayerItemAction itemAction;
 
@@ -894,7 +895,7 @@ s32 func_80A8777C(Actor* thisx, PlayState* play) {
             if (!Message_ShouldAdvance(play)) {
                 break;
             }
-        // Fallthrough
+            FALLTHROUGH;
         case TEXT_STATE_PAUSE_MENU:
             itemAction = func_80123810(play);
 
@@ -921,7 +922,7 @@ s32 func_80A8777C(Actor* thisx, PlayState* play) {
 
 s32 func_80A87880(Actor* thisx, PlayState* play) {
     Player* player = GET_PLAYER(play);
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     s32 ret = false;
 
     switch (this->unk_364) {
@@ -929,7 +930,7 @@ s32 func_80A87880(Actor* thisx, PlayState* play) {
             CutsceneManager_Stop(this->csId);
             this->csId = CutsceneManager_GetAdditionalCsId(this->csId);
             this->unk_364++;
-
+            FALLTHROUGH;
         case 1:
             if (CutsceneManager_GetCurrentCsId() == CS_ID_GLOBAL_TALK) {
                 CutsceneManager_Stop(CS_ID_GLOBAL_TALK);
@@ -994,7 +995,7 @@ s32 func_80A87880(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80A87B48(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     Player* player = GET_PLAYER(play);
     Vec3f sp4C;
     Vec3f sp40;
@@ -1053,7 +1054,7 @@ s32 func_80A87B48(Actor* thisx, PlayState* play) {
 }
 
 s32 func_80A87DC0(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     s32 ret = false;
 
     switch (this->unk_364) {
@@ -1061,7 +1062,7 @@ s32 func_80A87DC0(Actor* thisx, PlayState* play) {
             CutsceneManager_Stop(this->csId);
             this->csId = CutsceneManager_GetAdditionalCsId(this->csId);
             this->unk_364++;
-
+            FALLTHROUGH;
         case 1:
             if (CutsceneManager_GetCurrentCsId() == CS_ID_GLOBAL_TALK) {
                 CutsceneManager_Stop(CS_ID_GLOBAL_TALK);
@@ -1080,7 +1081,7 @@ s32 func_80A87DC0(Actor* thisx, PlayState* play) {
             Actor_PlaySfx(&this->actor, NA_SE_EN_KOUME_LAUGH);
             EnTru_ChangeAnim(this, KOUME_ANIM_TAKE_OFF);
             this->skelAnime.baseTransl.y = 0;
-            this->skelAnime.moveFlags = 2;
+            this->skelAnime.movementFlags = ANIM_FLAG_UPDATE_Y;
             this->unk_34E &= ~0x8;
             this->unk_34E |= 0x10;
             this->unk_364++;
@@ -1088,15 +1089,15 @@ s32 func_80A87DC0(Actor* thisx, PlayState* play) {
 
         case 3:
             if (!Animation_OnFrame(&this->skelAnime, this->skelAnime.endFrame)) {
-                AnimTaskQueue_AddActorMove(play, &this->actor, &this->skelAnime, 1.0f);
+                AnimTaskQueue_AddActorMovement(play, &this->actor, &this->skelAnime, 1.0f);
                 break;
-            } else {
-                EnTru_ChangeAnim(this, KOUME_ANIM_FLY);
-                this->actor.shape.rot.y = this->actor.world.rot.y;
-                this->unk_362 = 20;
-                this->unk_364++;
             }
 
+            EnTru_ChangeAnim(this, KOUME_ANIM_FLY);
+            this->actor.shape.rot.y = this->actor.world.rot.y;
+            this->unk_362 = 20;
+            this->unk_364++;
+            FALLTHROUGH;
         case 4:
             if (func_80A87400(this, play) || (DECR(this->unk_362) == 0)) {
                 ret = true;
@@ -1106,7 +1107,7 @@ s32 func_80A87DC0(Actor* thisx, PlayState* play) {
     }
 
     if (ret == true) {
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.draw = NULL;
         this->msgScriptCallback = NULL;
         this->unk_34E = 0;
@@ -1185,7 +1186,7 @@ void func_80A881E0(EnTru* this, PlayState* play) {
 }
 
 void EnTru_Init(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
 
     if ((gSaveContext.save.entrance != ENTRANCE(WOODS_OF_MYSTERY, 0)) || CHECK_WEEKEVENTREG(WEEKEVENTREG_SAVED_KOUME)) {
         Actor_Kill(&this->actor);
@@ -1204,7 +1205,7 @@ void EnTru_Init(Actor* thisx, PlayState* play) {
         this->unk_384 = 1;
     }
 
-    this->actor.targetMode = TARGET_MODE_0;
+    this->actor.attentionRangeType = ATTENTION_RANGE_0;
     Actor_SetScale(&this->actor, 0.008f);
     this->unk_34E = 0;
 
@@ -1219,13 +1220,13 @@ void EnTru_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnTru_Destroy(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
 
     Collider_DestroySphere(play, &this->collider);
 }
 
 void EnTru_Update(Actor* thisx, PlayState* play) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     f32 radius;
 
     func_80A872AC(this, play);
@@ -1247,7 +1248,7 @@ void EnTru_Update(Actor* thisx, PlayState* play) {
 s32 EnTru_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
     static Vec3f D_80A8B3FC = { 3000.0f, -800.0f, 0.0f };
     s32 pad;
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
 
     if (limbIndex == KOUME_LIMB_HEAD) {
         Matrix_MultZero(&this->actor.focus.pos);
@@ -1267,7 +1268,7 @@ s32 EnTru_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* p
 }
 
 void EnTru_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
 
     if (limbIndex == KOUME_LIMB_RIGHT_HAND) {
         func_80A86BAC(this, play);
@@ -1275,7 +1276,7 @@ void EnTru_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot,
 }
 
 void EnTru_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
     s32 pad[3];
     s32 overrideRot;
     s32 stepRot;
@@ -1323,7 +1324,7 @@ void EnTru_Draw(Actor* thisx, PlayState* play) {
         gKoumeEyeHalfTex,
     };
     s32 pad;
-    EnTru* this = THIS;
+    EnTru* this = (EnTru*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

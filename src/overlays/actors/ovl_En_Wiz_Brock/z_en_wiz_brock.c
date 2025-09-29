@@ -7,9 +7,7 @@
 #include "z_en_wiz_brock.h"
 #include "assets/objects/object_wiz/object_wiz.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_LOCK_ON_DISABLED)
-
-#define THIS ((EnWizBrock*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_LOCK_ON_DISABLED)
 
 void EnWizBrock_Init(Actor* thisx, PlayState* play);
 void EnWizBrock_Destroy(Actor* thisx, PlayState* play);
@@ -34,7 +32,7 @@ ActorProfile En_Wiz_Brock_Profile = {
 };
 
 void EnWizBrock_Init(Actor* thisx, PlayState* play) {
-    EnWizBrock* this = THIS;
+    EnWizBrock* this = (EnWizBrock*)thisx;
     CollisionHeader* colHeader = NULL;
 
     DynaPolyActor_Init(&this->dyna, 0);
@@ -51,7 +49,7 @@ void EnWizBrock_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnWizBrock_Destroy(Actor* thisx, PlayState* play) {
-    EnWizBrock* this = THIS;
+    EnWizBrock* this = (EnWizBrock*)thisx;
 
     DynaPoly_DeleteBgActor(play, &play->colCtx.dyna, this->dyna.bgId);
 }
@@ -87,14 +85,14 @@ void EnWizBrock_UpdateStatus(EnWizBrock* this, PlayState* play) {
 }
 
 void EnWizBrock_Update(Actor* thisx, PlayState* play) {
-    EnWizBrock* this = THIS;
+    EnWizBrock* this = (EnWizBrock*)thisx;
 
     this->actionFunc(this, play);
 }
 
 void EnWizBrock_Draw(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnWizBrock* this = THIS;
+    EnWizBrock* this = (EnWizBrock*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
     Gfx_SetupDL25_Xlu(play->state.gfxCtx);
@@ -131,7 +129,7 @@ void EnWizBrock_Draw(Actor* thisx, PlayState* play) {
             gDPSetEnvColor(POLY_XLU_DISP++, 50, 00, 255, TRUNCF_BINANG(this->alpha));
         }
 
-        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_XLU_DISP++, &gWizrobePlatformCenterDL);
 
         CLOSE_DISPS(play->state.gfxCtx);

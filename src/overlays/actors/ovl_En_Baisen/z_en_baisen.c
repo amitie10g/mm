@@ -7,9 +7,7 @@
 #include "z_en_baisen.h"
 #include "assets/objects/object_bai/object_bai.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnBaisen*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnBaisen_Init(Actor* thisx, PlayState* play);
 void EnBaisen_Destroy(Actor* thisx, PlayState* play);
@@ -37,7 +35,7 @@ ActorProfile En_Baisen_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -45,11 +43,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0xF7CFFFFF, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 20, 60, 0, { 0, 0, 0 } },
@@ -77,7 +75,7 @@ static u8 sAnimationModes[ENBAISEN_ANIM_MAX] = {
 };
 
 void EnBaisen_Init(Actor* thisx, PlayState* play) {
-    EnBaisen* this = THIS;
+    EnBaisen* this = (EnBaisen*)thisx;
 
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 25.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &object_bai_Skel_007908, &object_bai_Anim_0011C0, this->jointTable,
@@ -99,7 +97,7 @@ void EnBaisen_Init(Actor* thisx, PlayState* play) {
             Actor_Kill(&this->actor);
         }
     }
-    this->actor.targetMode = TARGET_MODE_6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     this->actor.gravity = -3.0f;
     Collider_InitAndSetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
     if (this->paramCopy == 0) {
@@ -110,7 +108,7 @@ void EnBaisen_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnBaisen_Destroy(Actor* thisx, PlayState* play) {
-    EnBaisen* this = THIS;
+    EnBaisen* this = (EnBaisen*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -256,7 +254,7 @@ void func_80BE8AAC(EnBaisen* this, PlayState* play) {
 
 void EnBaisen_Update(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnBaisen* this = THIS;
+    EnBaisen* this = (EnBaisen*)thisx;
 
     SkelAnime_Update(&this->skelAnime);
     if (this->unusedCounter != 0) {
@@ -284,7 +282,7 @@ void EnBaisen_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnBaisen_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnBaisen* this = THIS;
+    EnBaisen* this = (EnBaisen*)thisx;
 
     if (limbIndex == OBJECT_BAI_LIMB_09) {
         rot->x += this->headRotX;
@@ -296,7 +294,7 @@ s32 EnBaisen_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f
 }
 
 void EnBaisen_Draw(Actor* thisx, PlayState* play) {
-    EnBaisen* this = THIS;
+    EnBaisen* this = (EnBaisen*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
     SkelAnime_DrawFlexOpa(play, this->skelAnime.skeleton, this->skelAnime.jointTable, this->skelAnime.dListCount,

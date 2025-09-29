@@ -6,9 +6,7 @@
 
 #include "z_en_talk.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnTalk*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnTalk_Init(Actor* thisx, PlayState* play);
 void EnTalk_Destroy(Actor* thisx, PlayState* play);
@@ -29,11 +27,11 @@ ActorProfile En_Talk_Profile = {
 };
 
 void EnTalk_Init(Actor* thisx, PlayState* play) {
-    EnTalk* this = THIS;
-    s8 targetMode = ENTALK_GET_TARGET_MODE(&this->actor);
+    EnTalk* this = (EnTalk*)thisx;
+    s8 attentionRangeType = ENTALK_GET_ATTENTION_RANGE_TYPE(&this->actor);
 
-    if ((targetMode >= TARGET_MODE_0) && (targetMode < TARGET_MODE_7)) {
-        this->actor.targetMode = targetMode;
+    if ((attentionRangeType >= ATTENTION_RANGE_0) && (attentionRangeType < ATTENTION_RANGE_7)) {
+        this->actor.attentionRangeType = attentionRangeType;
     }
 
     Actor_SetScale(&this->actor, 1.0f);
@@ -63,7 +61,7 @@ void func_80BDE090(EnTalk* this, PlayState* play) {
 }
 
 void EnTalk_Update(Actor* thisx, PlayState* play) {
-    EnTalk* this = THIS;
+    EnTalk* this = (EnTalk*)thisx;
 
     this->actionFunc(this, play);
 }

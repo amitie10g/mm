@@ -5,10 +5,9 @@
  */
 
 #include "z_en_ginko_man.h"
+#include "attributes.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnGinkoMan*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnGinkoMan_Init(Actor* thisx, PlayState* play);
 void EnGinkoMan_Destroy(Actor* thisx, PlayState* play);
@@ -59,10 +58,10 @@ static AnimationInfo sAnimationInfo[GINKO_ANIM_MAX] = {
 };
 
 void EnGinkoMan_Init(Actor* thisx, PlayState* play) {
-    EnGinkoMan* this = THIS;
+    EnGinkoMan* this = (EnGinkoMan*)thisx;
 
-    this->actor.targetMode = TARGET_MODE_1;
-    this->actor.uncullZoneForward = 400.0f;
+    this->actor.attentionRangeType = ATTENTION_RANGE_1;
+    this->actor.cullingVolumeDistance = 400.0f;
     Actor_SetScale(&this->actor, 0.01f);
     this->actor.colChkInfo.cylRadius = 100;
     this->curTextId = 0;
@@ -79,7 +78,7 @@ void EnGinkoMan_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void EnGinkoMan_SetupIdle(EnGinkoMan* this) {
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, GINKO_ANIM_SITTING);
     this->actionFunc = EnGinkoMan_Idle;
 }
@@ -290,7 +289,7 @@ void EnGinkoMan_DepositDialogue(EnGinkoMan* this, PlayState* play) {
 
         case 0x476:
             Actor_ChangeAnimationByInfo(&this->skelAnime, sAnimationInfo, GINKO_ANIM_SITTING);
-            // fallthrough
+            FALLTHROUGH;
         case 0x475:
         case 0x47C:
         case 0x47D:
@@ -653,7 +652,7 @@ void EnGinkoMan_FacePlayer(EnGinkoMan* this, PlayState* play) {
 }
 
 void EnGinkoMan_Update(Actor* thisx, PlayState* play) {
-    EnGinkoMan* this = THIS;
+    EnGinkoMan* this = (EnGinkoMan*)thisx;
 
     this->actionFunc(this, play);
     this->actor.focus.pos = this->actor.world.pos;
@@ -662,7 +661,7 @@ void EnGinkoMan_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnGinkoMan_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnGinkoMan* this = THIS;
+    EnGinkoMan* this = (EnGinkoMan*)thisx;
 
     if (limbIndex == OBJECT_BOJ_LIMB_0F) {
         *dList = object_boj_DL_00B1D8;
@@ -685,7 +684,7 @@ void EnGinkoMan_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s*
 }
 
 void EnGinkoMan_Draw(Actor* thisx, PlayState* play) {
-    EnGinkoMan* this = THIS;
+    EnGinkoMan* this = (EnGinkoMan*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

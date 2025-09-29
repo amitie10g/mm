@@ -8,9 +8,9 @@
 #include "overlays/actors/ovl_En_Clear_Tag/z_en_clear_tag.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_10 | ACTOR_FLAG_200)
-
-#define THIS ((EnBbfall*)thisx)
+#define FLAGS                                                                                 \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_HOSTILE | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR)
 
 void EnBbfall_Init(Actor* thisx, PlayState* play);
 void EnBbfall_Destroy(Actor* thisx, PlayState* play);
@@ -51,33 +51,33 @@ ActorProfile En_Bbfall_Profile = {
 static ColliderJntSphElementInit sJntSphElementsInit[3] = {
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0xF7CFFFFF, 0x01, 0x08 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_HARD,
-            BUMP_ON | BUMP_HOOKABLE,
+            ATELEM_ON | ATELEM_SFX_HARD,
+            ACELEM_ON | ACELEM_HOOKABLE,
             OCELEM_ON,
         },
         { 0, { { 0, 0, 0 }, 20 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0xF7CFFFFF, 0x01, 0x08 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_HARD,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_HARD,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 0, { { 0, 0, 0 }, 20 }, 100 },
     },
     {
         {
-            ELEMTYPE_UNK0,
+            ELEM_MATERIAL_UNK0,
             { 0xF7CFFFFF, 0x01, 0x08 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_ON | TOUCH_SFX_HARD,
-            BUMP_NONE,
+            ATELEM_ON | ATELEM_SFX_HARD,
+            ACELEM_NONE,
             OCELEM_NONE,
         },
         { 0, { { 0, 0, 0 }, 20 }, 100 },
@@ -86,7 +86,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[3] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_HIT3,
+        COL_MATERIAL_HIT3,
         AT_NONE | AT_TYPE_ENEMY,
         AC_ON | AC_TYPE_PLAYER,
         OC1_ON | OC1_TYPE_ALL,
@@ -145,11 +145,11 @@ static CollisionCheckInfoInit sColChkInfoInit = { 2, 20, 40, 50 };
 
 static InitChainEntry sInitChain[] = {
     ICHAIN_S8(hintId, TATL_HINT_ID_RED_BUBBLE, ICHAIN_CONTINUE),
-    ICHAIN_F32(targetArrowOffset, 10, ICHAIN_STOP),
+    ICHAIN_F32(lockOnArrowOffset, 10, ICHAIN_STOP),
 };
 
 void EnBbfall_Init(Actor* thisx, PlayState* play) {
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
     s32 i;
 
     Actor_ProcessInitChain(&this->actor, sInitChain);
@@ -167,7 +167,7 @@ void EnBbfall_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnBbfall_Destroy(Actor* thisx, PlayState* play) {
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
 
     Collider_DestroyJntSph(play, &this->collider);
 }
@@ -178,7 +178,7 @@ void EnBbfall_Freeze(EnBbfall* this) {
     this->drawDmgEffFrozenSteamScale = 0.6f;
     this->timer = 80;
     this->drawDmgEffAlpha = 1.0f;
-    this->actor.flags &= ~ACTOR_FLAG_200;
+    this->actor.flags &= ~ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR;
     Actor_SetColorFilter(&this->actor, COLORFILTER_COLORFLAG_RED, 255, COLORFILTER_BUFFLAG_OPA, 80);
 }
 
@@ -187,7 +187,7 @@ void EnBbfall_Thaw(EnBbfall* this, PlayState* play) {
         this->drawDmgEffType = ACTOR_DRAW_DMGEFF_FIRE;
         this->drawDmgEffAlpha = 0.0f;
         Actor_SpawnIceEffects(play, &this->actor, this->bodyPartsPos, BUBBLE_BODYPART_MAX, 2, 0.2f, 0.15f);
-        this->actor.flags |= ACTOR_FLAG_200;
+        this->actor.flags |= ACTOR_FLAG_HOOKSHOT_PULLS_ACTOR;
     }
 }
 
@@ -234,15 +234,15 @@ void EnBbfall_CheckForWall(EnBbfall* this) {
 }
 
 void EnBbfall_EnableColliders(EnBbfall* this) {
-    this->collider.elements[0].base.toucher.effect = ELEMTYPE_UNK1; // Fire
-    this->collider.elements[1].base.toucherFlags |= TOUCH_ON;
-    this->collider.elements[2].base.toucherFlags |= TOUCH_ON;
+    this->collider.elements[0].base.atDmgInfo.effect = ELEM_MATERIAL_UNK1; // Fire
+    this->collider.elements[1].base.atElemFlags |= ATELEM_ON;
+    this->collider.elements[2].base.atElemFlags |= ATELEM_ON;
 }
 
 void EnBbfall_DisableColliders(EnBbfall* this) {
-    this->collider.elements[0].base.toucher.effect = ELEMTYPE_UNK0; // Nothing
-    this->collider.elements[1].base.toucherFlags &= ~TOUCH_ON;
-    this->collider.elements[2].base.toucherFlags &= ~TOUCH_ON;
+    this->collider.elements[0].base.atDmgInfo.effect = ELEM_MATERIAL_UNK0; // Nothing
+    this->collider.elements[1].base.atElemFlags &= ~ATELEM_ON;
+    this->collider.elements[2].base.atElemFlags &= ~ATELEM_ON;
 }
 
 void EnBbfall_SetupWaitForPlayer(EnBbfall* this) {
@@ -269,7 +269,7 @@ void EnBbfall_SetupWaitForPlayer(EnBbfall* this) {
     }
 
     this->actor.bgCheckFlags &= ~BGCHECKFLAG_GROUND;
-    this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+    this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     this->actionFunc = EnBbfall_WaitForPlayer;
 }
 
@@ -290,7 +290,7 @@ void EnBbfall_SetupEmerge(EnBbfall* this) {
     this->collider.base.ocFlags1 |= OC1_ON;
     this->actor.velocity.y = 17.0f;
     EnBbfall_EnableColliders(this);
-    this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+    this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     Actor_PlaySfx(&this->actor, NA_SE_EN_BUBLEFALL_APPEAR);
     this->actionFunc = EnBbfall_Emerge;
 }
@@ -524,7 +524,7 @@ void EnBbfall_UpdateDamage(EnBbfall* this, PlayState* play) {
         this->collider.base.atFlags &= ~(AT_HIT | AT_BOUNCED);
         this->collider.base.atFlags &= ~AT_ON;
         if ((this->drawDmgEffType != ACTOR_DRAW_DMGEFF_FROZEN_NO_SFX) ||
-            !(this->collider.elements[0].base.acHitElem->toucher.dmgFlags & 0xDB0B3)) {
+            !(this->collider.elements[0].base.acHitElem->atDmgInfo.dmgFlags & 0xDB0B3)) {
             Actor_SetDropFlagJntSph(&this->actor, &this->collider);
             this->flameOpacity = 0;
             this->flameScaleY = 0.0f;
@@ -554,9 +554,10 @@ void EnBbfall_UpdateDamage(EnBbfall* this, PlayState* play) {
                 this->drawDmgEffAlpha = 4.0f;
                 this->drawDmgEffScale = 0.4f;
                 this->drawDmgEffType = ACTOR_DRAW_DMGEFF_LIGHT_ORBS;
-                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG, this->collider.elements[0].base.bumper.hitPos.x,
-                            this->collider.elements[0].base.bumper.hitPos.y,
-                            this->collider.elements[0].base.bumper.hitPos.z, 0, 0, 0,
+                Actor_Spawn(&play->actorCtx, play, ACTOR_EN_CLEAR_TAG,
+                            this->collider.elements[0].base.acDmgInfo.hitPos.x,
+                            this->collider.elements[0].base.acDmgInfo.hitPos.y,
+                            this->collider.elements[0].base.acDmgInfo.hitPos.z, 0, 0, 0,
                             CLEAR_TAG_PARAMS(CLEAR_TAG_SMALL_LIGHT_RAYS));
             }
         }
@@ -574,7 +575,7 @@ void EnBbfall_UpdateDamage(EnBbfall* this, PlayState* play) {
 }
 
 void EnBbfall_Update(Actor* thisx, PlayState* play) {
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
     Sphere16* sphere;
     Vec3f diff;
     s32 i;
@@ -616,7 +617,7 @@ void EnBbfall_Update(Actor* thisx, PlayState* play) {
         Math_Vec3s_ToVec3f(&this->actor.focus.pos, &this->collider.elements[0].dim.worldSphere.center);
 
         if (this->collider.base.atFlags & AT_ON) {
-            this->actor.flags |= ACTOR_FLAG_1000000;
+            this->actor.flags |= ACTOR_FLAG_SFX_FOR_PLAYER_BODY_HIT;
             CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
         }
 
@@ -641,7 +642,7 @@ void EnBbfall_Update(Actor* thisx, PlayState* play) {
 }
 
 s32 EnBbfall_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
 
     if (this->bodyPartDrawStatus == BBFALL_BODY_PART_DRAW_STATUS_BROKEN) {
         this->limbDList = *dList;
@@ -681,7 +682,7 @@ static Vec3f sEffectsBodyPartOffset = { 1000.0f, -700.0f, 0.0f };
 
 void EnBbfall_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
     s32 pad;
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
     MtxF* currentMatrixState;
 
     if (this->bodyPartDrawStatus == BBFALL_BODY_PART_DRAW_STATUS_ALIVE) {
@@ -712,7 +713,7 @@ void EnBbfall_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* r
             currentMatrixState->mf[3][1] = this->bodyPartsPos[sLimbToBodyParts[limbIndex]].y;
             currentMatrixState->mf[3][2] = this->bodyPartsPos[sLimbToBodyParts[limbIndex]].z;
             Matrix_RotateZS(thisx->world.rot.z, MTXMODE_APPLY);
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_OPA_DISP++, this->limbDList);
 
             CLOSE_DISPS(play->state.gfxCtx);
@@ -722,7 +723,7 @@ void EnBbfall_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* r
 
 void EnBbfall_Draw(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    EnBbfall* this = THIS;
+    EnBbfall* this = (EnBbfall*)thisx;
     MtxF* currentMatrixState;
     Gfx* gfx;
     s32 opacity;
@@ -756,7 +757,7 @@ void EnBbfall_Draw(Actor* thisx, PlayState* play2) {
             currentMatrixState->mf[3][0] = pos->x;
             currentMatrixState->mf[3][1] = pos->y;
             currentMatrixState->mf[3][2] = pos->z;
-            gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
             gSPDisplayList(POLY_XLU_DISP++, gEffFire1DL);
 
             opacity -= 35;

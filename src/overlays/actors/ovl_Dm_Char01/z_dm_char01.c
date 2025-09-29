@@ -8,9 +8,7 @@
 #include "assets/objects/object_mtoride/object_mtoride.h"
 #include "overlays/actors/ovl_Obj_Etcetera/z_obj_etcetera.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20 | ACTOR_FLAG_2000000)
-
-#define THIS ((DmChar01*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_UPDATE_DURING_OCARINA)
 
 void DmChar01_Init(Actor* thisx, PlayState* play);
 void DmChar01_Destroy(Actor* thisx, PlayState* play);
@@ -48,13 +46,13 @@ ActorProfile Dm_Char01_Profile = {
 };
 
 static InitChainEntry sInitChain[] = {
-    ICHAIN_F32(uncullZoneScale, 300, ICHAIN_STOP),
+    ICHAIN_F32(cullingVolumeScale, 300, ICHAIN_STOP),
 };
 
 s16 D_80AAAAB4 = false;
 
 void DmChar01_Init(Actor* thisx, PlayState* play) {
-    DmChar01* this = THIS;
+    DmChar01* this = (DmChar01*)thisx;
     s32 i;
 
     Actor_ProcessInitChain(&this->dyna.actor, sInitChain);
@@ -149,7 +147,7 @@ void DmChar01_Init(Actor* thisx, PlayState* play) {
 }
 
 void DmChar01_Destroy(Actor* thisx, PlayState* play) {
-    DmChar01* this = THIS;
+    DmChar01* this = (DmChar01*)thisx;
 
     if (this->unk_34D) {
         DynaPoly_DeleteBgActor(play, &play->colCtx.dyna, this->dyna.bgId);
@@ -164,7 +162,7 @@ void func_80AA8698(DmChar01* this, PlayState* play) {
         return;
     }
 
-    if ((player->stateFlags2 & PLAYER_STATE2_8000000) && (player2->actor.world.pos.x > -40.0f) &&
+    if ((player->stateFlags2 & PLAYER_STATE2_USING_OCARINA) && (player2->actor.world.pos.x > -40.0f) &&
         (player2->actor.world.pos.x < 40.0f) && (player2->actor.world.pos.z > 1000.0f) &&
         (player2->actor.world.pos.z < 1078.0f)) {
         if (!D_80AAAAB4) {
@@ -365,7 +363,7 @@ void func_80AA90F4(DmChar01* this, PlayState* play) {
 
 void DmChar01_Update(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
-    DmChar01* this = THIS;
+    DmChar01* this = (DmChar01*)thisx;
 
     this->actionFunc(this, play);
 
@@ -397,7 +395,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
     static s16 D_80AAAAC4 = 0;
     static s16 D_80AAAAC8 = 0;
     static s16 D_80AAAACC = 0;
-    DmChar01* this = THIS;
+    DmChar01* this = (DmChar01*)thisx;
     f32 temp_f12;
     f32 spBC;
     s32 i;
@@ -431,8 +429,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0x96, 255, 255, 255, 255);
                         gSPSegment(POLY_OPA_DISP++, 0x0B,
                                    Lib_SegmentedToVirtual(gWoodfallSceneryDynamicPoisonWaterVtx));
-                        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
                         gSPDisplayList(POLY_OPA_DISP++, gWoodfallSceneryDynamicPoisonWaterDL);
                     } else {
                         Gfx_SetupDL25_Xlu(play->state.gfxCtx);
@@ -443,8 +440,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                         gDPSetPrimColor(POLY_XLU_DISP++, 0, 0x96, 255, 255, 255, (u8)this->unk_348);
                         gSPSegment(POLY_XLU_DISP++, 0x0B,
                                    Lib_SegmentedToVirtual(gWoodfallSceneryDynamicPoisonWaterVtx));
-                        gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                        MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
                         gSPDisplayList(POLY_XLU_DISP++, gWoodfallSceneryDynamicPoisonWaterDL);
                     }
 
@@ -487,8 +483,7 @@ void DmChar01_Draw(Actor* thisx, PlayState* play) {
                 gDPPipeSync(POLY_XLU_DISP++);
                 gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 0, (u8)this->unk_348);
                 gDPSetPrimColor(POLY_XLU_DISP++, 0, 0x80, 255, 255, 255, (u8)this->unk_348);
-                gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(play->state.gfxCtx),
-                          G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                MATRIX_FINALIZE_AND_LOAD(POLY_XLU_DISP++, play->state.gfxCtx);
                 gSPDisplayList(POLY_XLU_DISP++, gWoodfallSceneryWaterFlowingOverTempleDL);
 
                 CLOSE_DISPS(play->state.gfxCtx);

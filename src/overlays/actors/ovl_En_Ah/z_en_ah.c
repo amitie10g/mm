@@ -7,9 +7,9 @@
 #include "z_en_ah.h"
 #include "assets/objects/object_ah/object_ah.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((EnAh*)thisx)
+#define FLAGS                                                                                  \
+    (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED | \
+     ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void EnAh_Init(Actor* thisx, PlayState* play);
 void EnAh_Destroy(Actor* thisx, PlayState* play);
@@ -65,7 +65,7 @@ ActorProfile En_Ah_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_HIT1,
+        COL_MATERIAL_HIT1,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -73,11 +73,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK1,
+        ELEM_MATERIAL_UNK1,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 10, 68, 0, { 0, 0, 0 } },
@@ -329,7 +329,7 @@ s32 func_80BD3198(EnAh* this, PlayState* play) {
     Player* player = GET_PLAYER(play);
     u16 temp = play->msgCtx.currentTextId;
 
-    if (player->stateFlags1 & PLAYER_STATE1_40) {
+    if (player->stateFlags1 & PLAYER_STATE1_TALKING) {
         if (this->unk_2DA != temp) {
             if (temp == 0x2954) {
                 this->unk_18C = func_80BD3118;
@@ -503,11 +503,11 @@ void func_80BD36B8(EnAh* this, PlayState* play) {
     if (!Schedule_RunScript(play, D_80BD3DB0, &scheduleOutput) ||
         ((this->scheduleResult != scheduleOutput.result) && !func_80BD3548(this, play, &scheduleOutput))) {
         this->actor.shape.shadowDraw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         scheduleOutput.result = 0;
     } else {
         this->actor.shape.shadowDraw = ActorShadow_DrawCircle;
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
     }
     this->scheduleResult = scheduleOutput.result;
     func_80BD3658(this, play);
@@ -535,7 +535,7 @@ void func_80BD3768(EnAh* this, PlayState* play) {
 }
 
 void EnAh_Init(Actor* thisx, PlayState* play) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
 
     if (EnAh_FindActor(this, play, ACTORCAT_NPC, ACTOR_EN_AH)) {
         Actor_Kill(&this->actor);
@@ -549,7 +549,7 @@ void EnAh_Init(Actor* thisx, PlayState* play) {
     EnAh_ChangeAnim(this, ENAH_ANIM_0);
     Collider_InitAndSetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
     CollisionCheck_SetInfo2(&this->actor.colChkInfo, DamageTable_Get(0x16), &sColChkInfoInit);
-    this->actor.targetMode = TARGET_MODE_6;
+    this->actor.attentionRangeType = ATTENTION_RANGE_6;
     Actor_SetScale(&this->actor, 0.01f);
     this->scheduleResult = 0;
     this->unk_2D8 = 0;
@@ -559,13 +559,13 @@ void EnAh_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnAh_Destroy(Actor* thisx, PlayState* play) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
 
 void EnAh_Update(Actor* thisx, PlayState* play) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
     f32 radius;
     f32 height;
 
@@ -591,7 +591,7 @@ void EnAh_Update(Actor* thisx, PlayState* play) {
 }
 
 void EnAh_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
 
     if (limbIndex == OBJECT_AH_LIMB_07) {
         Matrix_MultVec3f(&D_80BD3F00, &this->actor.focus.pos);
@@ -600,7 +600,7 @@ void EnAh_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, 
 }
 
 void EnAh_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
     s32 stepRot;
     s32 overrideRot;
 
@@ -641,7 +641,7 @@ void EnAh_TransformLimbDraw(PlayState* play, s32 limbIndex, Actor* thisx) {
 }
 
 void EnAh_Draw(Actor* thisx, PlayState* play) {
-    EnAh* this = THIS;
+    EnAh* this = (EnAh*)thisx;
 
     if (this->scheduleResult != 0) {
         OPEN_DISPS(play->state.gfxCtx);

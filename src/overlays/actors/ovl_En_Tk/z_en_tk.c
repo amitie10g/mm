@@ -5,12 +5,11 @@
  */
 
 #include "z_en_tk.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_Bg_Danpei_Movebg/z_bg_danpei_movebg.h"
 #include "overlays/actors/ovl_En_Door/z_en_door.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY)
-
-#define THIS ((EnTk*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY)
 
 void EnTk_Init(Actor* thisx, PlayState* play);
 void EnTk_Destroy(Actor* thisx, PlayState* play);
@@ -77,7 +76,7 @@ ActorProfile En_Tk_Profile = {
 
 static ColliderCylinderInit sCylinderInit = {
     {
-        COLTYPE_NONE,
+        COL_MATERIAL_NONE,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -85,11 +84,11 @@ static ColliderCylinderInit sCylinderInit = {
         COLSHAPE_CYLINDER,
     },
     {
-        ELEMTYPE_UNK0,
+        ELEM_MATERIAL_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { 0x00000000, 0x00, 0x00 },
-        TOUCH_NONE | TOUCH_SFX_NORMAL,
-        BUMP_NONE,
+        ATELEM_NONE | ATELEM_SFX_NORMAL,
+        ACELEM_NONE,
         OCELEM_ON,
     },
     { 30, 52, 0, { 0, 0, 0 } },
@@ -212,7 +211,7 @@ void func_80AEC658(SkelAnime* skelAnime, f32 animCurFrame, f32 arg2, f32* arg3, 
 
 void EnTk_Init(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     this->unk_2B0 = ENTK_GET_F(&this->actor);
     this->switchFlag = ENTK_GET_SWITCH_FLAG(&this->actor);
@@ -229,7 +228,7 @@ void EnTk_Init(Actor* thisx, PlayState* play) {
     }
 
     if ((this->unk_2B0 == 1) || (this->unk_2B0 == 3)) {
-        this->actor.flags &= ~(ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY);
+        this->actor.flags &= ~(ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY);
         this->actor.update = func_80AEF2C8;
         this->actor.draw = NULL;
         return;
@@ -243,7 +242,7 @@ void EnTk_Init(Actor* thisx, PlayState* play) {
     this->unk_318 = 0;
     this->animIndex = ENTK_ANIM_NONE;
     Actor_SetScale(&this->actor, 0.01f);
-    this->actor.targetMode = TARGET_MODE_1;
+    this->actor.attentionRangeType = ATTENTION_RANGE_1;
     this->actor.colChkInfo.mass = MASS_IMMOVABLE;
 
     if (this->unk_2B0 == 2) {
@@ -257,7 +256,7 @@ void EnTk_Init(Actor* thisx, PlayState* play) {
     this->actor.world.rot.y = this->actor.yawTowardsPlayer;
     this->actor.gravity = -1.0f;
     this->actor.shape.rot.y = this->actor.world.rot.y;
-    this->actor.flags |= ACTOR_FLAG_10;
+    this->actor.flags |= ACTOR_FLAG_UPDATE_CULLING_DISABLED;
     SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, ENTK_ANIM_0, &this->animIndex);
     SubS_FillCutscenesList(&this->actor, this->csIdList, ARRAY_COUNT(this->csIdList));
 
@@ -289,7 +288,7 @@ void EnTk_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnTk_Destroy(Actor* thisx, PlayState* play) {
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     Collider_DestroyCylinder(play, &this->collider);
 }
@@ -370,9 +369,9 @@ void func_80AECB6C(EnTk* this, PlayState* play) {
 
     if (!scheduleResult && (this->scheduleResult != 0)) {
         this->actor.draw = NULL;
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
     } else if (scheduleResult && (this->scheduleResult == 0)) {
-        this->actor.flags |= ACTOR_FLAG_TARGETABLE;
+        this->actor.flags |= ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.draw = EnTk_Draw;
     }
 
@@ -380,7 +379,7 @@ void func_80AECB6C(EnTk* this, PlayState* play) {
     func_80AECE0C(this, play);
 
     if (this->unk_3CE & 8) {
-        this->actor.flags &= ~ACTOR_FLAG_TARGETABLE;
+        this->actor.flags &= ~ACTOR_FLAG_ATTENTION_ENABLED;
         this->actor.draw = NULL;
     }
 }
@@ -583,8 +582,8 @@ void func_80AED610(EnTk* this, PlayState* play) {
                 } else {
                     Message_StartTextbox(play, 0x1413, &this->actor);
                 }
-                break;
             }
+            break;
 
         case TEXT_STATE_NEXT:
         case TEXT_STATE_CLOSING:
@@ -709,7 +708,7 @@ void func_80AED940(EnTk* this, PlayState* play) {
 
     if (Actor_TalkOfferAccepted(&this->actor, &play->state)) {
         this->unk_2CA &= ~0x80;
-        this->actor.flags &= ~ACTOR_FLAG_10000;
+        this->actor.flags &= ~ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
         play->msgCtx.msgMode = MSGMODE_NONE;
         play->msgCtx.msgLength = 0;
         func_80AEDE10(this, play);
@@ -762,7 +761,7 @@ void func_80AEDD4C(EnTk* this, PlayState* play) {
 void func_80AEDDA0(EnTk* this, PlayState* play) {
     this->actor.speed = 0.0f;
     SubS_ChangeAnimationBySpeedInfo(&this->skelAnime, sAnimationSpeedInfo, ENTK_ANIM_2, &this->animIndex);
-    this->actor.flags |= ACTOR_FLAG_10000;
+    this->actor.flags |= ACTOR_FLAG_TALK_OFFER_AUTO_ACCEPTED;
     this->unk_2CA |= 0x80;
     this->actionFunc = func_80AED940;
 }
@@ -898,7 +897,7 @@ void func_80AEDF5C(EnTk* this, PlayState* play) {
 
                     case 0x140A:
                         SET_WEEKEVENTREG(WEEKEVENTREG_52_80);
-
+                        FALLTHROUGH;
                     case 0x140B:
                         func_80AEE784(this, play);
                         break;
@@ -1110,7 +1109,7 @@ s32 func_80AEEA4C(EnTk* this, PlayState* play) {
         ret = 3;
     } else if (this->actor.xyzDistToPlayerSq < SQ(60.0f)) {
         ret = 0;
-    } else if (this->actor.isLockedOn || (play->actorCtx.targetCtx.arrowPointedActor == &this->actor) ||
+    } else if (this->actor.isLockedOn || (play->actorCtx.attention.arrowHoverActor == &this->actor) ||
                (this->actor.xyzDistToPlayerSq < SQ(80.0f))) {
         ret = 1;
     } else {
@@ -1152,7 +1151,7 @@ void func_80AEEAD4(EnTk* this, PlayState* play) {
 }
 
 void func_80AEEB88(EnTk* this, PlayState* play) {
-    s32 sp74;
+    s32 bgId;
     Vec3f sp68;
     s32 i;
     f32 temp;
@@ -1166,7 +1165,7 @@ void func_80AEEB88(EnTk* this, PlayState* play) {
         sp68.z += this->actor.world.pos.z;
 
         temp =
-            BgCheck_EntityRaycastFloor3(&play->colCtx, &this->actor.floorPoly, &sp74, &sp68) - this->actor.world.pos.y;
+            BgCheck_EntityRaycastFloor3(&play->colCtx, &this->actor.floorPoly, &bgId, &sp68) - this->actor.world.pos.y;
         if (temp <= -80.0f) {
             break;
         }
@@ -1292,7 +1291,7 @@ void func_80AEF2C8(Actor* thisx, PlayState* play) {
 
 void func_80AEF2D8(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     if (this->actor.draw != NULL) {
         Collider_UpdateCylinder(&this->actor, &this->collider);
@@ -1316,7 +1315,7 @@ void func_80AEF2D8(Actor* thisx, PlayState* play) {
 
 void EnTk_Update(Actor* thisx, PlayState* play) {
     s32 pad;
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     Collider_UpdateCylinder(&this->actor, &this->collider);
     CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
@@ -1371,7 +1370,7 @@ void EnTk_Update(Actor* thisx, PlayState* play) {
 }
 
 void func_80AEF5F4(Actor* thisx, PlayState* play) {
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     this->unk_316 += 0x46C8;
     this->unk_318 = Math_SinS(this->unk_316) * 900.0f;
@@ -1379,7 +1378,7 @@ void func_80AEF5F4(Actor* thisx, PlayState* play) {
 }
 
 s32 EnTk_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     if (limbIndex == OBJECT_TK_LIMB_10) {
         rot->z += this->unk_31A;
@@ -1390,7 +1389,7 @@ s32 EnTk_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* po
 
 void EnTk_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
     static Vec3f D_80AEFA84 = { 0.0f, 0.0f, 4600.0f };
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     if (this->unk_2B0 != 2) {
         switch (limbIndex) {
@@ -1422,7 +1421,7 @@ void EnTk_Draw(Actor* thisx, PlayState* play) {
         object_tk_Tex_005390,
     };
     s32 pad;
-    EnTk* this = THIS;
+    EnTk* this = (EnTk*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

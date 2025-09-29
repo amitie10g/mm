@@ -4,14 +4,13 @@
  * Description: Marine Research Lab Fish
  */
 
+#include "z_en_fish2.h"
+#include "attributes.h"
 #include "overlays/actors/ovl_En_Fish/z_en_fish.h"
 #include "overlays/actors/ovl_En_Mushi2/z_en_mushi2.h"
-#include "z_en_fish2.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
-#define FLAGS (ACTOR_FLAG_TARGETABLE | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_10)
-
-#define THIS ((EnFish2*)thisx)
+#define FLAGS (ACTOR_FLAG_ATTENTION_ENABLED | ACTOR_FLAG_FRIENDLY | ACTOR_FLAG_UPDATE_CULLING_DISABLED)
 
 void EnFish2_Init(Actor* thisx, PlayState* play);
 void EnFish2_Destroy(Actor* thisx, PlayState* play);
@@ -63,22 +62,22 @@ ActorProfile En_Fish2_Profile = {
 static ColliderJntSphElementInit sJntSphElementsInit[2] = {
     {
         {
-            ELEMTYPE_UNK2,
+            ELEM_MATERIAL_UNK2,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_NONE,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_NONE,
             OCELEM_ON,
         },
         { 1, { { 0, 0, 0 }, 0 }, 1 },
     },
     {
         {
-            ELEMTYPE_UNK2,
+            ELEM_MATERIAL_UNK2,
             { 0xF7CFFFFF, 0x00, 0x00 },
             { 0xF7CFFFFF, 0x00, 0x00 },
-            TOUCH_NONE | TOUCH_SFX_NORMAL,
-            BUMP_NONE,
+            ATELEM_NONE | ATELEM_SFX_NORMAL,
+            ACELEM_NONE,
             OCELEM_ON,
         },
         { 17, { { 0, 0, 0 }, 0 }, 1 },
@@ -87,7 +86,7 @@ static ColliderJntSphElementInit sJntSphElementsInit[2] = {
 
 static ColliderJntSphInit sJntSphInit = {
     {
-        COLTYPE_HARD,
+        COL_MATERIAL_HARD,
         AT_NONE,
         AC_NONE,
         OC1_ON | OC1_TYPE_ALL,
@@ -169,7 +168,7 @@ s32 func_80B28478(EnFish2* this) {
 }
 
 void EnFish2_Init(Actor* thisx, PlayState* play) {
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
     s32 i;
     s32 csId;
 
@@ -237,7 +236,7 @@ void EnFish2_Init(Actor* thisx, PlayState* play) {
 }
 
 void EnFish2_Destroy(Actor* thisx, PlayState* play) {
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
 
     if (this->actor.params != 1) {
         Collider_DestroyJntSph(play, &this->collider);
@@ -665,12 +664,12 @@ void func_80B297FC(EnFish2* this, PlayState* play) {
 
         case 2:
             phi_f0 = 0.1f;
-            // fallthrough
+            FALLTHROUGH;
         case 4:
             if (phi_f0 == 0) {
                 phi_f0 = 0.3f;
             }
-            // fallthrough
+            FALLTHROUGH;
         case 6:
             if (phi_f0 == 0) {
                 phi_f0 = 0.5f;
@@ -696,12 +695,12 @@ void func_80B297FC(EnFish2* this, PlayState* play) {
 
         case 3:
             phi_f0 = 1.3f;
-            // fallthrough
+            FALLTHROUGH;
         case 5:
             if (phi_f0 == 0) {
                 phi_f0 = 1.5f;
             }
-            // fallthrough
+            FALLTHROUGH;
         case 7:
             if (phi_f0 == 0) {
                 phi_f0 = 1.7f;
@@ -954,7 +953,7 @@ void EnFish2_Update(Actor* thisx, PlayState* play2) {
         0.0f, 40.0f, -40.0f, 0.0f, 0.0f, 0.0f,
     };
     PlayState* play = play2;
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
 
     if ((this->actionFunc != func_80B295A4) && (this->actor.params != 1)) {
         SkelAnime_Update(&this->skelAnime);
@@ -1057,7 +1056,7 @@ void EnFish2_Update(Actor* thisx, PlayState* play2) {
 }
 
 s32 EnFish2_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3s* rot, Actor* thisx) {
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
 
     if ((limbIndex == OBJECT_FB_LIMB_14) || (limbIndex == OBJECT_FB_LIMB_15)) {
         *dList = NULL;
@@ -1067,7 +1066,7 @@ s32 EnFish2_OverrideLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3f*
 }
 
 void EnFish2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* rot, Actor* thisx) {
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
     s32 pad;
 
     if ((limbIndex == OBJECT_FB_LIMB_14) || (limbIndex == OBJECT_FB_LIMB_15)) {
@@ -1076,7 +1075,7 @@ void EnFish2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* ro
         Matrix_Push();
         Matrix_ReplaceRotation(&play->billboardMtxF);
 
-        gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, play->state.gfxCtx);
         gSPDisplayList(POLY_OPA_DISP++, *dList);
 
         Matrix_Pop();
@@ -1096,7 +1095,7 @@ void EnFish2_PostLimbDraw(PlayState* play, s32 limbIndex, Gfx** dList, Vec3s* ro
 }
 
 void EnFish2_Draw(Actor* thisx, PlayState* play) {
-    EnFish2* this = THIS;
+    EnFish2* this = (EnFish2*)thisx;
 
     Gfx_SetupDL25_Opa(play->state.gfxCtx);
     Gfx_SetupDL25_Xlu(play->state.gfxCtx);
@@ -1184,7 +1183,7 @@ void func_80B2B180(EnFish2* this, PlayState* play) {
             Matrix_Translate(ptr->unk_04.x, ptr->unk_04.y, ptr->unk_04.z, MTXMODE_NEW);
             Matrix_Scale(ptr->unk_14, ptr->unk_14, ptr->unk_14, MTXMODE_APPLY);
 
-            gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(gfxCtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+            MATRIX_FINALIZE_AND_LOAD(POLY_OPA_DISP++, gfxCtx);
             gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
             gDPSetEnvColor(POLY_OPA_DISP++, 150, 150, 150, 0);
             gSPSegment(POLY_OPA_DISP++, 0x08, ptr->unk_20);

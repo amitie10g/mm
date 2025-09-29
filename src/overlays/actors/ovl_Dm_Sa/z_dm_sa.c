@@ -7,9 +7,7 @@
 #include "z_dm_sa.h"
 #include "assets/objects/object_stk/object_stk.h"
 
-#define FLAGS (ACTOR_FLAG_10 | ACTOR_FLAG_20)
-
-#define THIS ((DmSa*)thisx)
+#define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED)
 
 void DmSa_Init(Actor* thisx, PlayState* play);
 void DmSa_Destroy(Actor* thisx, PlayState* play);
@@ -56,11 +54,11 @@ void DmSa_ChangeAnim(SkelAnime* skelAnime, AnimationInfo* animInfo, u16 animInde
 }
 
 void DmSa_Init(Actor* thisx, PlayState* play) {
-    DmSa* this = THIS;
+    DmSa* this = (DmSa*)thisx;
 
     this->unk_2E0 = 0;
     this->alpha = 255;
-    this->actor.targetArrowOffset = 3000.0f;
+    this->actor.lockOnArrowOffset = 3000.0f;
     ActorShape_Init(&this->actor.shape, 0.0f, ActorShadow_DrawCircle, 24.0f);
     SkelAnime_InitFlex(play, &this->skelAnime, &gSkullKidSkel, NULL, NULL, NULL, 0);
     DmSa_ChangeAnim(&this->skelAnime, &sAnimationInfo[DMSA_ANIM_T_POSE], 0);
@@ -75,7 +73,7 @@ void DmSa_DoNothing(DmSa* this, PlayState* play) {
 }
 
 void DmSa_Update(Actor* thisx, PlayState* play) {
-    DmSa* this = THIS;
+    DmSa* this = (DmSa*)thisx;
 
     SkelAnime_Update(&this->skelAnime);
     this->alpha += 0;
@@ -114,7 +112,7 @@ Gfx* func_80A2EBB0(GraphicsContext* gfxCtx, u32 alpha) {
 }
 
 void DmSa_Draw(Actor* thisx, PlayState* play) {
-    DmSa* this = THIS;
+    DmSa* this = (DmSa*)thisx;
 
     OPEN_DISPS(play->state.gfxCtx);
 

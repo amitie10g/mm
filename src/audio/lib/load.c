@@ -13,6 +13,7 @@
 #include "global.h"
 #include "audio/load.h"
 #include "buffers.h"
+#include "attributes.h"
 
 /**
  * SoundFont Notes:
@@ -441,6 +442,7 @@ s32 AudioLoad_SyncLoadSample(Sample* sample, s32 fontId) {
             sample->sampleAddr = sampleAddr;
         }
     }
+    //! @bug Missing return, but the return value is never used so it's fine.
 }
 
 s32 AudioLoad_SyncLoadInstrument(s32 fontId, s32 instId, s32 drumId) {
@@ -457,7 +459,7 @@ s32 AudioLoad_SyncLoadInstrument(s32 fontId, s32 instId, s32 drumId) {
         if (instrument->normalRangeHi != 0x7F) {
             return AudioLoad_SyncLoadSample(instrument->highPitchTunedSample.sample, fontId);
         }
-        // TODO: is this missing return UB?
+        //! @bug Missing return, but the return value is never used so it's fine.
     } else if (instId == 0x7F) {
         Drum* drum = AudioPlayback_GetDrum(fontId, drumId);
 
@@ -467,7 +469,7 @@ s32 AudioLoad_SyncLoadInstrument(s32 fontId, s32 instId, s32 drumId) {
         AudioLoad_SyncLoadSample(drum->tunedSample.sample, fontId);
         return 0;
     }
-    // TODO: is this missing return UB?
+    //! @bug Missing return, but the return value is never used so it's fine.
 }
 
 void AudioLoad_AsyncLoad(s32 tableType, s32 id, s32 nChunks, s32 retData, OSMesgQueue* retQueue) {
@@ -542,9 +544,11 @@ void func_8018FA60(u32 tableType, u32 id, s32 type, s32 data) {
             case 0:
                 table->entries[id].romAddr = data;
                 break;
+
             case 1:
                 table->entries[id].size = data;
                 break;
+
             default:
                 break;
         }
@@ -558,10 +562,10 @@ s32 AudioLoad_SyncInitSeqPlayer(s32 playerIndex, s32 seqId, s32 arg2) {
 
     gAudioCtx.seqPlayers[playerIndex].skipTicks = 0;
     AudioLoad_SyncInitSeqPlayerInternal(playerIndex, seqId, arg2);
-    // Intentionally missing return. Returning the result of the above function
-    // call matches but is UB because it too is missing a return, and using the
-    // result of a non-void function that has failed to return a value is UB.
-    // The callers of this function do not use the return value, so it's fine.
+    //! @bug missing return. Returning the result of the above function
+    //! call matches but is UB because it too is missing a return, and using the
+    //! result of a non-void function that has failed to return a value is UB.
+    //! The callers of this function do not use the return value, so it's fine.
 }
 
 s32 AudioLoad_SyncInitSeqPlayerSkipTicks(s32 playerIndex, s32 seqId, s32 skipTicks) {
@@ -571,7 +575,7 @@ s32 AudioLoad_SyncInitSeqPlayerSkipTicks(s32 playerIndex, s32 seqId, s32 skipTic
 
     gAudioCtx.seqPlayers[playerIndex].skipTicks = skipTicks;
     AudioLoad_SyncInitSeqPlayerInternal(playerIndex, seqId, 0);
-    // Missing return, see above.
+    //! @bug Missing return, see comment in AudioLoad_SyncInitSeqPlayer above.
 }
 
 s32 AudioLoad_SyncInitSeqPlayerInternal(s32 playerIndex, s32 seqId, s32 arg2) {
@@ -752,6 +756,7 @@ void* AudioLoad_SyncLoad(s32 tableType, u32 id, s32* didAllocate) {
                     return ramAddr;
                 }
                 break;
+
             case CACHE_LOAD_TEMPORARY:
                 ramAddr = AudioHeap_AllocCached(tableType, size, CACHE_TEMPORARY, realId);
                 if (ramAddr == NULL) {
@@ -800,12 +805,15 @@ void* AudioLoad_SyncLoad(s32 tableType, u32 id, s32* didAllocate) {
         case SEQUENCE_TABLE:
             AudioLoad_SetSeqLoadStatus(realId, loadStatus);
             break;
+
         case FONT_TABLE:
             AudioLoad_SetFontLoadStatus(realId, loadStatus);
             break;
+
         case SAMPLE_TABLE:
             AudioLoad_SetSampleFontLoadStatusAndApplyCaches(realId, loadStatus);
             break;
+
         default:
             break;
     }
@@ -846,12 +854,15 @@ AudioTable* AudioLoad_GetLoadTable(s32 tableType) {
         case SEQUENCE_TABLE:
             table = gAudioCtx.sequenceTable;
             break;
+
         case FONT_TABLE:
             table = gAudioCtx.soundFontTable;
             break;
+
         default:
             table = NULL;
             break;
+
         case SAMPLE_TABLE:
             table = gAudioCtx.sampleBankTable;
             break;
@@ -1172,12 +1183,15 @@ void* AudioLoad_AsyncLoadInner(s32 tableType, s32 id, s32 nChunks, s32 retData, 
         case SEQUENCE_TABLE:
             AudioLoad_SetSeqLoadStatus(realId, loadStatus);
             break;
+
         case FONT_TABLE:
             AudioLoad_SetFontLoadStatus(realId, loadStatus);
             break;
+
         case SAMPLE_TABLE:
             AudioLoad_SetSampleFontLoadStatusAndApplyCaches(realId, loadStatus);
             break;
+
         default:
             break;
     }
@@ -1251,6 +1265,7 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
         default:
             gAudioCtx.unk_2960 = 16.713f;
             gAudioCtx.refreshRate = 60;
+            break;
     }
 
     AudioThread_InitMesgQueues();
@@ -1325,8 +1340,7 @@ void AudioLoad_Init(void* heap, size_t heapSize) {
     }
 
     if (addr = AudioHeap_Alloc(&gAudioCtx.initPool, gAudioHeapInitSizes.permanentPoolSize), addr == NULL) {
-        // cast away const from gAudioHeapInitSizes
-        *((u32*)&gAudioHeapInitSizes.permanentPoolSize) = 0;
+        gAudioHeapInitSizes.permanentPoolSize = 0;
     }
 
     AudioHeap_InitPool(&gAudioCtx.permanentPool, addr, gAudioHeapInitSizes.permanentPoolSize);
@@ -1455,6 +1469,7 @@ void AudioLoad_ProcessSlowLoads(s32 resetStatus) {
                     slowLoad->status = LOAD_STATUS_DONE;
                     continue;
                 }
+                FALLTHROUGH;
             case LOAD_STATUS_START:
                 slowLoad->status = LOAD_STATUS_LOADING;
                 if (slowLoad->bytesRemaining == 0) {
